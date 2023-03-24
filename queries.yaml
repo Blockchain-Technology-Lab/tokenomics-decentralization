@@ -1,0 +1,154 @@
+bitcoin:
+    WITH double_entry_book AS (
+    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+    FROM `bigquery-public-data.crypto_bitcoin.inputs` as inputs
+    UNION ALL
+    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+    FROM `bigquery-public-data.crypto_bitcoin.outputs` as outputs
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance > 0
+
+bitcoin_cash:
+    WITH double_entry_book AS (
+    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+    FROM `bigquery-public-data.crypto_bitcoin_cash.inputs` as inputs
+    UNION ALL
+    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+    FROM `bigquery-public-data.crypto_bitcoin_cash.outputs` as outputs
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance > 0
+
+cardano:
+    SELECT *    
+    FROM
+    (
+    WITH addr_outputs AS (
+    SELECT 
+    epoch_no,
+    address,
+    CAST(JSON_VALUE(o, '$.idx') AS INT64) AS idx,
+    CAST(JSON_VALUE(o, '$.slot_no') AS INT64) AS slot_no,
+    CAST(JSON_VALUE(o, '$.txidx') AS INT64) AS txidx
+    FROM
+    `iog-data-analytics.cardano_mainnet.rel_addr_txout`
+    LEFT JOIN
+    UNNEST(JSON_EXTRACT_ARRAY(outputs, "$") ) AS o),
+    INCOMING_UTXOS AS (
+    SELECT
+    tio.epoch_no,
+    addr_outputs.address,
+    tio.slot_no,
+    tio.txidx,
+    addr_outputs.idx,
+    CAST(JSON_VALUE(a, '$.out_value') AS INT64 ) AS value,
+    FROM
+    `iog-data-analytics.cardano_mainnet.tx_in_out` AS tio
+    JOIN
+    addr_outputs
+    ON
+    tio.epoch_no = addr_outputs.epoch_no
+    AND tio.slot_no = addr_outputs.slot_no
+    AND tio.txidx = addr_outputs.txidx
+    JOIN UNNEST(JSON_QUERY_ARRAY(outputs)) AS a ON CAST(JSON_VALUE(a, '$.out_idx') AS INT64 ) = addr_outputs.idx
+    ),
+    OUTGOING_UTXOS AS (
+    SELECT
+    tx.epoch_no,
+    io.address,
+    consumed_in_slot_no,
+    consumed_in_txidx,
+    cons.index,
+    value*-1 AS value,
+    FROM INCOMING_UTXOS AS io
+    JOIN `iog-data-analytics.cardano_mainnet.tx_consumed_output` AS cons
+    ON io.slot_no = cons.slot_no AND io.txidx = cons.txidx AND io.idx = cons.index
+    JOIN `iog-data-analytics.cardano_mainnet.tx` AS tx ON tx.slot_no = cons.consumed_in_slot_no AND tx.txidx = cons.consumed_in_txidx
+    ),
+    GROUPED_INCOMING AS (
+    SELECT epoch_no, address, SUM(value) as sum_incoming FROM INCOMING_UTXOS GROUP BY epoch_no, address
+    ),
+    GROUPED_OUTGOING AS (
+    SELECT epoch_no, address, SUM(value) as sum_outgoing FROM OUTGOING_UTXOS GROUP BY epoch_no, address
+    )
+    SELECT i.epoch_no, i.address, i.sum_incoming - o.sum_outgoing AS balance
+    FROM GROUPED_INCOMING AS i FULL JOIN GROUPED_OUTGOING AS o ON i.epoch_no = o.epoch_no AND i.address = o.address
+    )
+    WHERE balance > 0
+
+
+dash:
+    WITH double_entry_book AS (
+    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+    FROM `bigquery-public-data.crypto_dash.inputs` as inputs
+    UNION ALL
+    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+    FROM `bigquery-public-data.crypto_dash.outputs` as outputs
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance > 0
+
+dogecoin:
+    WITH double_entry_book AS (
+    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+    FROM `bigquery-public-data.crypto_dogecoin.inputs` as inputs
+    UNION ALL
+    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+    FROM `bigquery-public-data.crypto_dogecoin.outputs` as outputs
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance > 0
+
+ethereum:
+    SELECT address, eth_balance
+    FROM `bigquery-public-data.crypto_ethereum.balances`
+    WHERE eth_balance > 0
+
+litecoin:
+    WITH double_entry_book AS (
+    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+    FROM `bigquery-public-data.crypto_litecoin.inputs` as inputs
+    UNION ALL
+    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+    FROM `bigquery-public-data.crypto_litecoin.outputs` as outputs
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance > 0
+
+tezos:
+    WITH double_entry_book as (
+    SELECT IF(kind = 'contract', contract, delegate) AS address, change AS value
+    FROM `public-data-finance.crypto_tezos.balance_updates`
+    WHERE status IS NULL OR status = 'applied'
+    UNION ALL
+    SELECT address, balance_change
+    FROM `public-data-finance.crypto_tezos.migrations`
+    )
+    SELECT address, SUM(value) AS balance
+    FROM double_entry_book
+    GROUP BY address
+    HAVING balance > 0
+
+zcash:
+    WITH double_entry_book AS (
+    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+    FROM `bigquery-public-data.crypto_zcash.inputs` as inputs
+    UNION ALL
+    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+    FROM `bigquery-public-data.crypto_zcash.outputs` as outputs
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance > 0
