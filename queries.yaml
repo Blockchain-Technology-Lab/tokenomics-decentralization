@@ -109,7 +109,7 @@ dogecoin:
     HAVING balance > 0
 
 ethereum:
-    SELECT address, eth_balance
+    SELECT address, eth_balance AS balance
     FROM `bigquery-public-data.crypto_ethereum.balances`
     WHERE eth_balance > 0
 
