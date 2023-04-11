@@ -49,4 +49,4 @@ for ledger in queries.keys():
         writer.writerow([field.name for field in rows.schema])
         writer.writerows(rows)
     print(f'Done writing {ledger} results (took about {round(time() - start)} seconds)')
-    print('-------------------------------------------------------')
+    print(50 * '-')
