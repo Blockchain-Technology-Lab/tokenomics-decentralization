@@ -2,9 +2,11 @@ bitcoin:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -15,9 +17,11 @@ bitcoin_cash:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin_cash.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin_cash.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -86,9 +90,11 @@ dash:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_dash.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_dash.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -99,9 +105,11 @@ dogecoin:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_dogecoin.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_dogecoin.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -117,9 +125,11 @@ litecoin:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_litecoin.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_litecoin.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -144,9 +154,11 @@ zcash:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_zcash.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_zcash.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
