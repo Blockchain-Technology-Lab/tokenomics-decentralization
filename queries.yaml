@@ -34,7 +34,7 @@ cardano:
     (
     WITH addr_outputs AS (
     SELECT 
-    epoch_no,
+    `iog-data-analytics.cardano_mainnet.rel_addr_txout`.epoch_no AS epoch_no,
     address,
     CAST(JSON_VALUE(o, '$.idx') AS INT64) AS idx,
     CAST(JSON_VALUE(o, '$.slot_no') AS INT64) AS slot_no,
@@ -42,7 +42,9 @@ cardano:
     FROM
     `iog-data-analytics.cardano_mainnet.rel_addr_txout`
     LEFT JOIN
-    UNNEST(JSON_EXTRACT_ARRAY(outputs, "$") ) AS o),
+    UNNEST(JSON_EXTRACT_ARRAY(outputs, "$") ) AS o
+    JOIN `iog-data-analytics.cardano_mainnet.block` ON `iog-data-analytics.cardano_mainnet.block`.slot_no = slot_no AND `iog-data-analytics.cardano_mainnet.block`.block_time < "{{timestamp}}"
+    ),
     INCOMING_UTXOS AS (
     SELECT
     tio.epoch_no,
