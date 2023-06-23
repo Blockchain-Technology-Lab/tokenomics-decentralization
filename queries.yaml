@@ -117,9 +117,34 @@ dogecoin:
     HAVING balance > 0
 
 ethereum:
-    SELECT address, eth_balance AS balance
-    FROM `bigquery-public-data.crypto_ethereum.balances`
-    WHERE eth_balance > 0
+    WITH double_entry_book AS (
+        SELECT to_address as address, value AS value
+        FROM `bigquery-public-data.crypto_ethereum.traces`
+        WHERE to_address IS NOT null
+        AND status = 1
+        AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS null)
+        AND block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT from_address as address, -value AS value
+        FROM `bigquery-public-data.crypto_ethereum.traces`
+        WHERE from_address IS NOT null
+        AND status = 1
+        AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS null)
+        AND block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT miner AS address, sum(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) AS value
+        FROM `bigquery-public-data.crypto_ethereum.transactions` AS transactions
+        JOIN `bigquery-public-data.crypto_ethereum.blocks` AS blocks on blocks.number = transactions.block_number
+        WHERE transactions.block_timestamp < "{{timestamp}}"
+        GROUP BY blocks.miner
+        UNION ALL
+        SELECT from_address AS address, -(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) AS value
+        FROM `bigquery-public-data.crypto_ethereum.transactions`
+        WHERE block_timestamp < "{{timestamp}}"
+    )
+    SELECT address, sum(value) AS balance
+    FROM double_entry_book
+    GROUP BY address
 
 litecoin:
     WITH double_entry_book AS (

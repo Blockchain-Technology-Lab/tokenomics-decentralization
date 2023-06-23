@@ -29,7 +29,7 @@ client = bq.Client.from_service_account_json(json_credentials_path=ROOT_DIR / "g
 
 force_query = False
 # for ledger in queries.keys():
-for ledger in ['bitcoin', 'bitcoin_cash', 'dash', 'dogecoin', 'litecoin', 'tezos', 'zcash']:
+for ledger in ['bitcoin', 'bitcoin_cash', 'dash', 'dogecoin', 'ethereum', 'litecoin', 'tezos', 'zcash']:
     for year in range(START_YEAR, END_YEAR+1):
         for month in range(1, 13):
             timestamp = f'{year}-{month:02}-01'
