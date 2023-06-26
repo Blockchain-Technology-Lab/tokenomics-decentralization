@@ -13,6 +13,9 @@ from yaml import safe_load
 import pathlib
 from time import time
 
+START_YEAR = 2018
+END_YEAR = 2022
+
 ROOT_DIR = pathlib.Path(__file__).resolve().parent
 INPUT_DIR = ROOT_DIR / 'input'
 
@@ -26,27 +29,31 @@ client = bq.Client.from_service_account_json(json_credentials_path=ROOT_DIR / "g
 
 force_query = False
 for ledger in queries.keys():
-    filename = f'{ledger}_raw_data.csv'
-    file = INPUT_DIR / filename
-    if not force_query and file.is_file():
-        continue
-    print(f"Querying {ledger}..")
-    start = time()
-    QUERY = (queries[ledger])
-    query_job = client.query(QUERY)
-    try:
-        rows = query_job.result()
-        print(f'Done querying {ledger} (took about {round(time() - start)} seconds)')
-    except Exception as e:
-        print(f'{ledger} query failed, please make sure it is properly defined.')
-        print(f'The following exception was raised: {repr(e)}')
-        continue
+    for year in range(START_YEAR, END_YEAR+1):
+        for month in range(1, 13):
+            timestamp = f'{year}-{month:02}-01'
 
-    print(f"Writing {ledger} data to file..")
-    start = time()
-    with open(file, 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow([field.name for field in rows.schema])
-        writer.writerows(rows)
-    print(f'Done writing {ledger} results (took about {round(time() - start)} seconds)')
-    print(50 * '-')
+            filename = f'{ledger}_{timestamp}_raw_data.csv'
+            file = INPUT_DIR / filename
+            if not force_query and file.is_file():
+                continue
+            print(f"Querying {ledger} at snapshot {timestamp}..")
+            start = time()
+            QUERY = (queries[ledger]).replace('{{timestamp}}', timestamp)
+            query_job = client.query(QUERY)
+            try:
+                rows = query_job.result()
+                print(f'Done querying {ledger} (took about {round(time() - start)} seconds)')
+            except Exception as e:
+                print(f'{ledger} query failed, please make sure it is properly defined.')
+                print(f'The following exception was raised: {repr(e)}')
+                continue
+
+            print(f"Writing {ledger} data to file..")
+            start = time()
+            with open(file, 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow([field.name for field in rows.schema])
+                writer.writerows(rows)
+            print(f'Done writing {ledger} results (took about {round(time() - start)} seconds)')
+            print(50 * '-')

@@ -2,9 +2,11 @@ bitcoin:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -15,9 +17,11 @@ bitcoin_cash:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin_cash.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_bitcoin_cash.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -30,7 +34,7 @@ cardano:
     (
     WITH addr_outputs AS (
     SELECT 
-    epoch_no,
+    `iog-data-analytics.cardano_mainnet.rel_addr_txout`.epoch_no AS epoch_no,
     address,
     CAST(JSON_VALUE(o, '$.idx') AS INT64) AS idx,
     CAST(JSON_VALUE(o, '$.slot_no') AS INT64) AS slot_no,
@@ -38,7 +42,9 @@ cardano:
     FROM
     `iog-data-analytics.cardano_mainnet.rel_addr_txout`
     LEFT JOIN
-    UNNEST(JSON_EXTRACT_ARRAY(outputs, "$") ) AS o),
+    UNNEST(JSON_EXTRACT_ARRAY(outputs, "$") ) AS o
+    JOIN `iog-data-analytics.cardano_mainnet.block` ON `iog-data-analytics.cardano_mainnet.block`.slot_no = slot_no AND `iog-data-analytics.cardano_mainnet.block`.block_time < "{{timestamp}}"
+    ),
     INCOMING_UTXOS AS (
     SELECT
     tio.epoch_no,
@@ -86,9 +92,11 @@ dash:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_dash.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_dash.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -99,9 +107,11 @@ dogecoin:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_dogecoin.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_dogecoin.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -109,17 +119,44 @@ dogecoin:
     HAVING balance > 0
 
 ethereum:
-    SELECT address, eth_balance AS balance
-    FROM `bigquery-public-data.crypto_ethereum.balances`
-    WHERE eth_balance > 0
+    WITH double_entry_book AS (
+        SELECT to_address as address, value AS value
+        FROM `bigquery-public-data.crypto_ethereum.traces`
+        WHERE to_address IS NOT null
+        AND status = 1
+        AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS null)
+        AND block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT from_address as address, -value AS value
+        FROM `bigquery-public-data.crypto_ethereum.traces`
+        WHERE from_address IS NOT null
+        AND status = 1
+        AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS null)
+        AND block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT miner AS address, sum(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) AS value
+        FROM `bigquery-public-data.crypto_ethereum.transactions` AS transactions
+        JOIN `bigquery-public-data.crypto_ethereum.blocks` AS blocks on blocks.number = transactions.block_number
+        WHERE transactions.block_timestamp < "{{timestamp}}"
+        GROUP BY blocks.miner
+        UNION ALL
+        SELECT from_address AS address, -(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) AS value
+        FROM `bigquery-public-data.crypto_ethereum.transactions`
+        WHERE block_timestamp < "{{timestamp}}"
+    )
+    SELECT address, sum(value) AS balance
+    FROM double_entry_book
+    GROUP BY address
 
 litecoin:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_litecoin.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_litecoin.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
@@ -130,10 +167,11 @@ tezos:
     WITH double_entry_book as (
     SELECT IF(kind = 'contract', contract, delegate) AS address, change AS value
     FROM `public-data-finance.crypto_tezos.balance_updates`
-    WHERE status IS NULL OR status = 'applied'
+    WHERE (status IS NULL OR status = 'applied') AND (timestamp < "{{timestamp}}")
     UNION ALL
     SELECT address, balance_change
     FROM `public-data-finance.crypto_tezos.migrations`
+    WHERE timestamp < "{{timestamp}}"
     )
     SELECT address, SUM(value) AS balance
     FROM double_entry_book
@@ -144,9 +182,11 @@ zcash:
     WITH double_entry_book AS (
     SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
     FROM `bigquery-public-data.crypto_zcash.inputs` as inputs
+    WHERE block_timestamp < "{{timestamp}}"
     UNION ALL
     SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
     FROM `bigquery-public-data.crypto_zcash.outputs` as outputs
+    WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
