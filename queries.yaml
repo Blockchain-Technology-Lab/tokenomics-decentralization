@@ -1,32 +1,34 @@
 bitcoin:
     WITH double_entry_book AS (
-    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
-    FROM `bigquery-public-data.crypto_bitcoin.inputs` as inputs
-    WHERE block_timestamp < "{{timestamp}}"
-    UNION ALL
-    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
-    FROM `bigquery-public-data.crypto_bitcoin.outputs` as outputs
-    WHERE block_timestamp < "{{timestamp}}"
+        SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin.inputs` as inputs
+        WHERE block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin.outputs` as outputs
+        WHERE block_timestamp < "{{timestamp}}"
     )
-    SELECT address,   type,   sum(value) as balance
+    SELECT address, type, sum(value) as balance
     FROM double_entry_book
     GROUP BY 1,2
     HAVING balance > 0
+    ORDER BY balance DESC
 
 bitcoin_cash:
     WITH double_entry_book AS (
-    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
-    FROM `bigquery-public-data.crypto_bitcoin_cash.inputs` as inputs
-    WHERE block_timestamp < "{{timestamp}}"
-    UNION ALL
-    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
-    FROM `bigquery-public-data.crypto_bitcoin_cash.outputs` as outputs
-    WHERE block_timestamp < "{{timestamp}}"
+        SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin_cash.inputs` as inputs
+        WHERE block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin_cash.outputs` as outputs
+        WHERE block_timestamp < "{{timestamp}}"
     )
-    SELECT address,   type,   sum(value) as balance
+    SELECT address, type, sum(value) as balance
     FROM double_entry_book
     GROUP BY 1,2
     HAVING balance > 0
+    ORDER BY balance DESC
 
 cardano:
     SELECT *    
@@ -76,33 +78,35 @@ cardano:
 
 dash:
     WITH double_entry_book AS (
-    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
-    FROM `bigquery-public-data.crypto_dash.inputs` as inputs
-    WHERE block_timestamp < "{{timestamp}}"
-    UNION ALL
-    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
-    FROM `bigquery-public-data.crypto_dash.outputs` as outputs
-    WHERE block_timestamp < "{{timestamp}}"
+        SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_dash.inputs` as inputs
+        WHERE block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_dash.outputs` as outputs
+        WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
     GROUP BY 1,2
     HAVING balance > 0
+    ORDER BY balance DESC
 
 dogecoin:
     WITH double_entry_book AS (
-    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
-    FROM `bigquery-public-data.crypto_dogecoin.inputs` as inputs
-    WHERE block_timestamp < "{{timestamp}}"
-    UNION ALL
-    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
-    FROM `bigquery-public-data.crypto_dogecoin.outputs` as outputs
-    WHERE block_timestamp < "{{timestamp}}"
+        SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_dogecoin.inputs` as inputs
+        WHERE block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_dogecoin.outputs` as outputs
+        WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
     GROUP BY 1,2
     HAVING balance > 0
+    ORDER BY balance DESC
 
 ethereum:
     WITH double_entry_book AS (
@@ -133,48 +137,53 @@ ethereum:
     SELECT address, sum(value) AS balance
     FROM double_entry_book
     GROUP BY address
+    HAVING balance > 0
+    ORDER BY balance DESC
 
 litecoin:
     WITH double_entry_book AS (
-    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
-    FROM `bigquery-public-data.crypto_litecoin.inputs` as inputs
-    WHERE block_timestamp < "{{timestamp}}"
-    UNION ALL
-    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
-    FROM `bigquery-public-data.crypto_litecoin.outputs` as outputs
-    WHERE block_timestamp < "{{timestamp}}"
+        SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_litecoin.inputs` as inputs
+        WHERE block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_litecoin.outputs` as outputs
+        WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
     GROUP BY 1,2
     HAVING balance > 0
+    ORDER BY balance DESC
 
 tezos:
     WITH double_entry_book as (
-    SELECT IF(kind = 'contract', contract, delegate) AS address, change AS value
-    FROM `public-data-finance.crypto_tezos.balance_updates`
-    WHERE (status IS NULL OR status = 'applied') AND (timestamp < "{{timestamp}}")
-    UNION ALL
-    SELECT address, balance_change
-    FROM `public-data-finance.crypto_tezos.migrations`
-    WHERE timestamp < "{{timestamp}}"
+        SELECT IF(kind = 'contract', contract, delegate) AS address, change AS value
+        FROM `public-data-finance.crypto_tezos.balance_updates`
+        WHERE (status IS NULL OR status = 'applied') AND (timestamp < "{{timestamp}}")
+        UNION ALL
+        SELECT address, balance_change
+        FROM `public-data-finance.crypto_tezos.migrations`
+        WHERE timestamp < "{{timestamp}}"
     )
     SELECT address, SUM(value) AS balance
     FROM double_entry_book
     GROUP BY address
     HAVING balance > 0
+    ORDER BY balance DESC
 
 zcash:
     WITH double_entry_book AS (
-    SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
-    FROM `bigquery-public-data.crypto_zcash.inputs` as inputs
-    WHERE block_timestamp < "{{timestamp}}"
-    UNION ALL
-    SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
-    FROM `bigquery-public-data.crypto_zcash.outputs` as outputs
-    WHERE block_timestamp < "{{timestamp}}"
+        SELECT array_to_string(inputs.addresses, ",") as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_zcash.inputs` as inputs
+        WHERE block_timestamp < "{{timestamp}}"
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, ",") as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_zcash.outputs` as outputs
+        WHERE block_timestamp < "{{timestamp}}"
     )
     SELECT address,   type,   sum(value) as balance
     FROM double_entry_book
     GROUP BY 1,2
     HAVING balance > 0
+    ORDER BY balance DESC
