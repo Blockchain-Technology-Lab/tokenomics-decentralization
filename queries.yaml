@@ -32,61 +32,47 @@ cardano:
     SELECT *    
     FROM
     (
-    WITH addr_outputs AS (
-    SELECT 
-    `iog-data-analytics.cardano_mainnet.rel_addr_txout`.epoch_no AS epoch_no,
-    address,
-    CAST(JSON_VALUE(o, '$.idx') AS INT64) AS idx,
-    CAST(JSON_VALUE(o, '$.slot_no') AS INT64) AS slot_no,
-    CAST(JSON_VALUE(o, '$.txidx') AS INT64) AS txidx
-    FROM
-    `iog-data-analytics.cardano_mainnet.rel_addr_txout`
-    LEFT JOIN
-    UNNEST(JSON_EXTRACT_ARRAY(outputs, "$") ) AS o
-    JOIN `iog-data-analytics.cardano_mainnet.block` ON `iog-data-analytics.cardano_mainnet.block`.slot_no = slot_no AND `iog-data-analytics.cardano_mainnet.block`.block_time < "{{timestamp}}"
-    ),
-    INCOMING_UTXOS AS (
-    SELECT
-    tio.epoch_no,
-    addr_outputs.address,
-    tio.slot_no,
-    tio.txidx,
-    addr_outputs.idx,
-    CAST(JSON_VALUE(a, '$.out_value') AS INT64 ) AS value,
-    FROM
-    `iog-data-analytics.cardano_mainnet.tx_in_out` AS tio
-    JOIN
-    addr_outputs
-    ON
-    tio.epoch_no = addr_outputs.epoch_no
-    AND tio.slot_no = addr_outputs.slot_no
-    AND tio.txidx = addr_outputs.txidx
-    JOIN UNNEST(JSON_QUERY_ARRAY(outputs)) AS a ON CAST(JSON_VALUE(a, '$.out_idx') AS INT64 ) = addr_outputs.idx
-    ),
-    OUTGOING_UTXOS AS (
-    SELECT
-    tx.epoch_no,
-    io.address,
-    consumed_in_slot_no,
-    consumed_in_txidx,
-    cons.index,
-    value*-1 AS value,
-    FROM INCOMING_UTXOS AS io
-    JOIN `iog-data-analytics.cardano_mainnet.tx_consumed_output` AS cons
-    ON io.slot_no = cons.slot_no AND io.txidx = cons.txidx AND io.idx = cons.index
-    JOIN `iog-data-analytics.cardano_mainnet.tx` AS tx ON tx.slot_no = cons.consumed_in_slot_no AND tx.txidx = cons.consumed_in_txidx
-    ),
-    GROUPED_INCOMING AS (
-    SELECT epoch_no, address, SUM(value) as sum_incoming FROM INCOMING_UTXOS GROUP BY epoch_no, address
-    ),
-    GROUPED_OUTGOING AS (
-    SELECT epoch_no, address, SUM(value) as sum_outgoing FROM OUTGOING_UTXOS GROUP BY epoch_no, address
-    )
-    SELECT i.epoch_no, i.address, i.sum_incoming - o.sum_outgoing AS balance
-    FROM GROUPED_INCOMING AS i FULL JOIN GROUPED_OUTGOING AS o ON i.epoch_no = o.epoch_no AND i.address = o.address
+        WITH blocks AS (
+          SELECT
+          slot_no AS block_number,
+          block_time
+          FROM `iog-data-analytics.cardano_mainnet.block`
+          WHERE block_time < "{{timestamp}}"
+        ),
+        OUTPUTS AS (
+          SELECT
+          slot_no as output_slot_number,
+          CAST(JSON_VALUE(a, '$.out_address') AS STRING) AS address,
+          CAST(JSON_VALUE(a, '$.out_idx') AS INT64) as out_idx,
+          CAST(JSON_VALUE(a, '$.out_value') AS INT64 ) AS value
+          FROM `iog-data-analytics.cardano_mainnet.vw_tx_in_out_with_inputs_value`
+          JOIN blocks ON block_number = slot_no
+          JOIN UNNEST(JSON_QUERY_ARRAY(outputs)) AS a
+        ),
+        INPUTS AS (
+          SELECT
+          address,
+          CAST(JSON_VALUE(i, '$.out_value') AS INT64 ) AS value
+          FROM `iog-data-analytics.cardano_mainnet.vw_tx_in_out_with_inputs_value`
+          JOIN OUTPUTS ON slot_no = output_slot_number
+          JOIN UNNEST(JSON_QUERY_ARRAY(inputs)) AS i ON CAST(JSON_VALUE(i, '$.in_idx') AS INT64) = OUTPUTS.out_idx
+        ),
+        INCOMING AS (
+          SELECT address, SUM(CAST(value AS numeric)) as sum_incoming -- cast numeric to avoid integer overflow in sum aggregation
+          FROM INPUTS
+          GROUP BY address
+        ),
+        OUTGOING AS (
+          SELECT address, SUM(CAST(value AS numeric)) as sum_outgoing
+          FROM OUTPUTS
+          GROUP BY address
+        )
+        SELECT i.address, i.sum_incoming - o.sum_outgoing AS balance
+        FROM INCOMING AS i
+        JOIN OUTGOING AS o ON i.address = o.address
     )
     WHERE balance > 0
-
+    ORDER BY balance DESC
 
 dash:
     WITH double_entry_book AS (
