@@ -60,7 +60,7 @@ cardano:
           JOIN UNNEST(JSON_QUERY_ARRAY(inputs)) AS i ON CAST(JSON_VALUE(i, '$.in_idx') AS INT64) = OUTPUTS.out_idx
         ),
         INCOMING AS (
-          SELECT address, SUM(CAST(value AS numeric)) as sum_incoming -- cast numeric to avoid integer overflow in sum aggregation
+          SELECT address, SUM(CAST(value AS numeric)) as sum_incoming
           FROM INPUTS
           GROUP BY address
         ),
