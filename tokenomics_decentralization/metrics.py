@@ -44,3 +44,7 @@ def compute_shannon_entropy(entries, circulation):
             entropy -= market_share * log(market_share, 2)
 
     return entropy
+
+
+def compute_total_entities(entries, circulation):
+    return len(entries)
