@@ -1,0 +1,16 @@
+metrics:  # NOT IMPLEMENTED YET
+  - entropy
+  - gini
+  - hhi
+  - nakamoto_coefficient
+
+timeframe:
+  start_year: 2010
+  end_year: 2023
+
+default_ledgers:
+  - bitcoin
+  - ethereum
+
+db_directories:  # Paths to directories of snapshot db files; either absolute or relative from run.py; the first will be used to write newly created dbs
+  - ./output
