@@ -94,8 +94,7 @@ def fill_db_with_balances(conn, ledger, snapshot):
                     cursor.execute(f"INSERT INTO balances(balance, snapshot_id, address_id) VALUES ({balance}, {snapshot_id}, {address_id})")
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
-                        prev_balance = int(cursor.execute(f"SELECT balance FROM balances WHERE address_id={address_id} AND snapshot_id={snapshot_id}").fetchone()[0])
-                        cursor.execute(f"UPDATE balances SET balance={prev_balance+balance} WHERE address_id={address_id} AND snapshot_id={snapshot_id}")
+                        pass
                     else:
                         raise e
 
