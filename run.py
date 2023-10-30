@@ -10,13 +10,13 @@ logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:
 ROOT_DIR = pathlib.Path(__file__).resolve().parent
 
 
-def main(ledgers, snapshots, force_compute, only_analyze, db_directories):
+def main(ledgers, snapshots, force_compute, only_analyze, db_directories, no_clustering):
     if not only_analyze:
         for ledger in ledgers:
             for snapshot in snapshots:
                 logging.info(f'Mapping {ledger} {snapshot}')
                 apply_mapping(ledger, snapshot, db_directories)
-    analyze(ledgers, snapshots, force_compute, db_directories)
+    analyze(ledgers, snapshots, force_compute, db_directories, no_clustering)
 
 
 if __name__ == '__main__':
@@ -38,11 +38,14 @@ if __name__ == '__main__':
                              'already exist.')
     parser.add_argument('--only-analyze', action='store_true',
                         help='Flag to specify whether to only analyze existing data, if the database exists.')
+    parser.add_argument('--no-clustering', action='store_true',
+                        help='Flag to specify whether to not perform any address clustering.')
     args = parser.parse_args()
 
     ledgers = args.ledgers
     snapshots = args.snapshots
     force_compute = args.force_compute
     only_analyze = args.only_analyze
+    no_clustering = args.no_clustering
 
-    main(ledgers, snapshots, force_compute, only_analyze, db_directories)
+    main(ledgers, snapshots, force_compute, only_analyze, db_directories, no_clustering)
