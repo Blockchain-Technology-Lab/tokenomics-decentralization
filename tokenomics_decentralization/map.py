@@ -126,4 +126,4 @@ def apply_mapping(ledger, snapshot, db_directories):
 
         logging.info('Finished')
     else:
-        logging.info('Snapthot input or db file does not exist')
+        logging.info('Snapshot input or db file does not exist')
