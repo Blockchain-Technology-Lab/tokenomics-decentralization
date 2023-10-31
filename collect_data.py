@@ -56,7 +56,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
 if __name__ == '__main__':
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
-    default_ledgers = ['bitcoin', 'cardano', 'ethereum']
+    default_ledgers = ['bitcoin', 'cardano', 'ethereum', 'dogecoin']
     start_year, end_year = 2018, 2023
     default_snapshot_dates = [f'{year}-01-01' for year in range(start_year, end_year + 1)]
 

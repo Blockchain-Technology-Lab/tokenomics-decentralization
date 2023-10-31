@@ -1,5 +1,5 @@
 from tokenomics_decentralization.schema import get_connector
-from tokenomics_decentralization.metrics import compute_hhi, compute_tau, compute_gini, compute_shannon_entropy
+from tokenomics_decentralization.metrics import compute_hhi, compute_tau, compute_gini, compute_shannon_entropy, compute_total_entities
 from time import time
 import sqlite3
 import os
@@ -58,7 +58,8 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
     compute_functions = {
         'hhi': compute_hhi,
         'shannon entropy': compute_shannon_entropy,
-        'gini': compute_gini
+        'gini': compute_gini,
+        'total entities': compute_total_entities,
     }
     for threshold in TAU_THRESHOLDS:
         compute_functions[f'tau={threshold}'] = compute_tau
@@ -111,9 +112,9 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
 
 def get_output(ledger, year, metrics, no_clustering):
     if no_clustering:
-        csv_output = f'{ledger},{year},{metrics["non-clustered gini"]},{metrics["non-clustered hhi"]},{metrics["non-clustered shannon entropy"]}'
+        csv_output = f'{ledger},{year},{metrics["non-clustered total entities"]},{metrics["non-clustered gini"]},{metrics["non-clustered hhi"]},{metrics["non-clustered shannon entropy"]}'
     else:
-        csv_output = f'{ledger},{year},{metrics["gini"]},{metrics["hhi"]},{metrics["shannon entropy"]}'
+        csv_output = f'{ledger},{year},{metrics["total entities"]},{metrics["gini"]},{metrics["hhi"]},{metrics["shannon entropy"]}'
 
     for tau in TAU_THRESHOLDS:
         if no_clustering:
@@ -126,7 +127,7 @@ def get_output(ledger, year, metrics, no_clustering):
 
 
 def write_csv_output(output):
-    csv_output = ['ledger,snapshot,gini,hhi,shannon entropy']
+    csv_output = ['ledger,snapshot,total entities,gini,hhi,shannon entropy']
     for tau in TAU_THRESHOLDS:
         csv_output[-1] += f',tau={tau}'
 

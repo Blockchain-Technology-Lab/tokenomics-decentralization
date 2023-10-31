@@ -46,9 +46,7 @@ def fill_db_with_addresses(conn, ledger):
                 cursor.execute(f"INSERT INTO addresses(name, ledger_id, entity_id) VALUES ('{addr}', {ledger_id}, {entity_id})")
             except sqlite3.IntegrityError as e:
                 if 'UNIQUE constraint failed' in str(e):
-                    old_entity = cursor.execute(f"SELECT entity_id FROM addresses WHERE name='{addr}' AND ledger_id={ledger_id}").fetchone()[0]
-                    if old_entity is None:
-                        cursor.execute(f"UPDATE addresses SET entity_id={entity_id} WHERE name='{addr}' AND ledger_id={ledger_id}")
+                    cursor.execute(f"UPDATE addresses SET entity_id={entity_id} WHERE name='{addr}' AND ledger_id={ledger_id}")
                 else:
                     raise e
     conn.commit()
@@ -94,8 +92,7 @@ def fill_db_with_balances(conn, ledger, snapshot):
                     cursor.execute(f"INSERT INTO balances(balance, snapshot_id, address_id) VALUES ({balance}, {snapshot_id}, {address_id})")
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
-                        prev_balance = int(cursor.execute(f"SELECT balance FROM balances WHERE address_id={address_id} AND snapshot_id={snapshot_id}").fetchone()[0])
-                        cursor.execute(f"UPDATE balances SET balance={prev_balance+balance} WHERE address_id={address_id} AND snapshot_id={snapshot_id}")
+                        pass
                     else:
                         raise e
 
@@ -126,4 +123,4 @@ def apply_mapping(ledger, snapshot, db_directories):
 
         logging.info('Finished')
     else:
-        logging.info('Snapthot input or db file does not exist')
+        logging.info('Snapshot input or db file does not exist')
