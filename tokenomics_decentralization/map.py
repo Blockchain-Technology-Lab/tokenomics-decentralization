@@ -72,10 +72,8 @@ def fill_db_with_balances(conn, ledger, snapshot):
             snapshot_id = cursor.execute(f"SELECT id FROM snapshots WHERE ledger_id={ledger_id} AND name='{snapshot}'").fetchone()[0]
 
             circulation = 0
+            next(csv_reader, None)  # skip header
             for line in csv_reader:
-                if 'address' in line:
-                    continue
-
                 address, balance = line[0], int(line[-1])
                 circulation += balance
 

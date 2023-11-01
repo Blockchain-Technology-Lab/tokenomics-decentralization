@@ -5,6 +5,7 @@ import sqlite3
 import os
 import pathlib
 import logging
+import csv
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
@@ -110,35 +111,34 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
     return metrics_results
 
 
-def get_output(ledger, year, metrics, no_clustering):
+def get_output_row(ledger, year, metrics, no_clustering):
+    csv_row = []
     if no_clustering:
-        csv_output = f'{ledger},{year},{metrics["non-clustered total entities"]},{metrics["non-clustered gini"]},{metrics["non-clustered hhi"]},{metrics["non-clustered shannon entropy"]}'
+        csv_row.extend([ledger, year, metrics["non-clustered total entities"], metrics["non-clustered gini"], metrics["non-clustered hhi"], metrics["non-clustered shannon entropy"]])
     else:
-        csv_output = f'{ledger},{year},{metrics["total entities"]},{metrics["gini"]},{metrics["hhi"]},{metrics["shannon entropy"]}'
+        csv_row.extend([ledger, year, metrics["total entities"], metrics["gini"], metrics["hhi"], metrics["shannon entropy"]])
 
     for tau in TAU_THRESHOLDS:
         if no_clustering:
-            value = metrics[f'non-clustered tau={tau}']
+            csv_row.append(metrics[f'non-clustered tau={tau}'])
         else:
-            value = metrics[f'tau={tau}']
-        csv_output += f',{value}'
+            csv_row.append(metrics[f'tau={tau}'])
 
-    return csv_output
+    return csv_row
 
 
-def write_csv_output(output):
-    csv_output = ['ledger,snapshot,total entities,gini,hhi,shannon entropy']
-    for tau in TAU_THRESHOLDS:
-        csv_output[-1] += f',tau={tau}'
-
-    csv_output += output
+def write_csv_output(output_rows):
+    header = ['ledger', 'snapshot', 'total entities', 'gini', 'hhi', 'shannon entropy']
+    header.extend([f'tau={tau}' for tau in TAU_THRESHOLDS])
 
     with open('output.csv', 'w') as f:
-        f.write('\n'.join(csv_output))
+        csv_writer = csv.writer(f)
+        csv_writer.writerow(header)
+        csv_writer.writerows(output_rows)
 
 
 def analyze(ledgers, snapshots, force_compute, db_directories, no_clustering):
-    output = []
+    output_rows = []
     for ledger in ledgers:
         for snapshot in snapshots:
             year = snapshot[:4]
@@ -156,8 +156,8 @@ def analyze(ledgers, snapshots, force_compute, db_directories, no_clustering):
 
             conn = get_connector(db_file)
             metrics_values = analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering)
-            output.append(get_output(ledger, year, metrics_values, no_clustering))
+            output_rows.append(get_output_row(ledger, year, metrics_values, no_clustering))
             for metric, value in metrics_values.items():
                 logging.info(f'{metric}: {value}')
 
-    write_csv_output(output)
+    write_csv_output(output_rows)
