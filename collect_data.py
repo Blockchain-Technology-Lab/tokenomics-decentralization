@@ -5,7 +5,8 @@
 
     Attention! Before running this script, you need to generate service account credentials from Google, as described
     here (https://developers.google.com/workspace/guides/create-credentials#service-account) and save your key in the
-    root directory of the project under the name 'google-service-account-key.json'
+    root directory of the project under the name 'google-service-account-key-0.json'. Any additional keys should be
+    named 'google-service-account-key-1.json', 'google-service-account-key-2.json', etc.
 """
 import google.cloud.bigquery as bq
 import csv
@@ -24,33 +25,53 @@ def collect_data(ledgers, snapshot_dates, force_query):
 
     with open(ROOT_DIR / "queries.yaml") as f:
         queries = safe_load(f)
-
-    client = bq.Client.from_service_account_json(json_credentials_path=ROOT_DIR / "google-service-account-key.json")
+    
+    i = 0
+    all_quota_exceeded = False
 
     for ledger in ledgers:
         for date in snapshot_dates:
+            if all_quota_exceeded:
+                break
             file = INPUT_DIR / f'{ledger}_{date}_raw_data.csv'
             if not force_query and file.is_file():
                 logging.info(f'{ledger} data for {date} already exists locally. '
-                             f'For querying {ledger} anyway please run the script using the flag --force-query')
+                            f'For querying {ledger} anyway please run the script using the flag --force-query')
                 continue
             logging.info(f"Querying {ledger} at snapshot {date}..")
-            query = (queries[ledger]).replace('{{timestamp}}', date)
-            query_job = client.query(query)
-            try:
-                rows = query_job.result()
-                logging.info(f'Done querying {ledger}')
-            except Exception as e:
-                logging.info(f'{ledger} query failed, please make sure it is properly defined.')
-                logging.info(f'The following exception was raised: {repr(e)}')
-                continue
 
-            logging.info(f"Writing {ledger} data to file..")
-            with open(file, 'w') as f:
-                writer = csv.writer(f)
-                writer.writerow([field.name for field in rows.schema])
-                writer.writerows(rows)
-            logging.info(f'Done writing {ledger} data to file.\n')
+            rows = None
+            query = (queries[ledger]).replace('{{timestamp}}', date)
+            
+            while True:
+                try:
+                    client = bq.Client.from_service_account_json(json_credentials_path=ROOT_DIR / f"google-service-account-key-{i}.json")
+                except FileNotFoundError:
+                    logging.info(f'Exhausted all {i} service account keys. Aborting..')
+                    all_quota_exceeded = True
+                    break
+                query_job = client.query(query)
+                try:
+                    rows = query_job.result()
+                    logging.info(f'Done querying {ledger}')
+                    break
+                except Exception as e:
+                    if 'Quota exceeded' in repr(e):
+                        i += 1
+                        logging.info(f'Quota exceeded with service account key {i - 1}, trying to use key {i}..')
+                        continue
+                    else:
+                        logging.info(f'{ledger} query failed, please make sure it is properly defined.')
+                        logging.info(f'The following exception was raised: {repr(e)}')
+                        break
+            
+            if rows:
+                logging.info(f"Writing {ledger} data to file..")
+                with open(file, 'w') as f:
+                    writer = csv.writer(f)
+                    writer.writerow([field.name for field in rows.schema])
+                    writer.writerows(rows)
+                logging.info(f'Done writing {ledger} data to file.\n')
 
 
 if __name__ == '__main__':
