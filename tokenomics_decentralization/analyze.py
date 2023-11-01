@@ -103,7 +103,7 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
 
             conn.commit()
 
-        if 'tau' in metric_name:
+        if 'tau' in metric_name or metric_name == 'total entities':
             metric_value = int(metric_value)
 
         metrics_results[metric_name] = metric_value
