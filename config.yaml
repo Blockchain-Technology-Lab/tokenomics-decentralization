@@ -12,6 +12,7 @@ default_ledgers:
   - bitcoin
   - ethereum
   - dogecoin
+  - litecoin
 
 db_directories:  # Paths to directories of snapshot db files; either absolute or relative from run.py; the first will be used to write newly created dbs
   - ./output
