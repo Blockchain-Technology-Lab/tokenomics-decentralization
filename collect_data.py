@@ -25,7 +25,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
 
     with open(ROOT_DIR / "queries.yaml") as f:
         queries = safe_load(f)
-    
+
     i = 0
     all_quota_exceeded = False
 
@@ -36,13 +36,13 @@ def collect_data(ledgers, snapshot_dates, force_query):
             file = INPUT_DIR / f'{ledger}_{date}_raw_data.csv'
             if not force_query and file.is_file():
                 logging.info(f'{ledger} data for {date} already exists locally. '
-                            f'For querying {ledger} anyway please run the script using the flag --force-query')
+                             f'For querying {ledger} anyway please run the script using the flag --force-query')
                 continue
             logging.info(f"Querying {ledger} at snapshot {date}..")
 
             rows = None
             query = (queries[ledger]).replace('{{timestamp}}', date)
-            
+
             while True:
                 try:
                     client = bq.Client.from_service_account_json(json_credentials_path=ROOT_DIR / f"google-service-account-key-{i}.json")
@@ -64,7 +64,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
                         logging.info(f'{ledger} query failed, please make sure it is properly defined.')
                         logging.info(f'The following exception was raised: {repr(e)}')
                         break
-            
+
             if rows:
                 logging.info(f"Writing {ledger} data to file..")
                 with open(file, 'w') as f:
@@ -77,7 +77,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
 if __name__ == '__main__':
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
-    default_ledgers = ['bitcoin', 'cardano', 'ethereum', 'dogecoin']
+    default_ledgers = ['bitcoin', 'cardano', 'ethereum', 'dogecoin', 'litecoin']
     start_year, end_year = 2018, 2023
     default_snapshot_dates = [f'{year}-01-01' for year in range(start_year, end_year + 1)]
 
