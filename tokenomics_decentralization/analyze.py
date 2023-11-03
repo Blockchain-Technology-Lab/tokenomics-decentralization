@@ -7,6 +7,8 @@ import pathlib
 import logging
 import csv
 
+OUTPUT_DIR = pathlib.Path(__file__).resolve().parent.parent / 'output'  
+
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 TAU_THRESHOLDS = [0.33, 0.5, 0.66]
@@ -131,7 +133,7 @@ def write_csv_output(output_rows):
     header = ['ledger', 'snapshot', 'total entities', 'gini', 'hhi', 'shannon entropy']
     header.extend([f'tau={tau}' for tau in TAU_THRESHOLDS])
 
-    with open('output.csv', 'w') as f:
+    with open(OUTPUT_DIR / 'output.csv', 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(header)
         csv_writer.writerows(output_rows)
@@ -161,3 +163,4 @@ def analyze(ledgers, snapshots, force_compute, db_directories, no_clustering):
                 logging.info(f'{metric}: {value}')
 
     write_csv_output(output_rows)
+    return output_rows

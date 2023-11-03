@@ -1,5 +1,6 @@
 from tokenomics_decentralization.map import apply_mapping
 from tokenomics_decentralization.analyze import analyze
+from tokenomics_decentralization.plot import plot
 from yaml import safe_load
 import argparse
 import pathlib
@@ -17,6 +18,7 @@ def main(ledgers, snapshots, force_compute, only_analyze, db_directories, no_clu
                 logging.info(f'Mapping {ledger} {snapshot}')
                 apply_mapping(ledger, snapshot, db_directories)
     analyze(ledgers, snapshots, force_compute, db_directories, no_clustering)
+    plot()
 
 
 if __name__ == '__main__':
