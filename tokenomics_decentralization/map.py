@@ -17,7 +17,7 @@ def fill_db_with_addresses(conn, ledger):
     cursor = conn.cursor()
 
     try:
-        cursor.execute(f"INSERT INTO ledgers(name) VALUES ('{ledger}')")
+        cursor.execute("INSERT INTO ledgers(name) VALUES (?)", (ledger, ))
         conn.commit()
     except sqlite3.IntegrityError as e:
         if 'UNIQUE constraint failed' in str(e):
@@ -25,7 +25,7 @@ def fill_db_with_addresses(conn, ledger):
         else:
             raise e
 
-    ledger_id = cursor.execute(f"SELECT id FROM ledgers WHERE name='{ledger}'").fetchone()[0]
+    ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
 
     try:
         with open(MAPPING_INFO_PATH / f'addresses/{ledger}.json') as f:
@@ -33,7 +33,7 @@ def fill_db_with_addresses(conn, ledger):
             for addr, info in address_entities.items():
                 entity = info['name']
                 try:
-                    cursor.execute(f"INSERT INTO entities(name, ledger_id) VALUES ('{entity}', {ledger_id})")
+                    cursor.execute("INSERT INTO entities(name, ledger_id) VALUES (?, ?)", (entity, ledger_id))
                     conn.commit()
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
@@ -41,13 +41,13 @@ def fill_db_with_addresses(conn, ledger):
                     else:
                         raise e
 
-                entity_id = cursor.execute(f"SELECT id FROM entities WHERE name='{entity}' AND ledger_id={ledger_id}").fetchone()[0]
+                entity_id = cursor.execute("SELECT id FROM entities WHERE name=? AND ledger_id=?", (entity, ledger_id)).fetchone()[0]
 
                 try:
-                    cursor.execute(f"INSERT INTO addresses(name, ledger_id, entity_id) VALUES ('{addr}', {ledger_id}, {entity_id})")
+                    cursor.execute("INSERT INTO addresses(name, ledger_id, entity_id) VALUES (?, ?, ?)", (addr, ledger_id, entity_id))
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
-                        cursor.execute(f"UPDATE addresses SET entity_id={entity_id} WHERE name='{addr}' AND ledger_id={ledger_id}")
+                        cursor.execute(f"UPDATE addresses SET entity_id={entity_id} WHERE name=? AND ledger_id=?", (addr, ledger_id))
                     else:
                         raise e
         conn.commit()
@@ -58,21 +58,21 @@ def fill_db_with_addresses(conn, ledger):
 def fill_db_with_balances(conn, ledger, snapshot):
     cursor = conn.cursor()
 
-    ledger_id = cursor.execute(f"SELECT id FROM ledgers WHERE name='{ledger}'").fetchone()[0]
+    ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
 
     input_file = RAW_DATA_PATH / f'{ledger}_{snapshot}_raw_data.csv'
     if os.path.isfile(input_file):
         with open(input_file) as f:
             csv_reader = csv.reader(f, delimiter=',')
             try:
-                cursor.execute(f"INSERT INTO snapshots(name, ledger_id) VALUES ('{snapshot}', {ledger_id})")
+                cursor.execute("INSERT INTO snapshots(name, ledger_id) VALUES (?, ?)", (snapshot, ledger_id))
             except sqlite3.IntegrityError as e:
                 if 'UNIQUE constraint failed' in str(e):
                     pass
                 else:
                     raise e
 
-            snapshot_id = cursor.execute(f"SELECT id FROM snapshots WHERE ledger_id={ledger_id} AND name='{snapshot}'").fetchone()[0]
+            snapshot_id = cursor.execute("SELECT id FROM snapshots WHERE ledger_id=? AND name=?", (ledger_id, snapshot)).fetchone()[0]
 
             circulation = 0
             next(csv_reader, None)  # skip header
@@ -81,23 +81,23 @@ def fill_db_with_balances(conn, ledger, snapshot):
                 circulation += balance
 
                 try:
-                    cursor.execute(f"INSERT INTO addresses(name, ledger_id) VALUES ('{address}', {ledger_id})")
+                    cursor.execute("INSERT INTO addresses(name, ledger_id) VALUES (?, ?)", (address, ledger_id))
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
                         pass
                     else:
                         raise e
 
-                address_id = cursor.execute(f"SELECT id FROM addresses WHERE ledger_id={ledger_id} AND name='{address}'").fetchone()[0]
+                address_id = cursor.execute("SELECT id FROM addresses WHERE ledger_id=? AND name=?", (ledger_id, address)).fetchone()[0]
                 try:
-                    cursor.execute(f"INSERT INTO balances(balance, snapshot_id, address_id) VALUES ({balance}, {snapshot_id}, {address_id})")
+                    cursor.execute("INSERT INTO balances(balance, snapshot_id, address_id) VALUES (?, ?, ?)", (balance, snapshot_id, address_id))
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
                         pass
                     else:
                         raise e
 
-            cursor.execute(f"UPDATE snapshots SET circulation={circulation} WHERE id={snapshot_id}")
+            cursor.execute("UPDATE snapshots SET circulation=? WHERE id=?", (circulation, snapshot_id))
 
             conn.commit()
 
