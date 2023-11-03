@@ -13,35 +13,35 @@ TAU_THRESHOLDS = [0.33, 0.5, 0.66]
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 
 
-def get_non_clustered_balance_entries(cursor, ledger_id, snapshot_id):
+def get_non_clustered_balance_entries(cursor, snapshot_id):
     start = time()
-    query = f'''
+    query = '''
         SELECT addresses.name, balance
         FROM balances
         LEFT JOIN addresses ON balances.address_id=addresses.id
-        WHERE snapshot_id={snapshot_id}
+        WHERE snapshot_id=?
         ORDER BY balance DESC
     '''
 
-    entries = cursor.execute(query).fetchall()
+    entries = cursor.execute(query, (snapshot_id, )).fetchall()
     logging.info(f'Retrieving entries took about {time() - start} seconds')
 
     return entries
 
 
-def get_balance_entries(cursor, ledger_id, snapshot_id):
+def get_balance_entries(cursor, snapshot_id):
     start = time()
-    query = f'''
+    query = '''
         SELECT IFNULL(entities.name, addresses.name) AS entity, SUM(CAST(balance AS REAL)) AS aggregate_balance
         FROM balances
         LEFT JOIN addresses ON balances.address_id=addresses.id
         LEFT JOIN entities ON addresses.entity_id=entities.id
-        WHERE snapshot_id={snapshot_id}
+        WHERE snapshot_id=?
         GROUP BY entity
         ORDER BY aggregate_balance DESC
     '''
 
-    entries = cursor.execute(query).fetchall()
+    entries = cursor.execute(query, (snapshot_id, )).fetchall()
     logging.info(f'Retrieving entries took about {time() - start} seconds')
 
     return entries
@@ -50,9 +50,9 @@ def get_balance_entries(cursor, ledger_id, snapshot_id):
 def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
     cursor = conn.cursor()
 
-    ledger_id = cursor.execute(f"SELECT id FROM ledgers WHERE name='{ledger}'").fetchone()[0]
+    ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
 
-    snapshot_info = cursor.execute(f"SELECT * FROM snapshots WHERE name='{snapshot}' AND ledger_id={ledger_id}").fetchone()
+    snapshot_info = cursor.execute("SELECT * FROM snapshots WHERE name=? AND ledger_id=?", (snapshot, ledger_id)).fetchone()
     snapshot_id = snapshot_info[0]
     circulation = int(snapshot_info[3])
 
@@ -77,15 +77,15 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
 
         logging.info(f'Computing {metric_name}')
 
-        val = cursor.execute(f'SELECT value FROM metrics WHERE snapshot_id={snapshot_id} and name="{metric_name}"').fetchone()
+        val = cursor.execute('SELECT value FROM metrics WHERE snapshot_id=? and name=?', (snapshot_id, metric_name)).fetchone()
         if val and not force_compute:
             metric_value = val[0]
         else:
             if not entries:
                 if no_clustering:
-                    entries = get_non_clustered_balance_entries(cursor, ledger_id, snapshot_id)
+                    entries = get_non_clustered_balance_entries(cursor, snapshot_id)
                 else:
-                    entries = get_balance_entries(cursor, ledger_id, snapshot_id)
+                    entries = get_balance_entries(cursor, snapshot_id)
 
             if 'tau' in metric_name:
                 threshold = float(metric_name.split('=')[1])
@@ -94,10 +94,10 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
                 metric_value = compute_functions[metric_name](entries, circulation)
 
             try:
-                cursor.execute(f"INSERT INTO metrics(name, value, snapshot_id) VALUES ('{metric_name}', {metric_value}, {snapshot_id})")
+                cursor.execute("INSERT INTO metrics(name, value, snapshot_id) VALUES (?, ?, ?)", (metric_name, metric_value, snapshot_id))
             except sqlite3.IntegrityError as e:
                 if 'UNIQUE constraint failed' in str(e):
-                    cursor.execute(f"UPDATE metrics SET value={metric_value} WHERE name='{metric_name}' AND snapshot_id={snapshot_id}")
+                    cursor.execute("UPDATE metrics SET value=? WHERE name=? AND snapshot_id=?", (metric_value, metric_name, snapshot_id))
                 else:
                     raise e
 
