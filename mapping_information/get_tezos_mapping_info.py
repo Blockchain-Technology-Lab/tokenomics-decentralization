@@ -30,67 +30,35 @@ def get_address_aliases():
             params["offset"] = offset
             print(f'Processed {offset} accounts so far..')
 
-        # save to json file
-        with open(filename, 'w') as f:
-            json.dump(address_aliases, f, indent=4)
         return address_aliases
 
 
-def parse_aliases(address_aliases):
-    keywords = [
-        'Foundation Baker',  # Tezos Foundation
-        'Foundation Delegator',  # Tezos Foundation
-        'Vested funds',
-        'Binance',  # exchange
-        'Kraken',  # exchange 
-        'Coinbase',  # exchange 
-        'Huobi',  # exchange 
-        'OKEx',  # exchange 
-        'HitBTC',  # exchange 
-        'Bitfinex',  # exchange 
-        'BitMax',  # exchange 
-        'Bithumb',  # exchange 
-        'Bittrex',  # exchange 
-        'Upbit',  # exchange
-        'KuCoin',  # exchange
-        'Gate.io',  # exchange
-        'Kolibri',  # DeFi
-        'Skull',  # DeFi
-        'Ageur',  # DeFi
-        'Vault',
-        '3Route',
-        'DNAG',
-        'DOGAMI',
-        'Dashmaster',
-        'FXHASH',
-        'Gill',
-        'Hover Labs',
-        'Here and Now',
-        'Lucid Mining',
-        'MATEUS',
-        'MATIC',   
-        'PayTezos',
-        'Polychain Labs',
-        'QuipuSwap',
-        'Stake House',
-        'Tez Baker',
-        'Tezocracy',
-        'Tezos Capital Legacy',
-        'Ubinetic',
-        'Werenode EVSE',
-        'Youves',
-        'concierge',
-        'priyamistry',
-        '8bidou'
-        ]
-    for address, alias in address_aliases.items():
-        for keyword in keywords:
-            if keyword.lower() in alias["name"].lower():
-                alias['name'] = keyword
+def parse_aliases(address_aliases):    
+    aliases = {
+        'Tezos Foundation': 'Tezos Foundation',
+        'Foundation Baker': 'Tezos Foundation',
+        'Foundation Delegator': 'Tezos Foundation'
+    }
+
+    single_aliases = ['Vested funds', 'Binance', 'Kraken', 'Coinbase', 'Huobi', 'OKEx', 'HitBTC', 'Bitfinex', 'BitMax',
+                       'Bithumb', 'Bittrex', 'Upbit', 'KuCoin', 'Gate.io', 'Kolibri', 'Skull', 'Ageur', 'Vault', 
+                       '3Route', 'DNAG', 'DOGAMI', 'Dashmaster', 'FXHASH', 'Gill', 'Hover Labs', 'Here and Now', 
+                       'Lucid Mining', 'MATEUS', 'MATIC', 'PayTezos', 'Polychain Labs', 'QuipuSwap', 'Stake House',
+                       'Tez Baker', 'Tezocracy', 'Tezos Capital Legacy', 'Ubinetic', 'Werenode EVSE', 'Youves',
+                       'concierge', 'priyamistry', '8bidou', 'Chorus One', 'XTZMaster', 'Coinone']
+    
+    for alias in single_aliases:
+        aliases[alias] = alias
+
+    for value in address_aliases.values():
+        for keyword in aliases:
+            if value["name"].lower().startswith(keyword.lower()):
+                value['extra_info'] = value["name"]
+                value['name'] = aliases[keyword]
                 break
 
     # save to json file
-    with open('tezos_address_aliases_clustered.json', 'w') as f:
+    with open('addresses/tezos.json', 'w') as f:
         json.dump(address_aliases, f, indent=4)
     return address_aliases
 
