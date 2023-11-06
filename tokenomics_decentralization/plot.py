@@ -1,11 +1,5 @@
-import argparse
 import logging
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import seaborn as sns
-import numpy as np
-import tokenomics_decentralization.helper as hlp
-import colorcet as cc
 import pandas as pd
 import pathlib
 
@@ -16,6 +10,7 @@ def plot():
     """
     Plots the data contained in the output file
     """
+    logging.info('Plotting data..')
     output_df = pd.read_csv(OUTPUT_DIR / 'output.csv')
     figures_path = OUTPUT_DIR / 'figures'
     if not figures_path.is_dir():
