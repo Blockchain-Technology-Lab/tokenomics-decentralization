@@ -78,6 +78,11 @@ def fill_db_with_balances(conn, ledger, snapshot):
             next(csv_reader, None)  # skip header
             for line in csv_reader:
                 address, balance = line[0], int(line[-1])
+
+                # For Ethereum, store the balance in Gwei
+                if ledger == 'ethereum':
+                    balance /= int(10**9)
+
                 circulation += balance
 
                 try:
