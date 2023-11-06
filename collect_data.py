@@ -11,19 +11,18 @@
 import google.cloud.bigquery as bq
 import csv
 from yaml import safe_load
-import pathlib
 import logging
 import argparse
-
-ROOT_DIR = pathlib.Path(__file__).resolve().parent
-INPUT_DIR = ROOT_DIR / 'input'
+import tokenomics_decentralization.helper as hlp
 
 
 def collect_data(ledgers, snapshot_dates, force_query):
-    if not INPUT_DIR.is_dir():
-        INPUT_DIR.mkdir()
+    input_dir = hlp.INPUT_DIR
+    root_dir = hlp.ROOT_DIR
+    if not input_dir.is_dir():
+        input_dir.mkdir()
 
-    with open(ROOT_DIR / "queries.yaml") as f:
+    with open(root_dir / "queries.yaml") as f:
         queries = safe_load(f)
 
     i = 0
@@ -33,7 +32,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
         for date in snapshot_dates:
             if all_quota_exceeded:
                 break
-            file = INPUT_DIR / f'{ledger}_{date}_raw_data.csv'
+            file = input_dir / f'{ledger}_{date}_raw_data.csv'
             if not force_query and file.is_file():
                 logging.info(f'{ledger} data for {date} already exists locally. '
                              f'For querying {ledger} anyway please run the script using the flag --force-query')
@@ -45,7 +44,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
 
             while True:
                 try:
-                    client = bq.Client.from_service_account_json(json_credentials_path=ROOT_DIR / f"google-service-account-key-{i}.json")
+                    client = bq.Client.from_service_account_json(json_credentials_path=root_dir / f"google-service-account-key-{i}.json")
                 except FileNotFoundError:
                     logging.info(f'Exhausted all {i} service account keys. Aborting..')
                     all_quota_exceeded = True
@@ -77,17 +76,16 @@ def collect_data(ledgers, snapshot_dates, force_query):
 if __name__ == '__main__':
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
-    with open(ROOT_DIR / "config.yaml") as f:
+    with open(hlp.ROOT_DIR / "config.yaml") as f:
         config = safe_load(f)
-    default_ledgers = config['default_ledgers']
-    start_year, end_year = config['timeframe']['start_year'], config['timeframe']['end_year']
-
-    default_snapshot_dates = [f'{year}-01-01' for year in range(start_year, end_year + 1)]
+    default_ledgers = hlp.get_default_ledgers()
+    start_date, end_date = hlp.get_default_start_end_dates()
+    default_snapshot_dates = [f'{year}-01-01' for year in range(int(start_date[:4]), int(end_date[:4]) + 1)]
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--ledgers', nargs="*", type=str.lower, default=default_ledgers,
                         choices=[ledger for ledger in default_ledgers], help='The ledgers to collect data for.')
-    parser.add_argument('--snapshot_dates', nargs="*", type=str.lower, default=default_snapshot_dates,
+    parser.add_argument('--snapshot_dates', nargs="*", type=hlp.valid_date, default=default_snapshot_dates,
                         help='The dates to collect data for.')
     parser.add_argument('--force-query', action='store_true',
                         help='Flag to specify whether to query for project data regardless if the relevant data '
