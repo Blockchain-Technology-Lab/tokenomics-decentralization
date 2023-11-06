@@ -130,7 +130,7 @@ def get_output_row(ledger, year, metrics, no_clustering):
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot', 'total entities', 'gini', 'hhi', 'shannon entropy']
+    header = ['ledger', 'snapshot date', 'total entities', 'gini', 'hhi', 'shannon entropy']
     header.extend([f'tau={tau}' for tau in TAU_THRESHOLDS])
 
     with open(OUTPUT_DIR / 'output.csv', 'w') as f:
@@ -139,14 +139,13 @@ def write_csv_output(output_rows):
         csv_writer.writerows(output_rows)
 
 
-def analyze(ledgers, snapshots, force_compute, db_directories, no_clustering):
+def analyze(ledgers, snapshot_dates, force_compute, db_directories, no_clustering):
     output_rows = []
     for ledger in ledgers:
-        for snapshot in snapshots:
-            year = snapshot[:4]
-            logging.info(f'[*] {ledger} - {snapshot}')
+        for date in snapshot_dates:
+            logging.info(f'[*] {ledger} - {date}')
 
-            db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in db_directories]
+            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in db_directories]
             db_file = False
             for filename in db_paths:
                 if os.path.isfile(filename):
@@ -157,8 +156,8 @@ def analyze(ledgers, snapshots, force_compute, db_directories, no_clustering):
                 continue
 
             conn = get_connector(db_file)
-            metrics_values = analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering)
-            output_rows.append(get_output_row(ledger, year, metrics_values, no_clustering))
+            metrics_values = analyze_snapshot(conn, ledger, date, force_compute, no_clustering)
+            output_rows.append(get_output_row(ledger, date, metrics_values, no_clustering))
             for metric, value in metrics_values.items():
                 logging.info(f'{metric}: {value}')
 
