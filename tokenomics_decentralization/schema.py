@@ -56,7 +56,7 @@ def create_tables(conn):
     create_balance = '''
     CREATE TABLE IF NOT EXISTS balances (
         id INTEGER PRIMARY KEY,
-        balance INTEGER,
+        balance UNSIGNED BIG INT,
         snapshot_id INTEGER NOT NULL,
         address_id INTEGER NOT NULL,
         FOREIGN KEY (address_id) REFERENCES addresses (id),
