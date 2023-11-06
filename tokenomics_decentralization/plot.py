@@ -1,9 +1,8 @@
+import tokenomics_decentralization.helper as hlp
 import logging
 import matplotlib.pyplot as plt
 import pandas as pd
-import pathlib
 
-OUTPUT_DIR = pathlib.Path(__file__).resolve().parent.parent / 'output'    
 
 
 def plot():
@@ -11,8 +10,8 @@ def plot():
     Plots the data contained in the output file
     """
     logging.info('Plotting data..')
-    output_df = pd.read_csv(OUTPUT_DIR / 'output.csv')
-    figures_path = OUTPUT_DIR / 'figures'
+    output_df = pd.read_csv(hlp.OUTPUT_DIR / 'output.csv')
+    figures_path = hlp.OUTPUT_DIR / 'figures'
     if not figures_path.is_dir():
         figures_path.mkdir()
     output_df['snapshot date'] = pd.to_datetime(output_df['snapshot date'])

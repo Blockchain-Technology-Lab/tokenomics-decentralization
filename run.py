@@ -9,8 +9,6 @@ import logging
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
-ROOT_DIR = pathlib.Path(__file__).resolve().parent
-
 
 def main(ledgers, snapshot_dates, force_compute, only_analyze, db_directories, no_clustering):
     if not only_analyze:
@@ -23,7 +21,7 @@ def main(ledgers, snapshot_dates, force_compute, only_analyze, db_directories, n
 
 
 if __name__ == '__main__':
-    with open(ROOT_DIR / 'config.yaml') as f:
+    with open(hlp.ROOT_DIR / 'config.yaml') as f:
         config = safe_load(f)
 
     default_ledgers = hlp.get_default_ledgers()
@@ -66,5 +64,8 @@ if __name__ == '__main__':
         snapshot_dates = hlp.get_dates_between(start_date, end_date, args.granularity)
     else:
         snapshot_dates = [hlp.get_date_string_from_object(hlp.get_date_beginning(date)) for date in snapshot_dates]
+
+    if not hlp.OUTPUT_DIR.is_dir():
+        hlp.OUTPUT_DIR.mkdir()
 
     main(ledgers, snapshot_dates, force_compute, only_analyze, db_directories, no_clustering)

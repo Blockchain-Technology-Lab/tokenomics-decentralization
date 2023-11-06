@@ -1,18 +1,15 @@
 from tokenomics_decentralization.schema import get_connector
 from tokenomics_decentralization.metrics import compute_hhi, compute_tau, compute_gini, compute_shannon_entropy, compute_total_entities
+import tokenomics_decentralization.helper as hlp
 from time import time
 import sqlite3
 import os
-import pathlib
 import logging
 import csv
-
-OUTPUT_DIR = pathlib.Path(__file__).resolve().parent.parent / 'output'
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 TAU_THRESHOLDS = [0.33, 0.5, 0.66]
-ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 
 
 def get_non_clustered_balance_entries(cursor, snapshot_id):
@@ -133,7 +130,7 @@ def write_csv_output(output_rows):
     header = ['ledger', 'snapshot date', 'total entities', 'gini', 'hhi', 'shannon entropy']
     header.extend([f'tau={tau}' for tau in TAU_THRESHOLDS])
 
-    with open(OUTPUT_DIR / 'output.csv', 'w') as f:
+    with open(hlp.OUTPUT_DIR / 'output.csv', 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(header)
         csv_writer.writerows(output_rows)
