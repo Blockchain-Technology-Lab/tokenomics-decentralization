@@ -97,7 +97,7 @@ def fill_db_with_balances(conn, ledger, snapshot):
                     else:
                         raise e
 
-            cursor.execute("UPDATE snapshots SET circulation=? WHERE id=?", (circulation, snapshot_id))
+            cursor.execute("UPDATE snapshots SET circulation=? WHERE id=?", (str(circulation), snapshot_id))
 
             conn.commit()
 

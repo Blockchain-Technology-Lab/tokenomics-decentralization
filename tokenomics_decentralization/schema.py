@@ -47,7 +47,7 @@ def create_tables(conn):
         id INTEGER PRIMARY KEY,
         name DATETIME NOT NULL,
         ledger_id INTEGER NOT NULL,
-        circulation INTEGER,
+        circulation TEXT,
         FOREIGN KEY (ledger_id) REFERENCES ledgers (id),
         CONSTRAINT U_Snapshot UNIQUE (ledger_id, name)
     );
