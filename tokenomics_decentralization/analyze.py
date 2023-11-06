@@ -7,7 +7,7 @@ import pathlib
 import logging
 import csv
 
-OUTPUT_DIR = pathlib.Path(__file__).resolve().parent.parent / 'output'  
+OUTPUT_DIR = pathlib.Path(__file__).resolve().parent.parent / 'output'
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
@@ -144,7 +144,7 @@ def analyze(ledgers, snapshots, force_compute, db_directories, no_clustering):
     for ledger in ledgers:
         for snapshot in snapshots:
             year = snapshot[:4]
-            logging.info(f'[*] {ledger} - {year}')
+            logging.info(f'[*] {ledger} - {snapshot}')
 
             db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in db_directories]
             db_file = False
