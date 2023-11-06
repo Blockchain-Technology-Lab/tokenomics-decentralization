@@ -15,7 +15,9 @@ def plot():
     figures_path = OUTPUT_DIR / 'figures'
     if not figures_path.is_dir():
         figures_path.mkdir()
+    output_df['snapshot date'] = pd.to_datetime(output_df['snapshot date'])
     metric_cols = output_df.columns[2:]
     for metric in metric_cols:
-        output_df.pivot('snapshot','ledger', metric).plot(title=metric, xticks=output_df.snapshot, grid=True, marker='o', xlabel='time', ylabel=metric)
+        df_pivot = output_df.pivot(index='snapshot date', columns='ledger', values=metric)
+        df_pivot.plot(title=metric, grid=True, marker='o', xlabel='time', ylabel=metric)
         plt.savefig(figures_path / f'{metric}.png', bbox_inches='tight')
