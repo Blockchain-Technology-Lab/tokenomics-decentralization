@@ -74,8 +74,6 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
         if no_clustering:
             metric_name = 'non-clustered ' + metric_name
 
-        logging.info(f'Computing {metric_name}')
-
         val = cursor.execute('SELECT value FROM metrics WHERE snapshot_id=? and name=?', (snapshot_id, metric_name)).fetchone()
         if val and not force_compute:
             metric_value = val[0]
@@ -86,6 +84,7 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
                 else:
                     entries = get_balance_entries(cursor, snapshot_id)
 
+            logging.info(f'Computing {metric_name}')
             if 'tau' in metric_name:
                 threshold = float(metric_name.split('=')[1])
                 metric_value = compute_tau(entries, circulation, threshold)[0]
