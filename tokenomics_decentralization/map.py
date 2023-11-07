@@ -108,6 +108,7 @@ def fill_db_with_balances(conn, ledger, snapshot):
 
 
 def apply_mapping(ledger, snapshot, db_directories):
+    logging.info(f'Mapping {ledger} {snapshot}')
     input_filename = RAW_DATA_PATH / f'{ledger}_{snapshot}_raw_data.csv'
     db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in db_directories]
     db_file = False

@@ -10,12 +10,12 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def main(ledgers, snapshot_dates, force_compute, only_analyze, db_directories, no_clustering):
+def main(ledgers, snapshot_dates, force_compute, force_map, only_analyze, db_directories, no_clustering):
     if not only_analyze:
         for ledger in ledgers:
             for snapshot in snapshot_dates:
-                logging.info(f'Mapping {ledger} {snapshot}')
-                apply_mapping(ledger, snapshot, db_directories)
+                if not (hlp.OUTPUT_DIR / f'{ledger}_{snapshot}.db').is_file() or force_map:
+                    apply_mapping(ledger, snapshot, db_directories)
     analyze(ledgers, snapshot_dates, force_compute, db_directories, no_clustering)
     plot()
 
@@ -47,6 +47,9 @@ if __name__ == '__main__':
     parser.add_argument('--force-compute', action='store_true',
                         help='Flag to specify whether to query for project data regardless if the relevant data '
                         'already exist.')
+    parser.add_argument('--force-map', action='store_true',
+                        help='Flag to specify whether to apply the mapping for some project and snapshot regardless '
+                        'if the relevant data already exist.')
     parser.add_argument('--only-analyze', action='store_true',
                         help='Flag to specify whether to only analyze existing data, if the database exists.')
     parser.add_argument('--no-clustering', action='store_true',
@@ -56,6 +59,7 @@ if __name__ == '__main__':
     ledgers = args.ledgers
     snapshot_dates = args.snapshot_dates
     force_compute = args.force_compute
+    force_map = args.force_map
     only_analyze = args.only_analyze
     no_clustering = args.no_clustering
 
@@ -68,4 +72,4 @@ if __name__ == '__main__':
     if not hlp.OUTPUT_DIR.is_dir():
         hlp.OUTPUT_DIR.mkdir()
 
-    main(ledgers, snapshot_dates, force_compute, only_analyze, db_directories, no_clustering)
+    main(ledgers, snapshot_dates, force_compute, force_map, only_analyze, db_directories, no_clustering)
