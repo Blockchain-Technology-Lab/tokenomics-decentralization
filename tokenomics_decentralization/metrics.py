@@ -4,7 +4,8 @@ from math import log
 def compute_tau(balance_distribution, threshold):
     """
     Calculates the tau index of a distribution of balances
-    :param balance_distribution: a list of integers, each corresponding to the balance of an entity
+    :param balance_distribution: a *sorted* list of integers, each corresponding to the balance of an entity,
+        sorted in descending order
     :param threshold: float, the parameter of the tau index, i.e. the threshold for the market share 
         that is captured by the index
     :returns: tuple of (int, float) where the first element is the tau index and the second is the 
@@ -14,9 +15,9 @@ def compute_tau(balance_distribution, threshold):
     circulation = sum(balance_distribution)
 
     for balance in balance_distribution:
-        market_share = balance / circulation
         if tau_market_share >= threshold:
             break
+        market_share = balance / circulation
         tau_index += 1
         tau_market_share += market_share
     return tau_index, tau_market_share
@@ -25,18 +26,19 @@ def compute_tau(balance_distribution, threshold):
 def compute_gini(balance_distribution):
     """
     Calculates the Gini coefficient of a distribution of balances
-    :param balance_distribution: a list of integers, each corresponding to the balance of an entity
+    :param balance_distribution: a *sorted* list of integers, each corresponding to the balance of an entity,
+        sorted in descending order
     :returns: float between 0 and 1 that represents the Gini coefficient of the given distribution
     """
-    parsed_entries = 0
+    parsed_balances = 0
     circulation = sum(balance_distribution)
     population = len(balance_distribution)
     gini = 1
     for balance in balance_distribution:
-        richer_population_percentage = parsed_entries / population
+        richer_population_percentage = parsed_balances / population
         market_share = balance / circulation
         gini -= market_share * ((1 / population) + (2 * richer_population_percentage))
-        parsed_entries += 1
+        parsed_balances += 1
 
     return gini
 
