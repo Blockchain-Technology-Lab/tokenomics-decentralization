@@ -85,11 +85,12 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
                     entries = get_balance_entries(cursor, snapshot_id)
 
             logging.info(f'Computing {metric_name}')
+            balance_distribution = [int(entry[1]) for entry in entries]
             if 'tau' in metric_name:
                 threshold = float(metric_name.split('=')[1])
-                metric_value, _ = compute_tau(entries, circulation, threshold)
+                metric_value, _ = compute_tau(balance_distribution, threshold)
             else:
-                metric_value = compute_functions[metric_name](entries, circulation)
+                metric_value = compute_functions[metric_name](balance_distribution)
 
             try:
                 cursor.execute("INSERT INTO metrics(name, value, snapshot_id) VALUES (?, ?, ?)", (metric_name, metric_value, snapshot_id))
