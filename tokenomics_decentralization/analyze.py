@@ -87,7 +87,7 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
             logging.info(f'Computing {metric_name}')
             if 'tau' in metric_name:
                 threshold = float(metric_name.split('=')[1])
-                metric_value = compute_tau(entries, circulation, threshold)[0]
+                metric_value, _ = compute_tau(entries, circulation, threshold)
             else:
                 metric_value = compute_functions[metric_name](entries, circulation)
 

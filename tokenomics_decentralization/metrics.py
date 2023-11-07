@@ -2,16 +2,15 @@ from math import log
 
 
 def compute_tau(entries, circulation, threshold):
-    results = [0, 0]
+    tau_index, tau_market_share = 0, 0
 
     for entry in entries:
         market_share = int(entry[1]) / circulation
-        if results[1] >= threshold:
+        if tau_market_share >= threshold:
             break
-        results[0] += 1
-        results[1] += market_share
-
-    return results
+        tau_index += 1
+        tau_market_share += market_share
+    return tau_index, tau_market_share
 
 
 def compute_gini(entries, circulation):
