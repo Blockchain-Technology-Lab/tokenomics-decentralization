@@ -30,7 +30,7 @@ def compute_gini(entries, circulation):
 def compute_hhi(entries, circulation):
     hhi = 0
     for entry in entries:
-        market_share = int(entry[1]) / circulation
+        market_share = int(entry[1]) / circulation * 100
         hhi += market_share**2
 
     return hhi
