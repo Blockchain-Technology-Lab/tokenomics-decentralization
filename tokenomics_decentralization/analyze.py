@@ -56,7 +56,7 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
 
     snapshot_info = cursor.execute("SELECT * FROM snapshots WHERE name=? AND ledger_id=?", (snapshot, ledger_id)).fetchone()
     snapshot_id = snapshot_info[0]
-    circulation = int(snapshot_info[3])
+    circulation = int(float(snapshot_info[3]))
 
     compute_functions = {
         'hhi': compute_hhi,
