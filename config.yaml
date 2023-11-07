@@ -4,9 +4,9 @@ metrics:  # NOT IMPLEMENTED YET
   - hhi
   - nakamoto_coefficient
 
-timeframe:
-  start_year: 2010
-  end_year: 2023
+default_timeframe:
+  start_date: 2020
+  end_date: 2023
 
 default_ledgers:
   - bitcoin
