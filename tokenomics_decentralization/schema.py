@@ -36,6 +36,7 @@ def create_tables(conn):
         name TEXT NOT NULL,
         ledger_id INTEGER,
         entity_id INTEGER,
+        is_contract BIT DEFAULT 0,
         FOREIGN KEY (ledger_id) REFERENCES ledgers (id),
         FOREIGN KEY (entity_id) REFERENCES entities (id),
         CONSTRAINT U_Address UNIQUE (name, ledger_id)

@@ -47,9 +47,12 @@ def fill_db_with_addresses(conn, ledger):
                     cursor.execute("INSERT INTO addresses(name, ledger_id, entity_id) VALUES (?, ?, ?)", (addr, ledger_id, entity_id))
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
-                        cursor.execute(f"UPDATE addresses SET entity_id={entity_id} WHERE name=? AND ledger_id=?", (addr, ledger_id))
+                        cursor.execute("UPDATE addresses SET entity_id=? WHERE name=? AND ledger_id=?", (entity_id, addr, ledger_id))
                     else:
                         raise e
+
+                if 'is_contract' in info.keys() and info['is_contract']:
+                    cursor.execute("UPDATE addresses SET is_contract=? WHERE name=? AND ledger_id=?", (info['is_contract'], addr, ledger_id))
         conn.commit()
     except FileNotFoundError:
         return

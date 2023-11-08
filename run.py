@@ -38,12 +38,12 @@ if __name__ == '__main__':
                         '"YYYY-MM" or "YYYY". If two dates are given and the --granularity argument is '
                         'not "none", then the dates are interpreted as the beginning and end of a time period, and the '
                         'granularity is used to determine which snapshots to analyze in between (e.g. every month).')
-    parser.add_argument('--granularity', nargs="?", type=str.lower, default='month', 
+    parser.add_argument('--granularity', nargs="?", type=str.lower, default='month',
                         choices=['day', 'week', 'month', 'year', 'none'],
                         help='The granularity that will be used for the analysis when two dates are provided'
                         'in the --snapshot_dates argument (which are then interpreted as start and end dates). '
                         'It can be one of: "day", "week", "month", "year", "none" and by default it is month. '
-                        'If "none" is chosen then only the snapshots for the two given dates will be analyzed.'    )
+                        'If "none" is chosen then only the snapshots for the two given dates will be analyzed.')
     parser.add_argument('--force-compute', action='store_true',
                         help='Flag to specify whether to query for project data regardless if the relevant data '
                         'already exist.')
