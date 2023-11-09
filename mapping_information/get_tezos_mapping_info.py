@@ -30,6 +30,12 @@ def get_address_info():
                         "is_contract": account["type"] == 'contract',
                         "source": "https://api.tzkt.io/"
                         }
+                elif account["type"] == 'contract':
+                    address_info[account["address"]] = {
+                        "name": account["address"],
+                        "is_contract": True,
+                        "source": "https://api.tzkt.io/"
+                        }
             offset += max_items
             params["offset"] = offset
             if offset % 100000 == 0:
