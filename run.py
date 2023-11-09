@@ -46,7 +46,7 @@ if __name__ == '__main__':
     no_clustering = config['no_clustering']
 
     granularity = config['granularity']
-    if len(snapshot_dates) == 2:
+    if granularity in ['day', 'week', 'month', 'year'] and len(snapshot_dates) > 1:
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
         snapshot_dates = hlp.get_dates_between(start_date, end_date, granularity)
     else:
