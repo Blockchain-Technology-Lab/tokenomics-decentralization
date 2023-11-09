@@ -133,4 +133,4 @@ def apply_mapping(ledger, snapshot, db_directories, force_map_addresses, force_m
 
         logging.info('Finished')
     else:
-        logging.info('Both input and db files do not exist')
+        logging.info('Neither input nor db files exist')
