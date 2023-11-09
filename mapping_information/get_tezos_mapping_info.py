@@ -2,7 +2,7 @@ import requests
 import json
 
 
-def get_address_aliases():
+def get_address_info():
     filename = 'tezos_address_aliases_all.json'
     try:
         with open(filename) as f:
@@ -17,23 +17,28 @@ def get_address_aliases():
 
         max_items = 10000
         offset = 0
-        params = {"limit": max_items, "select": 'id,type,address,alias,balance', "offset": offset}
+        params = {"limit": max_items, "select": 'type,address,alias', "offset": offset}
 
-        address_aliases = dict()
+        address_info = dict()
 
         while offset < total_accounts:
             accounts = requests.get(f'{base_url}{accounts_endpoint}', params=params).json()
             for account in accounts:
                 if account["alias"]:
-                    address_aliases[account["address"]] = {"name": account["alias"], "source": "https://api.tzkt.io/"}
+                    address_info[account["address"]] = {
+                        "name": account["alias"],
+                        "is_contract": account["type"] == 'contract',
+                        "source": "https://api.tzkt.io/"
+                        }
             offset += max_items
             params["offset"] = offset
-            print(f'Processed {offset} accounts so far..')
+            if offset % 100000 == 0:
+                print(f'Processed {offset} accounts so far..')
 
-        return address_aliases
+        return address_info
 
 
-def parse_aliases(address_aliases):    
+def parse_aliases(address_info):
     aliases = {
         'Tezos Foundation': 'Tezos Foundation',
         'Foundation Baker': 'Tezos Foundation',
@@ -50,7 +55,7 @@ def parse_aliases(address_aliases):
     for alias in single_aliases:
         aliases[alias] = alias
 
-    for value in address_aliases.values():
+    for value in address_info.values():
         for keyword in aliases:
             if value["name"].lower().startswith(keyword.lower()):
                 value['extra_info'] = value["name"]
@@ -59,9 +64,10 @@ def parse_aliases(address_aliases):
 
     # save to json file
     with open('addresses/tezos.json', 'w') as f:
-        json.dump(address_aliases, f, indent=4)
-    return address_aliases
+        json.dump(address_info, f, indent=4)
+    return address_info
+
 
 if __name__ == '__main__':
-    address_aliases = get_address_aliases()
-    parse_aliases(address_aliases)
+    address_info = get_address_info()
+    parse_aliases(address_info)
