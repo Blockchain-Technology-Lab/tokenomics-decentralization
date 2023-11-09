@@ -74,13 +74,14 @@ def get_default_ledgers():
     return ledgers
 
 
-def get_default_start_end_dates():
+def get_default_snapshots():
     """
-    Retrieves the start and end dates for which to analyze data
-    :returns: a tuple of two strings, (<start date>, <end date>)
+    Retrieves the snapshots for which to analyze data
+    :returns: a list of strings
     """
     config = get_config_data()
-    return str(config['default_timeframe']['start_date']), str(config['default_timeframe']['end_date'])
+    start_date, end_date = str(config['default_timeframe']['start_date']), str(config['default_timeframe']['end_date'])
+    return [f'{year}-01-01' for year in range(int(start_date[:4]), int(end_date[:4]) + 1)]
 
 
 def get_dates_between(start_date, end_date, granularity):

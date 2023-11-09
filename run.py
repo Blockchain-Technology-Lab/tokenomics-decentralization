@@ -23,8 +23,7 @@ if __name__ == '__main__':
     config = hlp.get_config_data()
 
     default_ledgers = hlp.get_default_ledgers()
-    start_date, end_date = hlp.get_default_start_end_dates()
-    default_snapshot_dates = [str(year) for year in range(int(start_date[:4]), int(end_date[:4]) + 1)]
+    default_snapshot_dates = hlp.get_default_snapshots()
 
     db_directories = [pathlib.Path(db_dir).resolve() for db_dir in config['db_directories']]
 
@@ -62,7 +61,7 @@ if __name__ == '__main__':
     no_clustering = args.no_clustering
 
     if len(snapshot_dates) == 2:
-        start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[1])
+        start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
         snapshot_dates = hlp.get_dates_between(start_date, end_date, args.granularity)
     else:
         snapshot_dates = [hlp.get_date_string_from_object(hlp.get_date_beginning(date)) for date in snapshot_dates]

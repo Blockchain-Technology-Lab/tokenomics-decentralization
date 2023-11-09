@@ -79,8 +79,7 @@ if __name__ == '__main__':
     with open(hlp.ROOT_DIR / "config.yaml") as f:
         config = safe_load(f)
     default_ledgers = hlp.get_default_ledgers()
-    start_date, end_date = hlp.get_default_start_end_dates()
-    default_snapshot_dates = [f'{year}-01-01' for year in range(int(start_date[:4]), int(end_date[:4]) + 1)]
+    default_snapshot_dates = hlp.get_default_snapshots()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--ledgers', nargs="*", type=str.lower, default=default_ledgers,
