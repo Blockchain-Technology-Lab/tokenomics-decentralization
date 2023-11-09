@@ -35,12 +35,6 @@ if __name__ == '__main__':
                         '"YYYY-MM" or "YYYY". If two dates are given and the --granularity argument is '
                         'not "none", then the dates are interpreted as the beginning and end of a time period, and the '
                         'granularity is used to determine which snapshots to analyze in between (e.g. every month).')
-    parser.add_argument('--granularity', nargs="?", type=str.lower, default='month',
-                        choices=['day', 'week', 'month', 'year', 'none'],
-                        help='The granularity that will be used for the analysis when two dates are provided'
-                        'in the --snapshot_dates argument (which are then interpreted as start and end dates). '
-                        'It can be one of: "day", "week", "month", "year", "none" and by default it is month. '
-                        'If "none" is chosen then only the snapshots for the two given dates will be analyzed.')
     args = parser.parse_args()
 
     ledgers = args.ledgers
@@ -51,9 +45,10 @@ if __name__ == '__main__':
     only_analyze = config['only_analyze']
     no_clustering = config['no_clustering']
 
+    granularity = config['granularity']
     if len(snapshot_dates) == 2:
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
-        snapshot_dates = hlp.get_dates_between(start_date, end_date, args.granularity)
+        snapshot_dates = hlp.get_dates_between(start_date, end_date, granularity)
     else:
         snapshot_dates = [hlp.get_date_string_from_object(hlp.get_date_beginning(date)) for date in snapshot_dates]
 
