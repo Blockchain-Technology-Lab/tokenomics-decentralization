@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     force_map_addresses = config['force_map_addresses']
     force_map_balances = config['force_map_balances']
-    force_analyze = config['only_analyze']
+    force_analyze = config['force_analyze']
     no_clustering = config['no_clustering']
 
     granularity = config['granularity']
