@@ -2,7 +2,6 @@ from tokenomics_decentralization.map import apply_mapping
 from tokenomics_decentralization.analyze import analyze
 from tokenomics_decentralization.plot import plot
 import tokenomics_decentralization.helper as hlp
-from yaml import safe_load
 import argparse
 import pathlib
 import logging
@@ -21,8 +20,7 @@ def main(ledgers, snapshot_dates, force_compute, force_map, only_analyze, db_dir
 
 
 if __name__ == '__main__':
-    with open(hlp.ROOT_DIR / 'config.yaml') as f:
-        config = safe_load(f)
+    config = hlp.get_config_data()
 
     default_ledgers = hlp.get_default_ledgers()
     start_date, end_date = hlp.get_default_start_end_dates()
