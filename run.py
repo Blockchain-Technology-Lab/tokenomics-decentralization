@@ -20,14 +20,9 @@ def main(ledgers, snapshot_dates, db_directories, force_map_addresses, force_map
 if __name__ == '__main__':
     config = hlp.get_config_data()
 
-    default_ledgers = hlp.get_default_ledgers()
     default_snapshot_dates = hlp.get_default_snapshots()
 
-    db_directories = [pathlib.Path(db_dir).resolve() for db_dir in config['db_directories']]
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ledgers', nargs="*", type=str.lower, default=default_ledgers,
-                        choices=[ledger for ledger in default_ledgers], help='The ledgers to analyze')
     parser.add_argument('--snapshot_dates', nargs="*", type=hlp.valid_date, default=default_snapshot_dates,
                         help='The dates to to analyze. Any number of dates can be specified, in the format "YYYY-MM-DD", '
                         '"YYYY-MM" or "YYYY". If two dates are given and the --granularity argument is '
@@ -35,8 +30,11 @@ if __name__ == '__main__':
                         'granularity is used to determine which snapshots to analyze in between (e.g. every month).')
     args = parser.parse_args()
 
-    ledgers = args.ledgers
     snapshot_dates = args.snapshot_dates
+
+    db_directories = [pathlib.Path(db_dir).resolve() for db_dir in config['db_directories']]
+
+    ledgers = hlp.get_default_ledgers()
 
     force_map_addresses = config['force_map_addresses']
     force_map_balances = config['force_map_balances']
