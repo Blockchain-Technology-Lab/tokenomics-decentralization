@@ -3,4 +3,4 @@
 output
 input/*_raw_data.json
 .coverage
-google-service-account-key.json
+google-service-account-key-?.json
