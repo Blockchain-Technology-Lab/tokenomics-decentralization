@@ -41,24 +41,15 @@ if __name__ == '__main__':
                         'in the --snapshot_dates argument (which are then interpreted as start and end dates). '
                         'It can be one of: "day", "week", "month", "year", "none" and by default it is month. '
                         'If "none" is chosen then only the snapshots for the two given dates will be analyzed.')
-    parser.add_argument('--force-compute', action='store_true',
-                        help='Flag to specify whether to query for project data regardless if the relevant data '
-                        'already exist.')
-    parser.add_argument('--force-map', action='store_true',
-                        help='Flag to specify whether to apply the mapping for some project and snapshot regardless '
-                        'if the relevant data already exist.')
-    parser.add_argument('--only-analyze', action='store_true',
-                        help='Flag to specify whether to only analyze existing data, if the database exists.')
-    parser.add_argument('--no-clustering', action='store_true',
-                        help='Flag to specify whether to not perform any address clustering.')
     args = parser.parse_args()
 
     ledgers = args.ledgers
     snapshot_dates = args.snapshot_dates
-    force_compute = args.force_compute
-    force_map = args.force_map
-    only_analyze = args.only_analyze
-    no_clustering = args.no_clustering
+
+    force_compute = config['force_compute']
+    force_map = config['force_map']
+    only_analyze = config['only_analyze']
+    no_clustering = config['no_clustering']
 
     if len(snapshot_dates) == 2:
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])

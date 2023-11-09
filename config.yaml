@@ -16,5 +16,11 @@ default_ledgers:
   - litecoin  
   - tezos
 
+# Execution flags
+force_compute: false
+force_map: false
+only_analyze: false
+no_clustering: false
+
 db_directories:  # Paths to directories of snapshot db files; either absolute or relative from run.py; the first will be used to write newly created dbs
   - ./output
