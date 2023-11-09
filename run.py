@@ -9,13 +9,11 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def main(ledgers, snapshot_dates, force_compute, force_map, only_analyze, db_directories, no_clustering):
-    if not only_analyze:
-        for ledger in ledgers:
-            for snapshot in snapshot_dates:
-                if not (hlp.OUTPUT_DIR / f'{ledger}_{snapshot}.db').is_file() or force_map:
-                    apply_mapping(ledger, snapshot, db_directories)
-    analyze(ledgers, snapshot_dates, force_compute, db_directories, no_clustering)
+def main(ledgers, snapshot_dates, db_directories, force_map_addresses, force_map_balances, force_analyze, no_clustering):
+    for ledger in ledgers:
+        for snapshot in snapshot_dates:
+            apply_mapping(ledger, snapshot, db_directories, force_map_addresses, force_map_balances)
+    analyze(ledgers, snapshot_dates, db_directories, force_analyze, no_clustering)
     plot()
 
 
@@ -40,9 +38,9 @@ if __name__ == '__main__':
     ledgers = args.ledgers
     snapshot_dates = args.snapshot_dates
 
-    force_compute = config['force_compute']
-    force_map = config['force_map']
-    only_analyze = config['only_analyze']
+    force_map_addresses = config['force_map_addresses']
+    force_map_balances = config['force_map_balances']
+    force_analyze = config['only_analyze']
     no_clustering = config['no_clustering']
 
     granularity = config['granularity']
@@ -55,4 +53,4 @@ if __name__ == '__main__':
     if not hlp.OUTPUT_DIR.is_dir():
         hlp.OUTPUT_DIR.mkdir()
 
-    main(ledgers, snapshot_dates, force_compute, force_map, only_analyze, db_directories, no_clustering)
+    main(ledgers, snapshot_dates, db_directories, force_map_addresses, force_map_balances, force_analyze, no_clustering)

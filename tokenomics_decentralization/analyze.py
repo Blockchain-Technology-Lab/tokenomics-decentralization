@@ -46,7 +46,7 @@ def get_balance_entries(cursor, snapshot_id):
     return entries
 
 
-def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
+def analyze_snapshot(conn, ledger, snapshot, force_analyze, no_clustering):
     cursor = conn.cursor()
 
     ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
@@ -75,7 +75,7 @@ def analyze_snapshot(conn, ledger, snapshot, force_compute, no_clustering):
             metric_name = 'non-clustered ' + metric_name
 
         val = cursor.execute('SELECT value FROM metrics WHERE snapshot_id=? and name=?', (snapshot_id, metric_name)).fetchone()
-        if val and not force_compute:
+        if val and not force_analyze:
             metric_value = val[0]
         else:
             if not entries:
@@ -135,7 +135,7 @@ def write_csv_output(output_rows):
         csv_writer.writerows(output_rows)
 
 
-def analyze(ledgers, snapshot_dates, force_compute, db_directories, no_clustering):
+def analyze(ledgers, snapshot_dates, db_directories, force_analyze, no_clustering):
     output_rows = []
     for ledger in ledgers:
         for date in snapshot_dates:
@@ -152,7 +152,7 @@ def analyze(ledgers, snapshot_dates, force_compute, db_directories, no_clusterin
                 continue
 
             conn = get_connector(db_file)
-            metrics_values = analyze_snapshot(conn, ledger, date, force_compute, no_clustering)
+            metrics_values = analyze_snapshot(conn, ledger, date, force_analyze, no_clustering)
             output_rows.append(get_output_row(ledger, date, metrics_values, no_clustering))
             for metric, value in metrics_values.items():
                 logging.info(f'{metric}: {value}')

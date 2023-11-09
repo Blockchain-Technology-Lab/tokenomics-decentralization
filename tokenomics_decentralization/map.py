@@ -106,7 +106,7 @@ def fill_db_with_balances(conn, ledger, snapshot):
             conn.commit()
 
 
-def apply_mapping(ledger, snapshot, db_directories):
+def apply_mapping(ledger, snapshot, db_directories, force_map_addresses, force_map_balances):
     logging.info(f'Mapping {ledger} {snapshot}')
     input_filename = INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
     db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in db_directories]
@@ -117,16 +117,20 @@ def apply_mapping(ledger, snapshot, db_directories):
             break
     if not db_file and os.path.isfile(input_filename):
         db_file = db_paths[0]
+        force_map_addresses = True
+        force_map_balances = True
 
     if db_file:
         conn = get_connector(db_file)
 
-        logging.info('Mapping addresses')
-        fill_db_with_addresses(conn, ledger)
+        if force_map_addresses:
+            logging.info('Mapping addresses')
+            fill_db_with_addresses(conn, ledger)
 
-        logging.info('Mapping balances')
-        fill_db_with_balances(conn, ledger, snapshot)
+        if force_map_balances:
+            logging.info('Mapping balances')
+            fill_db_with_balances(conn, ledger, snapshot)
 
         logging.info('Finished')
     else:
-        logging.info('Snapshot input or db file does not exist')
+        logging.info('Both input and db files do not exist')
