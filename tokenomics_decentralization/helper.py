@@ -74,13 +74,14 @@ def get_default_ledgers():
     return ledgers
 
 
-def get_default_start_end_dates():
+def get_default_snapshots():
     """
-    Retrieves the start and end dates for which to analyze data
-    :returns: a tuple of two strings, (<start date>, <end date>)
+    Retrieves the snapshots for which to analyze data
+    :returns: a list of strings
     """
     config = get_config_data()
-    return str(config['default_timeframe']['start_date']), str(config['default_timeframe']['end_date'])
+    start_date, end_date = str(config['default_timeframe']['start_date']), str(config['default_timeframe']['end_date'])
+    return [f'{year}-01-01' for year in range(int(start_date[:4]), int(end_date[:4]) + 1)]
 
 
 def get_dates_between(start_date, end_date, granularity):
@@ -89,7 +90,7 @@ def get_dates_between(start_date, end_date, granularity):
     :param start_date: a datetime.date object corresponding to the start date
     :param end_date: a datetime.date object corresponding to the end date
     :param granularity: the granularity that will be used for the analysis. It can be one of: day, week, month, year, none
-    :returns: a list of strings in YYYY-MM-DD format, corresponding to the dates between the given start and end dates based on the given granularity. 
+    :returns: a list of strings in YYYY-MM-DD format, corresponding to the dates between the given start and end dates based on the given granularity.
     Note that the end date may not be part of the list, depending on the start date and granularity.
     If granularity is none then the list will only contain the start and end dates.
     :raises ValueError: if the end date preceeds start_date or if the granularity is not
@@ -106,7 +107,7 @@ def get_dates_between(start_date, end_date, granularity):
     elif granularity == 'year':
         dates = [get_date_string_from_object(dt) for dt in rrule(freq=YEARLY, dtstart=start_date, until=end_date)]
     elif granularity == 'none':
-       dates = [get_date_string_from_object(start_date), get_date_string_from_object(end_date)]
+        dates = [get_date_string_from_object(start_date), get_date_string_from_object(end_date)]
     else:
         raise ValueError(f'Invalid granularity: {granularity}')
     return dates

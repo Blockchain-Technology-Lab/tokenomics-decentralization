@@ -16,5 +16,14 @@ default_ledgers:
   - litecoin  
   - tezos
 
+# Execution flags
+force_map_addresses: false
+force_map_balances: false
+force_analyze: false
+no_clustering: false
+
+# The granularity for the analysis when two dates are provided in the --snapshot_dates argument (which are then interpreted as start and end dates). It can be one of: "day", "week", "month", "year", or empty. If empty, then only the snapshots for the given dates will be analyzed.
+granularity: "month"
+
 db_directories:  # Paths to directories of snapshot db files; either absolute or relative from run.py; the first will be used to write newly created dbs
   - ./output
