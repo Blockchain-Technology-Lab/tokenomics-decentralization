@@ -132,7 +132,8 @@ def write_csv_output(output_rows):
     header = ['ledger', 'snapshot date', 'total entities', 'gini', 'hhi', 'shannon entropy']
     header.extend([f'tau={tau}' for tau in TAU_THRESHOLDS])
 
-    with open(hlp.OUTPUT_DIR / 'output.csv', 'w') as f:
+    output_dir = hlp.get_output_directories()[0]
+    with open(output_dir / 'output.csv', 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(header)
         csv_writer.writerows(output_rows)
