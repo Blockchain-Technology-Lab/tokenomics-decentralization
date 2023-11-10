@@ -40,7 +40,8 @@ if __name__ == '__main__':
     else:
         snapshot_dates = [hlp.get_date_string_from_object(hlp.get_date_beginning(date)) for date in snapshot_dates]
 
-    if not hlp.OUTPUT_DIR.is_dir():
-        hlp.OUTPUT_DIR.mkdir()
+    output_dir = hlp.get_output_directories()[0]
+    if not output_dir.is_dir():
+        output_dir.mkdir()
 
     main(ledgers, snapshot_dates)
