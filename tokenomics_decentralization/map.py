@@ -83,6 +83,9 @@ def fill_db_with_balances(conn, ledger, snapshot):
                     if ledger == 'ethereum':
                         balance /= int(10**9)
 
+                    if balance == 0:
+                        continue
+
                     circulation += balance
 
                     try:
