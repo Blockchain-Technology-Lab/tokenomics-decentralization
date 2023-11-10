@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     ledgers = hlp.get_default_ledgers()
 
-    snapshot_dates = hlp.get_default_snapshots()
+    snapshot_dates = hlp.get_snapshot_dates()
 
     granularity = config['granularity']
     if granularity in ['day', 'week', 'month', 'year']:

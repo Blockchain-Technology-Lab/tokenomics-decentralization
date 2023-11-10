@@ -70,12 +70,12 @@ def get_default_ledgers():
     return get_config_data()['ledgers']
 
 
-def get_default_snapshots():
+def get_snapshot_dates():
     """
-    Retrieves the snapshots for which to analyze data
+    Retrieves the snapshot dates for which to analyze data
     :returns: a list of strings
     """
-    return sorted(get_config_data()['snapshots'])
+    return sorted(get_config_data()['snapshot_dates'])
 
 
 def get_dates_between(start_date, end_date, granularity):

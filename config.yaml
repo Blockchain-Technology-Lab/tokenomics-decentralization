@@ -27,7 +27,7 @@ plot: true
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.
 # If granularity is also set, then the analysis will run on the timeframe of the two farthest snapshots.
-snapshots:
+snapshot_dates:
   - "2010"
   - "2024"
 
