@@ -45,8 +45,7 @@ def get_balance_entries(cursor, snapshot_id):
 
 
 def analyze_snapshot(conn, ledger, snapshot, no_clustering):
-    config = hlp.get_config_data()
-    force_analyze = config['force_analyze']
+    force_analyze = hlp.get_force_analyze_flag()
 
     cursor = conn.cursor()
 
@@ -65,7 +64,7 @@ def analyze_snapshot(conn, ledger, snapshot, no_clustering):
     for threshold in hlp.get_tau_thresholds():
         compute_functions[f'tau={threshold}'] = compute_tau
 
-    metric_names = config['metrics']
+    metric_names = hlp.get_metrics()
 
     for key in metric_names:
         compute_functions['non-clustered ' + key] = compute_functions[key]
@@ -113,7 +112,7 @@ def analyze_snapshot(conn, ledger, snapshot, no_clustering):
 
 def get_output_row(ledger, year, metrics, no_clustering):
     csv_row = [ledger, year]
-    for metric_name in hlp.get_config_data()['metrics']:
+    for metric_name in hlp.get_metrics():
         if no_clustering:
             csv_row.append(metrics[f'non-clustered {metric_name}'])
         else:
@@ -123,7 +122,7 @@ def get_output_row(ledger, year, metrics, no_clustering):
 
 def write_csv_output(output_rows):
     header = ['ledger', 'snapshot date']
-    header += hlp.get_config_data()['metrics']
+    header += hlp.get_metrics()
 
     output_dir = hlp.get_output_directories()[0]
     with open(output_dir / 'output.csv', 'w') as f:
@@ -133,8 +132,7 @@ def write_csv_output(output_rows):
 
 
 def analyze(ledgers, snapshot_dates):
-    config = hlp.get_config_data()
-    no_clustering = config['no_clustering']
+    no_clustering = hlp.get_no_clustering_flag()
 
     output_rows = []
     for ledger in ledgers:

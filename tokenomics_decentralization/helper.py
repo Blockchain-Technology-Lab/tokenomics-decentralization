@@ -141,3 +141,89 @@ def get_tau_thresholds():
     """
     config = get_config_data()
     return [float(name.split('=')[1].strip()) for name in config['metrics'] if 'tau' in name]
+
+
+def get_plot_flag():
+    """
+    Gets the flag whether to plot output
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'plot':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "plot" not in config file')
+
+
+def get_force_map_addresses_flag():
+    """
+    Gets the flag whether to forcefully map addresses in db
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'force_map_addresses':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "force_map_addresses" not in config file')
+
+
+def get_force_map_balances_flag():
+    """
+    Gets the flag whether to forcefully map balances in db
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'force_map_balances':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "force_map_balances" not in config file')
+
+
+def get_force_analyze_flag():
+    """
+    Gets the flag whether to forcefully recreate metrics
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'force_analyze':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "force_analyze" not in config file')
+
+
+def get_no_clustering_flag():
+    """
+    Gets the flag whether to forcefully recreate metrics
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['analyze_flags']:
+        if flag['name'] == 'no_clustering':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "no_clustering" not in config file')
+
+
+def get_metrics():
+    """
+    Retrieves the metrics to be analyzed
+    :returns: list of strings of the metric names to be used
+    """
+    return get_config_data()['metrics']
+
+
+def get_granularity():
+    """
+    Retrieves the granularity to be used in the analysis
+    :returns: string in ['day', 'week', 'month', 'year']
+    """
+    return get_config_data()['granularity']
