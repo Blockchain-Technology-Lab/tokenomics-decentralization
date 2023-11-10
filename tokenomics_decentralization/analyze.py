@@ -135,13 +135,13 @@ def write_csv_output(output_rows):
         csv_writer.writerows(output_rows)
 
 
-def analyze(ledgers, snapshot_dates, db_directories, force_analyze, no_clustering):
+def analyze(ledgers, snapshot_dates, force_analyze, no_clustering):
     output_rows = []
     for ledger in ledgers:
         for date in snapshot_dates:
             logging.info(f'[*] {ledger} - {date}')
 
-            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in db_directories]
+            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in hlp.get_db_directories()]
             db_file = False
             for filename in db_paths:
                 if os.path.isfile(filename):

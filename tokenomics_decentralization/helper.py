@@ -120,3 +120,12 @@ def get_date_string_from_object(date_object):
     :returns: a string representation of the given date in the format YYYY-MM-DD
     """
     return date_object.strftime('%Y-%m-%d')
+
+
+def get_db_directories():
+    """
+    Reads the config file and retrieves the output directories
+    :returns: a list of directories that might contain the db files
+    """
+    config = get_config_data()
+    return [pathlib.Path(db_dir).resolve() for db_dir in config['db_directories']]

@@ -1,5 +1,5 @@
 from tokenomics_decentralization.schema import get_connector
-from tokenomics_decentralization.helper import INPUT_DIR, MAPPING_INFO_DIR
+import tokenomics_decentralization.helper as hlp
 import os
 import sqlite3
 import json
@@ -24,7 +24,7 @@ def fill_db_with_addresses(conn, ledger):
     ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
 
     try:
-        with open(MAPPING_INFO_DIR / f'addresses/{ledger}.json') as f:
+        with open(hlp.MAPPING_INFO_DIR / f'addresses/{ledger}.json') as f:
             address_entities = json.load(f)
             for addr, info in address_entities.items():
                 entity = info['name']
@@ -59,7 +59,7 @@ def fill_db_with_balances(conn, ledger, snapshot):
 
     ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
 
-    input_file = INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
+    input_file = hlp.INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
     if os.path.isfile(input_file):
         with open(input_file) as f:
             csv_reader = csv.reader(f, delimiter=',')
@@ -106,10 +106,10 @@ def fill_db_with_balances(conn, ledger, snapshot):
             conn.commit()
 
 
-def apply_mapping(ledger, snapshot, db_directories, force_map_addresses, force_map_balances):
+def apply_mapping(ledger, snapshot, force_map_addresses, force_map_balances):
     logging.info(f'Mapping {ledger} {snapshot}')
-    input_filename = INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
-    db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in db_directories]
+    input_filename = hlp.INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
+    db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in hlp.get_db_directories()]
     db_file = False
     for filename in db_paths:
         if os.path.isfile(filename):

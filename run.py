@@ -3,17 +3,16 @@ from tokenomics_decentralization.analyze import analyze
 from tokenomics_decentralization.plot import plot
 import tokenomics_decentralization.helper as hlp
 import argparse
-import pathlib
 import logging
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def main(ledgers, snapshot_dates, db_directories, force_map_addresses, force_map_balances, force_analyze, no_clustering):
+def main(ledgers, snapshot_dates, force_map_addresses, force_map_balances, force_analyze, no_clustering):
     for ledger in ledgers:
         for snapshot in snapshot_dates:
-            apply_mapping(ledger, snapshot, db_directories, force_map_addresses, force_map_balances)
-    analyze(ledgers, snapshot_dates, db_directories, force_analyze, no_clustering)
+            apply_mapping(ledger, snapshot, force_map_addresses, force_map_balances)
+    analyze(ledgers, snapshot_dates, force_analyze, no_clustering)
     plot()
 
 
@@ -32,8 +31,6 @@ if __name__ == '__main__':
 
     snapshot_dates = args.snapshot_dates
 
-    db_directories = [pathlib.Path(db_dir).resolve() for db_dir in config['db_directories']]
-
     ledgers = hlp.get_default_ledgers()
 
     force_map_addresses = config['force_map_addresses']
@@ -51,4 +48,4 @@ if __name__ == '__main__':
     if not hlp.OUTPUT_DIR.is_dir():
         hlp.OUTPUT_DIR.mkdir()
 
-    main(ledgers, snapshot_dates, db_directories, force_map_addresses, force_map_balances, force_analyze, no_clustering)
+    main(ledgers, snapshot_dates, force_map_addresses, force_map_balances, force_analyze, no_clustering)
