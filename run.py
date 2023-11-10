@@ -21,7 +21,7 @@ def main(ledgers, snapshot_dates):
 if __name__ == '__main__':
     config = hlp.get_config_data()
 
-    ledgers = hlp.get_default_ledgers()
+    ledgers = hlp.get_ledgers()
 
     snapshot_dates = hlp.get_snapshot_dates()
 

@@ -61,9 +61,9 @@ def get_config_data():
     return config
 
 
-def get_default_ledgers():
+def get_ledgers():
     """
-    Retrieves data regarding the default ledgers to use
+    Retrieves data regarding the ledgers to use
     :returns: a list of strings that correspond to the ledgers that will be used (unless overriden by the relevant cmd
     arg)
     """
