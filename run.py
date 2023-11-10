@@ -8,11 +8,11 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def main(ledgers, snapshot_dates, force_analyze, no_clustering):
+def main(ledgers, snapshot_dates):
     for ledger in ledgers:
         for snapshot in snapshot_dates:
             apply_mapping(ledger, snapshot)
-    analyze(ledgers, snapshot_dates, force_analyze, no_clustering)
+    analyze(ledgers, snapshot_dates)
     plot()
 
 
@@ -33,9 +33,6 @@ if __name__ == '__main__':
 
     ledgers = hlp.get_default_ledgers()
 
-    force_analyze = config['force_analyze']
-    no_clustering = config['no_clustering']
-
     granularity = config['granularity']
     if granularity in ['day', 'week', 'month', 'year'] and len(snapshot_dates) > 1:
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
@@ -46,4 +43,4 @@ if __name__ == '__main__':
     if not hlp.OUTPUT_DIR.is_dir():
         hlp.OUTPUT_DIR.mkdir()
 
-    main(ledgers, snapshot_dates, force_analyze, no_clustering)
+    main(ledgers, snapshot_dates)

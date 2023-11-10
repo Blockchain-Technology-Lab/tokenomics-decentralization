@@ -46,7 +46,10 @@ def get_balance_entries(cursor, snapshot_id):
     return entries
 
 
-def analyze_snapshot(conn, ledger, snapshot, force_analyze, no_clustering):
+def analyze_snapshot(conn, ledger, snapshot, no_clustering):
+    config = hlp.get_config_data()
+    force_analyze = config['force_analyze']
+
     cursor = conn.cursor()
 
     ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
@@ -135,7 +138,10 @@ def write_csv_output(output_rows):
         csv_writer.writerows(output_rows)
 
 
-def analyze(ledgers, snapshot_dates, force_analyze, no_clustering):
+def analyze(ledgers, snapshot_dates):
+    config = hlp.get_config_data()
+    no_clustering = config['no_clustering']
+
     output_rows = []
     for ledger in ledgers:
         for date in snapshot_dates:
@@ -152,7 +158,7 @@ def analyze(ledgers, snapshot_dates, force_analyze, no_clustering):
                 continue
 
             conn = get_connector(db_file)
-            metrics_values = analyze_snapshot(conn, ledger, date, force_analyze, no_clustering)
+            metrics_values = analyze_snapshot(conn, ledger, date, no_clustering)
             output_rows.append(get_output_row(ledger, date, metrics_values, no_clustering))
             for metric, value in metrics_values.items():
                 logging.info(f'{metric}: {value}')
