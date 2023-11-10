@@ -11,8 +11,11 @@ def main(ledgers, snapshot_dates):
     for ledger in ledgers:
         for snapshot in snapshot_dates:
             apply_mapping(ledger, snapshot)
+
     analyze(ledgers, snapshot_dates)
-    plot()
+
+    if hlp.get_config_data()['plot']:
+        plot()
 
 
 if __name__ == '__main__':

@@ -22,6 +22,7 @@ force_map_addresses: false
 force_map_balances: false
 force_analyze: false
 no_clustering: false
+plot: true
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.
