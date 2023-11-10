@@ -59,51 +59,54 @@ def fill_db_with_balances(conn, ledger, snapshot):
 
     ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
 
-    input_file = hlp.INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
-    if os.path.isfile(input_file):
-        with open(input_file) as f:
-            csv_reader = csv.reader(f, delimiter=',')
-            try:
-                cursor.execute("INSERT INTO snapshots(name, ledger_id) VALUES (?, ?)", (snapshot, ledger_id))
-            except sqlite3.IntegrityError as e:
-                if 'UNIQUE constraint failed' in str(e):
-                    pass
-                else:
-                    raise e
-
-            snapshot_id = cursor.execute("SELECT id FROM snapshots WHERE ledger_id=? AND name=?", (ledger_id, snapshot)).fetchone()[0]
-
-            circulation = 0
-            next(csv_reader, None)  # skip header
-            for line in csv_reader:
-                address, balance = line[0], int(line[-1])
-
-                # For Ethereum, store the balance in Gwei
-                if ledger == 'ethereum':
-                    balance /= int(10**9)
-
-                circulation += balance
-
+    input_paths = [input_dir / f'{ledger}_{snapshot}_raw_data.csv' for input_dir in hlp.get_input_directories()]
+    for input_filename in input_paths:
+        if os.path.isfile(input_filename):
+            with open(input_filename) as f:
+                csv_reader = csv.reader(f, delimiter=',')
                 try:
-                    cursor.execute("INSERT INTO addresses(name, ledger_id) VALUES (?, ?)", (address, ledger_id))
+                    cursor.execute("INSERT INTO snapshots(name, ledger_id) VALUES (?, ?)", (snapshot, ledger_id))
                 except sqlite3.IntegrityError as e:
                     if 'UNIQUE constraint failed' in str(e):
                         pass
                     else:
                         raise e
 
-                address_id = cursor.execute("SELECT id FROM addresses WHERE ledger_id=? AND name=?", (ledger_id, address)).fetchone()[0]
-                try:
-                    cursor.execute("INSERT INTO balances(balance, snapshot_id, address_id) VALUES (?, ?, ?)", (balance, snapshot_id, address_id))
-                except sqlite3.IntegrityError as e:
-                    if 'UNIQUE constraint failed' in str(e):
-                        pass
-                    else:
-                        raise e
+                snapshot_id = cursor.execute("SELECT id FROM snapshots WHERE ledger_id=? AND name=?", (ledger_id, snapshot)).fetchone()[0]
 
-            cursor.execute("UPDATE snapshots SET circulation=? WHERE id=?", (str(circulation), snapshot_id))
+                circulation = 0
+                next(csv_reader, None)  # skip header
+                for line in csv_reader:
+                    address, balance = line[0], int(line[-1])
 
-            conn.commit()
+                    # For Ethereum, store the balance in Gwei
+                    if ledger == 'ethereum':
+                        balance /= int(10**9)
+
+                    circulation += balance
+
+                    try:
+                        cursor.execute("INSERT INTO addresses(name, ledger_id) VALUES (?, ?)", (address, ledger_id))
+                    except sqlite3.IntegrityError as e:
+                        if 'UNIQUE constraint failed' in str(e):
+                            pass
+                        else:
+                            raise e
+
+                    address_id = cursor.execute("SELECT id FROM addresses WHERE ledger_id=? AND name=?", (ledger_id, address)).fetchone()[0]
+                    try:
+                        cursor.execute("INSERT INTO balances(balance, snapshot_id, address_id) VALUES (?, ?, ?)", (balance, snapshot_id, address_id))
+                    except sqlite3.IntegrityError as e:
+                        if 'UNIQUE constraint failed' in str(e):
+                            pass
+                        else:
+                            raise e
+
+                cursor.execute("UPDATE snapshots SET circulation=? WHERE id=?", (str(circulation), snapshot_id))
+
+                conn.commit()
+
+            return
 
 
 def apply_mapping(ledger, snapshot):
@@ -112,17 +115,20 @@ def apply_mapping(ledger, snapshot):
     force_map_balances = config['force_map_balances']
 
     logging.info(f'Mapping {ledger} {snapshot}')
-    input_filename = hlp.INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
     db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in hlp.get_output_directories()]
     db_file = False
     for filename in db_paths:
         if os.path.isfile(filename):
             db_file = filename
             break
-    if not db_file and os.path.isfile(input_filename):
-        db_file = db_paths[0]
-        force_map_addresses = True
-        force_map_balances = True
+    if not db_file:
+        input_paths = [input_dir / f'{ledger}_{snapshot}_raw_data.csv' for input_dir in hlp.get_input_directories()]
+        for input_filename in input_paths:
+            if os.path.isfile(input_filename):
+                db_file = db_paths[0]
+                force_map_addresses = True
+                force_map_balances = True
+                break
 
     if db_file:
         conn = get_connector(db_file)

@@ -129,3 +129,12 @@ def get_output_directories():
     """
     config = get_config_data()
     return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']]
+
+
+def get_input_directories():
+    """
+    Reads the config file and retrieves the input directories
+    :returns: a list of directories that might contain the raw input data
+    """
+    config = get_config_data()
+    return [pathlib.Path(db_dir).resolve() for db_dir in config['input_directories']]

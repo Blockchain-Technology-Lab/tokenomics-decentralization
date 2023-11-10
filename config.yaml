@@ -27,3 +27,6 @@ granularity: "month"
 
 output_directories:  # Paths to directories of snapshot db files; either absolute or relative from run.py; the first will be used to write newly created dbs and the output of runs
   - ./output
+
+input_directories:  # Paths to directories that contain raw input data
+  - ./input
