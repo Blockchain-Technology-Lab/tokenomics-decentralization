@@ -88,4 +88,7 @@ if __name__ == '__main__':
                         help='Flag to specify whether to query for project data regardless if the relevant data '
                              'already exist.')
     args = parser.parse_args()
-    collect_data(ledgers=args.ledgers, snapshot_dates=args.snapshot_dates, force_query=args.force_query)
+
+    snapshot_dates = [hlp.get_date_string_from_date(hlp.get_date_beginning(date)) for date in args.snapshot_dates]
+
+    collect_data(ledgers=args.ledgers, snapshot_dates=snapshot_dates, force_query=args.force_query)
