@@ -32,6 +32,8 @@ execution_flags:
 analyze_flags:
   - name: "no_clustering"
     value: false
+  - name: "top_limit"
+    value: 0
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.

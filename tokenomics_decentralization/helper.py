@@ -227,3 +227,17 @@ def get_granularity():
     :returns: string in ['day', 'week', 'month', 'year']
     """
     return get_config_data()['granularity']
+
+
+def get_top_limit():
+    """
+    Retrieves the top-X limit to be applied in analysis
+    :returns: a positive integer if the limit is set, otherwise 0
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['analyze_flags']:
+        if flag['name'] == 'top_limit':
+            return flag['value'] if flag['value'] else 0
+    if value is None:
+        raise ValueError('Flag "no_clustering" not in config file')
