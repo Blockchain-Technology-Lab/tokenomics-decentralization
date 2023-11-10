@@ -93,21 +93,21 @@ def get_dates_between(start_date, end_date, granularity):
     if end_date < start_date:
         raise ValueError(f'Invalid start / end dates: {start_date, end_date}')
     if granularity == 'day':
-        dates = [get_date_string_from_object(dt) for dt in rrule(freq=DAILY, dtstart=start_date, until=end_date)]
+        dates = [get_date_string_from_date(dt) for dt in rrule(freq=DAILY, dtstart=start_date, until=end_date)]
     elif granularity == 'week':
-        dates = [get_date_string_from_object(dt) for dt in rrule(freq=WEEKLY, dtstart=start_date, until=end_date)]
+        dates = [get_date_string_from_date(dt) for dt in rrule(freq=WEEKLY, dtstart=start_date, until=end_date)]
     elif granularity == 'month':
-        dates = [get_date_string_from_object(dt) for dt in rrule(freq=MONTHLY, dtstart=start_date, until=end_date)]
+        dates = [get_date_string_from_date(dt) for dt in rrule(freq=MONTHLY, dtstart=start_date, until=end_date)]
     elif granularity == 'year':
-        dates = [get_date_string_from_object(dt) for dt in rrule(freq=YEARLY, dtstart=start_date, until=end_date)]
+        dates = [get_date_string_from_date(dt) for dt in rrule(freq=YEARLY, dtstart=start_date, until=end_date)]
     elif granularity == 'none':
-        dates = [get_date_string_from_object(start_date), get_date_string_from_object(end_date)]
+        dates = [get_date_string_from_date(start_date), get_date_string_from_date(end_date)]
     else:
         raise ValueError(f'Invalid granularity: {granularity}')
     return dates
 
 
-def get_date_string_from_object(date_object):
+def get_date_string_from_date(date_object):
     """
     Converts a date object to a string in the format YYYY-MM-DD
     :param date_object: a datetime.date object
