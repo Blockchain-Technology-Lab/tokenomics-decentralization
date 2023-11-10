@@ -26,8 +26,7 @@ def fill_db_with_addresses(conn, ledger):
     try:
         with open(hlp.MAPPING_INFO_DIR / f'addresses/{ledger}.json') as f:
             address_entities = json.load(f)
-            # for addr, info in address_entities.items():
-            for addr, info in list(address_entities.items())[:10]:
+            for addr, info in address_entities.items():
                 entity = info['name']
                 try:
                     cursor.execute("INSERT INTO entities(name, ledger_id) VALUES (?, ?)", (entity, ledger_id))
