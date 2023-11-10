@@ -43,6 +43,12 @@ def test_get_dates_between():
     assert dates_day[2] == "2023-09-27"
     assert dates_day[-1] == "2023-11-20"
 
+    start_date = datetime.date(2023, 11, 10)
+    end_date = datetime.date(2023, 11, 10)
+    dates_day = get_dates_between(start_date, end_date, granularity='day')
+    assert len(dates_day) == 1
+    assert dates_day[0] == "2023-11-10"
+
     start_date = datetime.date(2023, 11, 8)
     end_date = datetime.date(2023, 12, 25) 
     dates_week = get_dates_between(start_date, end_date, granularity='week')
@@ -74,8 +80,14 @@ def test_get_dates_between():
     assert dates_none[0] == "1996-09-25"
     assert dates_none[1] == "2023-09-24"
 
+    start_date = datetime.date(2023, 11, 11)
+    end_date = datetime.date(2023, 11, 10)
+    with pytest.raises(ValueError) as e_info:
+        dates_error = get_dates_between(start_date, end_date, granularity='day')
+    assert e_info.type == ValueError
+
     start_date = datetime.date(2023, 11, 10)
     end_date = datetime.date(2023, 11, 10)
-    dates_day = get_dates_between(start_date, end_date, granularity='day')
-    assert len(dates_day) == 1
-    assert dates_day[0] == "2023-11-10"
+    with pytest.raises(ValueError) as e_info:
+        dates_error = get_dates_between(start_date, end_date, granularity='bla')
+    assert e_info.type == ValueError
