@@ -4,14 +4,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-
 def plot():
     """
     Plots the data contained in the output file
     """
     logging.info('Plotting data..')
-    output_df = pd.read_csv(hlp.OUTPUT_DIR / 'output.csv')
-    figures_path = hlp.OUTPUT_DIR / 'figures'
+    output_dir = hlp.get_output_directories()[0]
+
+    output_df = pd.read_csv(output_dir / 'output.csv')
+    figures_path = output_dir / 'figures'
     if not figures_path.is_dir():
         figures_path.mkdir()
     output_df['snapshot date'] = pd.to_datetime(output_df['snapshot date'])

@@ -17,7 +17,7 @@ import tokenomics_decentralization.helper as hlp
 
 
 def collect_data(ledgers, snapshot_dates, force_query):
-    input_dir = hlp.INPUT_DIR
+    input_dir = hlp.get_input_directories()[0]
     root_dir = hlp.ROOT_DIR
     if not input_dir.is_dir():
         input_dir.mkdir()

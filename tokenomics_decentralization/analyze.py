@@ -9,8 +9,6 @@ import csv
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
-TAU_THRESHOLDS = [0.33, 0.5, 0.66]
-
 
 def get_non_clustered_balance_entries(cursor, snapshot_id):
     start = time()
@@ -46,7 +44,9 @@ def get_balance_entries(cursor, snapshot_id):
     return entries
 
 
-def analyze_snapshot(conn, ledger, snapshot, force_analyze, no_clustering):
+def analyze_snapshot(conn, ledger, snapshot, no_clustering):
+    force_analyze = hlp.get_force_analyze_flag()
+
     cursor = conn.cursor()
 
     ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
@@ -61,10 +61,11 @@ def analyze_snapshot(conn, ledger, snapshot, force_analyze, no_clustering):
         'gini': compute_gini,
         'total entities': compute_total_entities,
     }
-    for threshold in TAU_THRESHOLDS:
+    for threshold in hlp.get_tau_thresholds():
         compute_functions[f'tau={threshold}'] = compute_tau
 
-    metric_names = list(compute_functions.keys())
+    metric_names = hlp.get_metrics()
+
     for key in metric_names:
         compute_functions['non-clustered ' + key] = compute_functions[key]
 
@@ -109,39 +110,36 @@ def analyze_snapshot(conn, ledger, snapshot, force_analyze, no_clustering):
     return metrics_results
 
 
-def get_output_row(ledger, year, metrics, no_clustering):
-    csv_row = []
-    if no_clustering:
-        csv_row.extend([ledger, year, metrics["non-clustered total entities"], metrics["non-clustered gini"], metrics["non-clustered hhi"], metrics["non-clustered shannon entropy"]])
-    else:
-        csv_row.extend([ledger, year, metrics["total entities"], metrics["gini"], metrics["hhi"], metrics["shannon entropy"]])
-
-    for tau in TAU_THRESHOLDS:
+def get_output_row(ledger, date, metrics, no_clustering):
+    csv_row = [ledger, date]
+    for metric_name in hlp.get_metrics():
         if no_clustering:
-            csv_row.append(metrics[f'non-clustered tau={tau}'])
+            csv_row.append(metrics[f'non-clustered {metric_name}'])
         else:
-            csv_row.append(metrics[f'tau={tau}'])
-
+            csv_row.append(metrics[metric_name])
     return csv_row
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot date', 'total entities', 'gini', 'hhi', 'shannon entropy']
-    header.extend([f'tau={tau}' for tau in TAU_THRESHOLDS])
+    header = ['ledger', 'snapshot date']
+    header += hlp.get_metrics()
 
-    with open(hlp.OUTPUT_DIR / 'output.csv', 'w') as f:
+    output_dir = hlp.get_output_directories()[0]
+    with open(output_dir / 'output.csv', 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(header)
         csv_writer.writerows(output_rows)
 
 
-def analyze(ledgers, snapshot_dates, db_directories, force_analyze, no_clustering):
+def analyze(ledgers, snapshot_dates):
+    no_clustering = hlp.get_no_clustering_flag()
+
     output_rows = []
     for ledger in ledgers:
         for date in snapshot_dates:
             logging.info(f'[*] {ledger} - {date}')
 
-            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in db_directories]
+            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in hlp.get_output_directories()]
             db_file = False
             for filename in db_paths:
                 if os.path.isfile(filename):
@@ -152,7 +150,7 @@ def analyze(ledgers, snapshot_dates, db_directories, force_analyze, no_clusterin
                 continue
 
             conn = get_connector(db_file)
-            metrics_values = analyze_snapshot(conn, ledger, date, force_analyze, no_clustering)
+            metrics_values = analyze_snapshot(conn, ledger, date, no_clustering)
             output_rows.append(get_output_row(ledger, date, metrics_values, no_clustering))
             for metric, value in metrics_values.items():
                 logging.info(f'{metric}: {value}')

@@ -9,8 +9,6 @@ from yaml import safe_load
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
 
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
-INPUT_DIR = ROOT_DIR / 'input'
-OUTPUT_DIR = ROOT_DIR / 'output'
 MAPPING_INFO_DIR = ROOT_DIR / 'mapping_information'
 
 
@@ -63,25 +61,21 @@ def get_config_data():
     return config
 
 
-def get_default_ledgers():
+def get_ledgers():
     """
-    Retrieves data regarding the default ledgers to use
+    Retrieves data regarding the ledgers to use
     :returns: a list of strings that correspond to the ledgers that will be used (unless overriden by the relevant cmd
     arg)
     """
-    config = get_config_data()
-    ledgers = config['default_ledgers']
-    return ledgers
+    return get_config_data()['ledgers']
 
 
-def get_default_snapshots():
+def get_snapshot_dates():
     """
-    Retrieves the snapshots for which to analyze data
+    Retrieves the snapshot dates for which to analyze data
     :returns: a list of strings
     """
-    config = get_config_data()
-    start_date, end_date = str(config['default_timeframe']['start_date']), str(config['default_timeframe']['end_date'])
-    return [f'{year}-01-01' for year in range(int(start_date[:4]), int(end_date[:4]) + 1)]
+    return sorted(get_config_data()['snapshot_dates'])
 
 
 def get_dates_between(start_date, end_date, granularity):
@@ -120,3 +114,116 @@ def get_date_string_from_object(date_object):
     :returns: a string representation of the given date in the format YYYY-MM-DD
     """
     return date_object.strftime('%Y-%m-%d')
+
+
+def get_output_directories():
+    """
+    Reads the config file and retrieves the output directories
+    :returns: a list of directories that might contain the db files
+    """
+    config = get_config_data()
+    return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']]
+
+
+def get_input_directories():
+    """
+    Reads the config file and retrieves the input directories
+    :returns: a list of directories that might contain the raw input data
+    """
+    config = get_config_data()
+    return [pathlib.Path(db_dir).resolve() for db_dir in config['input_directories']]
+
+
+def get_tau_thresholds():
+    """
+    Reads the config file and retrieves the thresholds of tau decentralization
+    :returns: a list of floating point thresholds to be used to compute tau decentralization
+    """
+    config = get_config_data()
+    return [float(name.split('=')[1].strip()) for name in config['metrics'] if 'tau' in name]
+
+
+def get_plot_flag():
+    """
+    Gets the flag whether to plot output
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'plot':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "plot" not in config file')
+
+
+def get_force_map_addresses_flag():
+    """
+    Gets the flag whether to forcefully map addresses in db
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'force_map_addresses':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "force_map_addresses" not in config file')
+
+
+def get_force_map_balances_flag():
+    """
+    Gets the flag whether to forcefully map balances in db
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'force_map_balances':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "force_map_balances" not in config file')
+
+
+def get_force_analyze_flag():
+    """
+    Gets the flag whether to forcefully recreate metrics
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['execution_flags']:
+        if flag['name'] == 'force_analyze':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "force_analyze" not in config file')
+
+
+def get_no_clustering_flag():
+    """
+    Gets the flag whether to forcefully recreate metrics
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['analyze_flags']:
+        if flag['name'] == 'no_clustering':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "no_clustering" not in config file')
+
+
+def get_metrics():
+    """
+    Retrieves the metrics to be analyzed
+    :returns: list of strings of the metric names to be used
+    """
+    return get_config_data()['metrics']
+
+
+def get_granularity():
+    """
+    Retrieves the granularity to be used in the analysis
+    :returns: string in ['day', 'week', 'month', 'year']
+    """
+    return get_config_data()['granularity']
