@@ -95,6 +95,9 @@ def analyze_snapshot(conn, ledger, snapshot):
                 else:
                     entries = get_balance_entries(cursor, snapshot_id)
 
+            if top_limit:
+                circulation = hlp.get_circulation_from_entries(entries)
+
             logging.info(f'Computing {flagged_metric}')
             if 'tau' in default_metric_name:
                 threshold = float(default_metric_name.split('=')[1])

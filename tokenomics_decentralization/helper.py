@@ -240,4 +240,12 @@ def get_top_limit():
         if flag['name'] == 'top_limit':
             return flag['value'] if flag['value'] else 0
     if value is None:
-        raise ValueError('Flag "no_clustering" not in config file')
+        raise ValueError('Flag "top_limit" not in config file')
+
+
+def get_circulation_from_entries(entries):
+    """
+    Computes the aggregate value of a list of db entries
+    :returns: integer
+    """
+    return sum([int(i[1]) for i in entries])
