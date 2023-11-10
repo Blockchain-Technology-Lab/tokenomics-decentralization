@@ -67,9 +67,7 @@ def get_default_ledgers():
     :returns: a list of strings that correspond to the ledgers that will be used (unless overriden by the relevant cmd
     arg)
     """
-    config = get_config_data()
-    ledgers = config['default_ledgers']
-    return ledgers
+    return get_config_data()['ledgers']
 
 
 def get_default_snapshots():
@@ -77,9 +75,7 @@ def get_default_snapshots():
     Retrieves the snapshots for which to analyze data
     :returns: a list of strings
     """
-    config = get_config_data()
-    start_date, end_date = str(config['default_timeframe']['start_date']), str(config['default_timeframe']['end_date'])
-    return [f'{year}-01-01' for year in range(int(start_date[:4]), int(end_date[:4]) + 1)]
+    return sorted(get_config_data()['snapshots'])
 
 
 def get_dates_between(start_date, end_date, granularity):

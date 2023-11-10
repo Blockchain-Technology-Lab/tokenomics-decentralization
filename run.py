@@ -2,7 +2,6 @@ from tokenomics_decentralization.map import apply_mapping
 from tokenomics_decentralization.analyze import analyze
 from tokenomics_decentralization.plot import plot
 import tokenomics_decentralization.helper as hlp
-import argparse
 import logging
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
@@ -19,22 +18,12 @@ def main(ledgers, snapshot_dates):
 if __name__ == '__main__':
     config = hlp.get_config_data()
 
-    default_snapshot_dates = hlp.get_default_snapshots()
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--snapshot_dates', nargs="*", type=hlp.valid_date, default=default_snapshot_dates,
-                        help='The dates to to analyze. Any number of dates can be specified, in the format "YYYY-MM-DD", '
-                        '"YYYY-MM" or "YYYY". If two dates are given and the --granularity argument is '
-                        'not "none", then the dates are interpreted as the beginning and end of a time period, and the '
-                        'granularity is used to determine which snapshots to analyze in between (e.g. every month).')
-    args = parser.parse_args()
-
-    snapshot_dates = args.snapshot_dates
-
     ledgers = hlp.get_default_ledgers()
 
+    snapshot_dates = hlp.get_default_snapshots()
+
     granularity = config['granularity']
-    if granularity in ['day', 'week', 'month', 'year'] and len(snapshot_dates) > 1:
+    if granularity in ['day', 'week', 'month', 'year']:
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
         snapshot_dates = hlp.get_dates_between(start_date, end_date, granularity)
     else:

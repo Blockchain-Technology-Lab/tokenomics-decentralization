@@ -1,3 +1,4 @@
+# The metrics for which an analysis should be performed.
 metrics:
   - hhi
   - shannon entropy
@@ -7,11 +8,8 @@ metrics:
   - tau=0.5
   - tau=0.66
 
-default_timeframe:
-  start_date: 2010
-  end_date: 2023
-
-default_ledgers:
+# The ledgers for which an analysis should be performed.
+ledgers:
   - bitcoin
   - bitcoin_cash
   - dogecoin
@@ -25,10 +23,20 @@ force_map_balances: false
 force_analyze: false
 no_clustering: false
 
-# The granularity for the analysis when two dates are provided in the --snapshot_dates argument (which are then interpreted as start and end dates). It can be one of: "day", "week", "month", "year", or empty. If empty, then only the snapshots for the given dates will be analyzed.
+# The snapshots for which an analysis should be performed.
+# Each snapshot is a string of the form YYYY-MM-DD.
+# If granularity is also set, then the analysis will run on the timeframe of the two farthest snapshots.
+snapshots:
+  - "2010"
+  - "2024"
+
+# The granularity for the analysis when two dates are provided in the --snapshot_dates argument (which are then interpreted as start and end dates). 
+# It can be one of: "day", "week", "month", "year", or empty. If empty, then only the snapshots for the given dates will be analyzed.
 granularity: "month"
 
-output_directories:  # Paths to directories of snapshot db files; either absolute or relative from run.py; the first will be used to write newly created dbs and the output of runs
+# Paths to directories of snapshot db files; either absolute or relative from run.py.
+# The first path will be used to write newly created dbs and the output of runs
+output_directories:  
   - ./output
 
 input_directories:  # Paths to directories that contain raw input data
