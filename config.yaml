@@ -5,7 +5,7 @@ metrics:  # NOT IMPLEMENTED YET
   - nakamoto_coefficient
 
 default_timeframe:
-  start_date: 2020
+  start_date: 2010
   end_date: 2023
 
 default_ledgers:
