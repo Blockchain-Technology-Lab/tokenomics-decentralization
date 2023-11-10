@@ -9,8 +9,6 @@ import csv
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
-TAU_THRESHOLDS = [0.33, 0.5, 0.66]
-
 
 def get_non_clustered_balance_entries(cursor, snapshot_id):
     start = time()
@@ -64,10 +62,11 @@ def analyze_snapshot(conn, ledger, snapshot, no_clustering):
         'gini': compute_gini,
         'total entities': compute_total_entities,
     }
-    for threshold in TAU_THRESHOLDS:
+    for threshold in hlp.get_tau_thresholds():
         compute_functions[f'tau={threshold}'] = compute_tau
 
-    metric_names = list(compute_functions.keys())
+    metric_names = config['metrics']
+
     for key in metric_names:
         compute_functions['non-clustered ' + key] = compute_functions[key]
 
@@ -113,24 +112,18 @@ def analyze_snapshot(conn, ledger, snapshot, no_clustering):
 
 
 def get_output_row(ledger, year, metrics, no_clustering):
-    csv_row = []
-    if no_clustering:
-        csv_row.extend([ledger, year, metrics["non-clustered total entities"], metrics["non-clustered gini"], metrics["non-clustered hhi"], metrics["non-clustered shannon entropy"]])
-    else:
-        csv_row.extend([ledger, year, metrics["total entities"], metrics["gini"], metrics["hhi"], metrics["shannon entropy"]])
-
-    for tau in TAU_THRESHOLDS:
+    csv_row = [ledger, year]
+    for metric_name in hlp.get_config_data()['metrics']:
         if no_clustering:
-            csv_row.append(metrics[f'non-clustered tau={tau}'])
+            csv_row.append(metrics[f'non-clustered {metric_name}'])
         else:
-            csv_row.append(metrics[f'tau={tau}'])
-
+            csv_row.append(metrics[metric_name])
     return csv_row
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot date', 'total entities', 'gini', 'hhi', 'shannon entropy']
-    header.extend([f'tau={tau}' for tau in TAU_THRESHOLDS])
+    header = ['ledger', 'snapshot date']
+    header += hlp.get_config_data()['metrics']
 
     output_dir = hlp.get_output_directories()[0]
     with open(output_dir / 'output.csv', 'w') as f:

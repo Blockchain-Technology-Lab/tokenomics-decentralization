@@ -136,3 +136,12 @@ def get_input_directories():
     """
     config = get_config_data()
     return [pathlib.Path(db_dir).resolve() for db_dir in config['input_directories']]
+
+
+def get_tau_thresholds():
+    """
+    Reads the config file and retrieves the thresholds of tau decentralization
+    :returns: a list of floating point thresholds to be used to compute tau decentralization
+    """
+    config = get_config_data()
+    return [float(name.split('=')[1].strip()) for name in config['metrics'] if 'tau' in name]

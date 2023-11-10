@@ -1,8 +1,11 @@
-metrics:  # NOT IMPLEMENTED YET
-  - entropy
-  - gini
+metrics:
   - hhi
-  - nakamoto_coefficient
+  - shannon entropy
+  - gini
+  - total entities
+  - tau=0.33
+  - tau=0.5
+  - tau=0.66
 
 default_timeframe:
   start_date: 2010
