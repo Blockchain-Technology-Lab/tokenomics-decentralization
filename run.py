@@ -14,18 +14,16 @@ def main(ledgers, snapshot_dates):
 
     analyze(ledgers, snapshot_dates)
 
-    if hlp.get_config_data()['plot']:
+    if hlp.get_plot_flag():
         plot()
 
 
 if __name__ == '__main__':
-    config = hlp.get_config_data()
-
     ledgers = hlp.get_ledgers()
 
     snapshot_dates = hlp.get_snapshot_dates()
 
-    granularity = config['granularity']
+    granularity = hlp.get_granularity()
     if granularity in ['day', 'week', 'month', 'year']:
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
         snapshot_dates = hlp.get_dates_between(start_date, end_date, granularity)

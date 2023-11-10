@@ -18,18 +18,27 @@ ledgers:
   - tezos
 
 # Execution flags
-force_map_addresses: false
-force_map_balances: false
-force_analyze: false
-no_clustering: false
-plot: true
+execution_flags:
+  - name: "force_map_addresses"
+    value: false
+  - name: "force_map_balances"
+    value: false
+  - name: "force_analyze"
+    value: false
+  - name: "plot"
+    value: true
+
+# Analyze flags
+analyze_flags:
+  - name: "no_clustering"
+    value: false
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.
 # If granularity is also set, then the analysis will run on the timeframe of the two farthest snapshots.
 snapshot_dates:
   - "2010"
-  - "2024"
+  - "2020"
 
 # The granularity for the analysis when two dates are provided in the --snapshot_dates argument (which are then interpreted as start and end dates). 
 # It can be one of: "day", "week", "month", "year", or empty. If empty, then only the snapshots for the given dates will be analyzed.

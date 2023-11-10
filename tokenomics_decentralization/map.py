@@ -113,9 +113,8 @@ def fill_db_with_balances(conn, ledger, snapshot):
 
 
 def apply_mapping(ledger, snapshot):
-    config = hlp.get_config_data()
-    force_map_addresses = config['force_map_addresses']
-    force_map_balances = config['force_map_balances']
+    force_map_addresses = hlp.get_force_map_addresses_flag()
+    force_map_balances = hlp.get_force_map_balances_flag()
 
     logging.info(f'Mapping {ledger} {snapshot}')
     db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in hlp.get_output_directories()]
