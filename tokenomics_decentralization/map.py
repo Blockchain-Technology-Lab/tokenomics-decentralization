@@ -106,7 +106,11 @@ def fill_db_with_balances(conn, ledger, snapshot):
             conn.commit()
 
 
-def apply_mapping(ledger, snapshot, force_map_addresses, force_map_balances):
+def apply_mapping(ledger, snapshot):
+    config = hlp.get_config_data()
+    force_map_addresses = config['force_map_addresses']
+    force_map_balances = config['force_map_balances']
+
     logging.info(f'Mapping {ledger} {snapshot}')
     input_filename = hlp.INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
     db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in hlp.get_db_directories()]

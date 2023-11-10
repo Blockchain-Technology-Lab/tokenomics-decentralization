@@ -8,10 +8,10 @@ import logging
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def main(ledgers, snapshot_dates, force_map_addresses, force_map_balances, force_analyze, no_clustering):
+def main(ledgers, snapshot_dates, force_analyze, no_clustering):
     for ledger in ledgers:
         for snapshot in snapshot_dates:
-            apply_mapping(ledger, snapshot, force_map_addresses, force_map_balances)
+            apply_mapping(ledger, snapshot)
     analyze(ledgers, snapshot_dates, force_analyze, no_clustering)
     plot()
 
@@ -33,8 +33,6 @@ if __name__ == '__main__':
 
     ledgers = hlp.get_default_ledgers()
 
-    force_map_addresses = config['force_map_addresses']
-    force_map_balances = config['force_map_balances']
     force_analyze = config['force_analyze']
     no_clustering = config['no_clustering']
 
@@ -48,4 +46,4 @@ if __name__ == '__main__':
     if not hlp.OUTPUT_DIR.is_dir():
         hlp.OUTPUT_DIR.mkdir()
 
-    main(ledgers, snapshot_dates, force_map_addresses, force_map_balances, force_analyze, no_clustering)
+    main(ledgers, snapshot_dates, force_analyze, no_clustering)
