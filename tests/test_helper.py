@@ -1,7 +1,7 @@
 import argparse
 import datetime
 import pytest
-from tokenomics_decentralization.helper import get_default_ledgers, valid_date, get_date_beginning, get_date_end, get_dates_between
+from tokenomics_decentralization.helper import get_ledgers, valid_date, get_date_beginning, get_date_end, get_dates_between
 
 def test_valid_date():
     for d in ['2022', '2022-01', '2022-01-01']:
@@ -28,8 +28,8 @@ def test_get_date_end():
         assert get_date_end(date) == end_date
 
 
-def test_get_default_ledgers():
-    ledgers = get_default_ledgers()
+def test_get_ledgers():
+    ledgers = get_ledgers()
     assert type(ledgers) == list
     assert len(ledgers) > 0
 
@@ -73,3 +73,9 @@ def test_get_dates_between():
     assert len(dates_none) == 2
     assert dates_none[0] == "1996-09-25"
     assert dates_none[1] == "2023-09-24"
+
+    start_date = datetime.date(2023, 11, 10)
+    end_date = datetime.date(2023, 11, 10)
+    dates_day = get_dates_between(start_date, end_date, granularity='day')
+    assert len(dates_day) == 1
+    assert dates_day[0] == "2023-11-10"
