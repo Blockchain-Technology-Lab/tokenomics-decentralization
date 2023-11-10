@@ -147,7 +147,7 @@ def analyze(ledgers, snapshot_dates):
         for date in snapshot_dates:
             logging.info(f'[*] {ledger} - {date}')
 
-            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in hlp.get_db_directories()]
+            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in hlp.get_output_directories()]
             db_file = False
             for filename in db_paths:
                 if os.path.isfile(filename):

@@ -122,10 +122,10 @@ def get_date_string_from_object(date_object):
     return date_object.strftime('%Y-%m-%d')
 
 
-def get_db_directories():
+def get_output_directories():
     """
     Reads the config file and retrieves the output directories
     :returns: a list of directories that might contain the db files
     """
     config = get_config_data()
-    return [pathlib.Path(db_dir).resolve() for db_dir in config['db_directories']]
+    return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']]

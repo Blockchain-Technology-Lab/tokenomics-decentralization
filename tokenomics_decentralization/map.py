@@ -113,7 +113,7 @@ def apply_mapping(ledger, snapshot):
 
     logging.info(f'Mapping {ledger} {snapshot}')
     input_filename = hlp.INPUT_DIR / f'{ledger}_{snapshot}_raw_data.csv'
-    db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in hlp.get_db_directories()]
+    db_paths = [db_dir / f'{ledger}_{snapshot}.db' for db_dir in hlp.get_output_directories()]
     db_file = False
     for filename in db_paths:
         if os.path.isfile(filename):
