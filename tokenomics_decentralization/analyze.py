@@ -110,8 +110,8 @@ def analyze_snapshot(conn, ledger, snapshot, no_clustering):
     return metrics_results
 
 
-def get_output_row(ledger, year, metrics, no_clustering):
-    csv_row = [ledger, year]
+def get_output_row(ledger, date, metrics, no_clustering):
+    csv_row = [ledger, date]
     for metric_name in hlp.get_metrics():
         if no_clustering:
             csv_row.append(metrics[f'non-clustered {metric_name}'])
