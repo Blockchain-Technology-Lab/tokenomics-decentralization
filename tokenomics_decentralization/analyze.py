@@ -136,7 +136,8 @@ def get_output_row(ledger, date, metrics):
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
 
-    csv_row = [ledger, date]
+    csv_row = [ledger, date, no_clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value]
+
     for metric_name in hlp.get_metrics():
         val = metric_name
         if no_clustering:
@@ -150,7 +151,7 @@ def get_output_row(ledger, date, metrics):
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot date']
+    header = ['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type', 'top_limit_value']
     header += hlp.get_metrics()
 
     output_dir = hlp.get_output_directories()[0]
