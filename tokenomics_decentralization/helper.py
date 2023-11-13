@@ -174,7 +174,7 @@ def get_force_map_balances_flag():
     """
     config = get_config_data()
     try:
-        return config['execution_flags']['force_map_balances_flag']
+        return config['execution_flags']['force_map_balances']
     except KeyError:
         raise ValueError('Flag "force_map_balances" not in config file')
 
@@ -225,16 +225,41 @@ def get_granularity():
         raise ValueError('"granularity" not in config file')
 
 
-def get_top_limit():
+def get_top_limit_type():
     """
-    Retrieves the top-X limit to be applied in analysis
-    :returns: a positive integer if the limit is set, otherwise 0
+    Retrieves the type of top limit
+    :returns: a string in ["absolute", "percentage"]
     """
     config = get_config_data()
     try:
-        return config['analyze_flags']['top_limit']
+        if config['analyze_flags']['top_limit_type'] in ['absolute', 'percentage']:
+            return config['analyze_flags']['top_limit_type']
+        else:
+            raise ValueError('Malformed "top_limit_type" in config; should be "absolute" or "percentage"')
     except KeyError:
-        raise ValueError('Flag "top_limit" not set in config file')
+        raise ValueError('Flag "top_limit_type" not set in config file')
+
+
+def get_top_limit_value():
+    """
+    Retrieves the value of the top limit to be applied
+    :returns: a positive integer if the limit type is 'absolute', else a float in [0, 1] if type is 'percentage'
+    """
+    config = get_config_data()
+    top_limit_type = get_top_limit_type()
+    try:
+        if top_limit_type == 'absolute':
+            if config['analyze_flags']['top_limit_value'] >= 0:
+                return int(config['analyze_flags']['top_limit_value'])
+            else:
+                raise ValueError('Malformed "top_limit_value" in config; should be non-negative')
+        elif top_limit_type == 'percentage':
+            if 0 <= config['analyze_flags']['top_limit_value'] <= 1:
+                return int(config['analyze_flags']['top_limit_value'])
+            else:
+                raise ValueError('Malformed "top_limit_value" in config; should be in [0, 1]')
+    except KeyError:
+        raise ValueError('Flag "top_limit_percentage" not in config file')
 
 
 def get_circulation_from_entries(entries):
@@ -243,18 +268,6 @@ def get_circulation_from_entries(entries):
     :returns: integer
     """
     return sum([int(i[1]) for i in entries])
-
-
-def get_top_limit_percentage():
-    """
-    Retrieves the top-X% limit to be applied in analysis
-    :returns: a positive integer (of number of entities) if the limit is set, otherwise 0
-    """
-    config = get_config_data()
-    try:
-        return config['analyze_flags']['top_limit_percentage']
-    except KeyError:
-        raise ValueError('Flag "top_limit_percentage" not in config file')
 
 
 def get_exclude_contracts_flag():

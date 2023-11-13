@@ -10,8 +10,7 @@ import csv
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def get_non_clustered_balance_entries(cursor, snapshot_id, top_limit):
-    limit = f'LIMIT {top_limit}' if top_limit > 0 else ''
+def get_non_clustered_balance_entries(cursor, snapshot_id):
     exclude_contract_addresses = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
 
     start = time()
@@ -22,7 +21,6 @@ def get_non_clustered_balance_entries(cursor, snapshot_id, top_limit):
         WHERE snapshot_id=?
         {exclude_contract_addresses}
         ORDER BY balance DESC
-        {limit}
     '''
 
     entries = cursor.execute(query, (snapshot_id, )).fetchall()
@@ -31,8 +29,7 @@ def get_non_clustered_balance_entries(cursor, snapshot_id, top_limit):
     return entries
 
 
-def get_balance_entries(cursor, snapshot_id, top_limit):
-    limit = f'LIMIT {top_limit}' if top_limit > 0 else ''
+def get_balance_entries(cursor, snapshot_id):
     exclude_contract_addresses = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
 
     start = time()
@@ -45,7 +42,6 @@ def get_balance_entries(cursor, snapshot_id, top_limit):
         {exclude_contract_addresses}
         GROUP BY entity
         ORDER BY aggregate_balance DESC
-        {limit}
     '''
 
     entries = cursor.execute(query, (snapshot_id, )).fetchall()
@@ -57,9 +53,9 @@ def get_balance_entries(cursor, snapshot_id, top_limit):
 def analyze_snapshot(conn, ledger, snapshot):
     force_analyze = hlp.get_force_analyze_flag()
     no_clustering = hlp.get_no_clustering_flag()
-    top_limit = hlp.get_top_limit()
-    top_limit_percentage = hlp.get_top_limit_percentage()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
+    top_limit_type = hlp.get_top_limit_type()
+    top_limit_value = hlp.get_top_limit_value()
 
     cursor = conn.cursor()
 
@@ -88,10 +84,8 @@ def analyze_snapshot(conn, ledger, snapshot):
             flagged_metric = 'non-clustered ' + flagged_metric
         if exclude_contract_addresses_flag:
             flagged_metric = 'exclude_contracts ' + flagged_metric
-        if top_limit:
-            flagged_metric = f'top-{top_limit} ' + flagged_metric
-        elif top_limit_percentage:
-            flagged_metric = f'top-{top_limit_percentage}_percentage ' + flagged_metric
+        if top_limit_value > 0:
+            flagged_metric = f'top-{top_limit_value}_{top_limit_type} ' + flagged_metric
 
         val = cursor.execute('SELECT value FROM metrics WHERE snapshot_id=? and name=?', (snapshot_id, flagged_metric)).fetchone()
         if val and not force_analyze:
@@ -99,16 +93,16 @@ def analyze_snapshot(conn, ledger, snapshot):
         else:
             if not entries:
                 if no_clustering:
-                    entries = get_non_clustered_balance_entries(cursor, snapshot_id, top_limit)
+                    entries = get_non_clustered_balance_entries(cursor, snapshot_id)
                 else:
-                    entries = get_balance_entries(cursor, snapshot_id, top_limit)
+                    entries = get_balance_entries(cursor, snapshot_id)
 
-                if top_limit_percentage:
+                if top_limit_type == 'percentage':
                     total_entities = compute_functions['total entities'](entries, circulation)
-                    top_percentage_entities = int(total_entities * top_limit_percentage)
-                    entries = entries[:top_percentage_entities]
+                    top_limit_value = int(total_entities * top_limit_value)
 
-                if top_limit or top_limit_percentage:
+                if top_limit_value > 0:
+                    entries = entries[:top_limit_value]
                     circulation = hlp.get_circulation_from_entries(entries)
 
             logging.info(f'Computing {flagged_metric}')
@@ -138,9 +132,9 @@ def analyze_snapshot(conn, ledger, snapshot):
 
 def get_output_row(ledger, date, metrics):
     no_clustering = hlp.get_no_clustering_flag()
-    top_limit = hlp.get_top_limit()
-    top_limit_percentage = hlp.get_top_limit_percentage()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
+    top_limit_type = hlp.get_top_limit_type()
+    top_limit_value = hlp.get_top_limit_value()
 
     csv_row = [ledger, date]
     for metric_name in hlp.get_metrics():
@@ -149,10 +143,8 @@ def get_output_row(ledger, date, metrics):
             val = 'non-clustered ' + val
         if exclude_contract_addresses_flag:
             val = 'exclude_contracts ' + val
-        if top_limit > 0:
-            val = f'top-{top_limit} ' + val
-        elif top_limit_percentage > 0:
-            val = f'top-{top_limit_percentage}_percentage ' + val
+        if top_limit_value > 0:
+            val = f'top-{top_limit_value}_{top_limit_type} ' + val
         csv_row.append(metrics[val])
     return csv_row
 
