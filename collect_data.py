@@ -76,10 +76,8 @@ def collect_data(ledgers, snapshot_dates, force_query):
 if __name__ == '__main__':
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
-    with open(hlp.ROOT_DIR / "config.yaml") as f:
-        config = safe_load(f)
-    default_ledgers = hlp.get_default_ledgers()
-    default_snapshot_dates = hlp.get_default_snapshots()
+    default_ledgers = hlp.get_ledgers()
+    default_snapshot_dates = hlp.get_snapshot_dates()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--ledgers', nargs="*", type=str.lower, default=default_ledgers,
@@ -90,4 +88,7 @@ if __name__ == '__main__':
                         help='Flag to specify whether to query for project data regardless if the relevant data '
                              'already exist.')
     args = parser.parse_args()
-    collect_data(ledgers=args.ledgers, snapshot_dates=args.snapshot_dates, force_query=args.force_query)
+
+    snapshot_dates = [hlp.get_date_string_from_date(hlp.get_date_beginning(date)) for date in args.snapshot_dates]
+
+    collect_data(ledgers=args.ledgers, snapshot_dates=snapshot_dates, force_query=args.force_query)

@@ -28,7 +28,7 @@ if __name__ == '__main__':
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
         snapshot_dates = hlp.get_dates_between(start_date, end_date, granularity)
     else:
-        snapshot_dates = [hlp.get_date_string_from_object(hlp.get_date_beginning(date)) for date in snapshot_dates]
+        snapshot_dates = [hlp.get_date_string_from_date(hlp.get_date_beginning(date)) for date in snapshot_dates]
 
     output_dir = hlp.get_output_directories()[0]
     if not output_dir.is_dir():
