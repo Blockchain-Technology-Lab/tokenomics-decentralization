@@ -21,3 +21,8 @@ def plot():
         df_pivot = output_df.pivot(index='snapshot date', columns='ledger', values=metric)
         df_pivot.plot(title=metric, grid=True, marker='o', xlabel='time', ylabel=metric)
         plt.savefig(figures_path / f'{metric}.png', bbox_inches='tight')
+
+
+if __name__ == '__main__':
+    if hlp.get_plot_flag():
+        plot()

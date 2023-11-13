@@ -1,6 +1,6 @@
 from tokenomics_decentralization.map import apply_mapping
 from tokenomics_decentralization.analyze import analyze
-from tokenomics_decentralization.plot import plot
+from plot import plot
 import tokenomics_decentralization.helper as hlp
 import logging
 

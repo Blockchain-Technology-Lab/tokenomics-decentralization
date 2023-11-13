@@ -22,7 +22,6 @@ execution_flags:
   force_map_addresses: false
   force_map_balances: false
   force_analyze: false
-  plot: true
 
 # Analyze flags
 analyze_flags:
@@ -30,6 +29,10 @@ analyze_flags:
   top_limit_type: "absolute"  # one of two types: "absolute" or "percentage"; if absolute then value should be integer; if percentage then value should be float in [0, 1]
   top_limit_value: 0
   exclude_contract_addresses: false
+
+# Plot flags
+plot_flags:
+  plot: true
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.
