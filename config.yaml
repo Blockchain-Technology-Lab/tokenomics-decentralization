@@ -36,6 +36,8 @@ analyze_flags:
     value: 0
   - name: "top_limit_percentage"
     value: 0
+  - name: "exclude_contract_addresses"
+    value: false
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.

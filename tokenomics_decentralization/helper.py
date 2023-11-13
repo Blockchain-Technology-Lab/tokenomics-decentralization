@@ -263,3 +263,17 @@ def get_top_limit_percentage():
             return flag['value'] if flag['value'] else 0
     if value is None:
         raise ValueError('Flag "top_limit_percentage" not in config file')
+
+
+def get_exclude_contracts_flag():
+    """
+    Retrieves the flag on whether to exclude contract addresses from analysis
+    :returns: boolean
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['analyze_flags']:
+        if flag['name'] == 'exclude_contract_addresses':
+            return flag['value']
+    if value is None:
+        raise ValueError('Flag "exclude_contract_addresses" not in config file')
