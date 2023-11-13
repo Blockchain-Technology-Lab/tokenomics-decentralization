@@ -249,3 +249,17 @@ def get_circulation_from_entries(entries):
     :returns: integer
     """
     return sum([int(i[1]) for i in entries])
+
+
+def get_top_limit_percentage():
+    """
+    Retrieves the top-X% limit to be applied in analysis
+    :returns: a positive integer (of number of entities) if the limit is set, otherwise 0
+    """
+    config = get_config_data()
+    value = None
+    for flag in config['analyze_flags']:
+        if flag['name'] == 'top_limit_percentage':
+            return flag['value'] if flag['value'] else 0
+    if value is None:
+        raise ValueError('Flag "top_limit_percentage" not in config file')

@@ -10,8 +10,7 @@ import csv
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def get_non_clustered_balance_entries(cursor, snapshot_id):
-    top_limit = hlp.get_top_limit()
+def get_non_clustered_balance_entries(cursor, snapshot_id, top_limit):
     limit = f'LIMIT {top_limit}' if top_limit > 0 else ''
 
     start = time()
@@ -30,8 +29,7 @@ def get_non_clustered_balance_entries(cursor, snapshot_id):
     return entries
 
 
-def get_balance_entries(cursor, snapshot_id):
-    top_limit = hlp.get_top_limit()
+def get_balance_entries(cursor, snapshot_id, top_limit):
     limit = f'LIMIT {top_limit}' if top_limit > 0 else ''
 
     start = time()
@@ -56,6 +54,7 @@ def analyze_snapshot(conn, ledger, snapshot):
     force_analyze = hlp.get_force_analyze_flag()
     no_clustering = hlp.get_no_clustering_flag()
     top_limit = hlp.get_top_limit()
+    top_limit_percentage = hlp.get_top_limit_percentage()
 
     cursor = conn.cursor()
 
@@ -84,6 +83,8 @@ def analyze_snapshot(conn, ledger, snapshot):
             flagged_metric = 'non-clustered ' + flagged_metric
         if top_limit:
             flagged_metric = f'top-{top_limit} ' + flagged_metric
+        elif top_limit_percentage:
+            flagged_metric = f'top-{top_limit_percentage}_percentage ' + flagged_metric
 
         val = cursor.execute('SELECT value FROM metrics WHERE snapshot_id=? and name=?', (snapshot_id, flagged_metric)).fetchone()
         if val and not force_analyze:
@@ -91,12 +92,17 @@ def analyze_snapshot(conn, ledger, snapshot):
         else:
             if not entries:
                 if no_clustering:
-                    entries = get_non_clustered_balance_entries(cursor, snapshot_id)
+                    entries = get_non_clustered_balance_entries(cursor, snapshot_id, top_limit)
                 else:
-                    entries = get_balance_entries(cursor, snapshot_id)
+                    entries = get_balance_entries(cursor, snapshot_id, top_limit)
 
-            if top_limit:
-                circulation = hlp.get_circulation_from_entries(entries)
+                if top_limit_percentage:
+                    total_entities = compute_functions['total entities'](entries, circulation)
+                    top_percentage_entities = int(total_entities * top_limit_percentage)
+                    entries = entries[:top_percentage_entities]
+
+                if top_limit or top_limit_percentage:
+                    circulation = hlp.get_circulation_from_entries(entries)
 
             logging.info(f'Computing {flagged_metric}')
             if 'tau' in default_metric_name:
@@ -115,7 +121,7 @@ def analyze_snapshot(conn, ledger, snapshot):
 
             conn.commit()
 
-        if 'tau' in default_metric_name or default_metric_name == 'total entities':
+        if any(['tau' in default_metric_name, 'total entities' in default_metric_name]):
             metric_value = int(metric_value)
 
         metrics_results[flagged_metric] = metric_value
@@ -126,6 +132,7 @@ def analyze_snapshot(conn, ledger, snapshot):
 def get_output_row(ledger, date, metrics):
     no_clustering = hlp.get_no_clustering_flag()
     top_limit = hlp.get_top_limit()
+    top_limit_percentage = hlp.get_top_limit_percentage()
 
     csv_row = [ledger, date]
     for metric_name in hlp.get_metrics():
@@ -134,6 +141,8 @@ def get_output_row(ledger, date, metrics):
             val = 'non-clustered ' + val
         if top_limit > 0:
             val = f'top-{top_limit} ' + val
+        elif top_limit_percentage > 0:
+            val = f'top-{top_limit_percentage}_percentage ' + val
         csv_row.append(metrics[val])
     return csv_row
 

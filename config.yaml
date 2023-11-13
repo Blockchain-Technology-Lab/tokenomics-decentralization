@@ -34,6 +34,8 @@ analyze_flags:
     value: false
   - name: "top_limit"
     value: 0
+  - name: "top_limit_percentage"
+    value: 0
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.
