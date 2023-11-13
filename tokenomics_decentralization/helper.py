@@ -149,11 +149,9 @@ def get_plot_flag():
     :returns: boolean
     """
     config = get_config_data()
-    value = None
-    for flag in config['execution_flags']:
-        if flag['name'] == 'plot':
-            return flag['value']
-    if value is None:
+    try:
+        return config['plot_flags']['plot']
+    except KeyError:
         raise ValueError('Flag "plot" not in config file')
 
 
@@ -163,11 +161,9 @@ def get_force_map_addresses_flag():
     :returns: boolean
     """
     config = get_config_data()
-    value = None
-    for flag in config['execution_flags']:
-        if flag['name'] == 'force_map_addresses':
-            return flag['value']
-    if value is None:
+    try:
+        return config['execution_flags']['force_map_addresses']
+    except KeyError:
         raise ValueError('Flag "force_map_addresses" not in config file')
 
 
@@ -177,11 +173,9 @@ def get_force_map_balances_flag():
     :returns: boolean
     """
     config = get_config_data()
-    value = None
-    for flag in config['execution_flags']:
-        if flag['name'] == 'force_map_balances':
-            return flag['value']
-    if value is None:
+    try:
+        return config['execution_flags']['force_map_balances_flag']
+    except KeyError:
         raise ValueError('Flag "force_map_balances" not in config file')
 
 
@@ -191,11 +185,9 @@ def get_force_analyze_flag():
     :returns: boolean
     """
     config = get_config_data()
-    value = None
-    for flag in config['execution_flags']:
-        if flag['name'] == 'force_analyze':
-            return flag['value']
-    if value is None:
+    try:
+        return config['execution_flags']['force_analyze']
+    except KeyError:
         raise ValueError('Flag "force_analyze" not in config file')
 
 
@@ -205,11 +197,9 @@ def get_no_clustering_flag():
     :returns: boolean
     """
     config = get_config_data()
-    value = None
-    for flag in config['analyze_flags']:
-        if flag['name'] == 'no_clustering':
-            return flag['value']
-    if value is None:
+    try:
+        return config['analyze_flags']['no_clustering']
+    except KeyError:
         raise ValueError('Flag "no_clustering" not in config file')
 
 
@@ -218,7 +208,10 @@ def get_metrics():
     Retrieves the metrics to be analyzed
     :returns: list of strings of the metric names to be used
     """
-    return get_config_data()['metrics']
+    try:
+        return get_config_data()['metrics']
+    except KeyError:
+        raise ValueError('"metrics" not set in config file')
 
 
 def get_granularity():
@@ -226,7 +219,10 @@ def get_granularity():
     Retrieves the granularity to be used in the analysis
     :returns: string in ['day', 'week', 'month', 'year']
     """
-    return get_config_data()['granularity']
+    try:
+        return get_config_data()['granularity']
+    except KeyError:
+        raise ValueError('"granularity" not in config file')
 
 
 def get_top_limit():
@@ -235,12 +231,10 @@ def get_top_limit():
     :returns: a positive integer if the limit is set, otherwise 0
     """
     config = get_config_data()
-    value = None
-    for flag in config['analyze_flags']:
-        if flag['name'] == 'top_limit':
-            return flag['value'] if flag['value'] else 0
-    if value is None:
-        raise ValueError('Flag "top_limit" not in config file')
+    try:
+        return config['analyze_flags']['top_limit']
+    except KeyError:
+        raise ValueError('Flag "top_limit" not set in config file')
 
 
 def get_circulation_from_entries(entries):
@@ -257,11 +251,9 @@ def get_top_limit_percentage():
     :returns: a positive integer (of number of entities) if the limit is set, otherwise 0
     """
     config = get_config_data()
-    value = None
-    for flag in config['analyze_flags']:
-        if flag['name'] == 'top_limit_percentage':
-            return flag['value'] if flag['value'] else 0
-    if value is None:
+    try:
+        return config['analyze_flags']['top_limit_percentage']
+    except KeyError:
         raise ValueError('Flag "top_limit_percentage" not in config file')
 
 
@@ -271,9 +263,7 @@ def get_exclude_contracts_flag():
     :returns: boolean
     """
     config = get_config_data()
-    value = None
-    for flag in config['analyze_flags']:
-        if flag['name'] == 'exclude_contract_addresses':
-            return flag['value']
-    if value is None:
+    try:
+        return config['analyze_flags']['exclude_contract_addresses']
+    except KeyError:
         raise ValueError('Flag "exclude_contract_addresses" not in config file')
