@@ -248,7 +248,9 @@ def get_top_limit_value():
     config = get_config_data()
     top_limit_type = get_top_limit_type()
     try:
-        if top_limit_type == 'absolute':
+        if config['analyze_flags']['top_limit_value'] is None:
+            return 0
+        elif top_limit_type == 'absolute':
             if config['analyze_flags']['top_limit_value'] >= 0:
                 return int(config['analyze_flags']['top_limit_value'])
             else:
