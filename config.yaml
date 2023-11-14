@@ -33,6 +33,36 @@ analyze_flags:
 # Plot flags
 plot_flags:
   plot: true
+  ledgers:
+    - bitcoin
+    - bitcoin_cash
+    - dogecoin
+    - ethereum  
+    - litecoin  
+    - tezos
+  metrics:
+    - hhi
+    - shannon entropy
+    - gini
+    - total entities
+    - tau=0.33
+    - tau=0.5
+    - tau=0.66
+  plot_line_params:
+    no_clustering:
+      - true
+      - false
+    top_limit_absolute:
+      - 0
+      - 1000
+      - 10000
+    top_limit_percentage:
+      - 0
+      - 0.3
+      - 0.5
+    exclude_contract_addresses:
+      - true
+      - false
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.

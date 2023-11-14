@@ -2,6 +2,7 @@
 Module with helper functions
 """
 import pathlib
+import os
 import datetime
 import calendar
 import argparse
@@ -291,3 +292,12 @@ def get_plot_config_data():
     :returns: dictionary
     """
     return get_config_data()['plot_flags']
+
+
+def get_output_files():
+    """
+    Retrieves all output files produced by some run
+    :returns: a list of filenames
+    """
+    output_dir = str(get_output_directories()[0])
+    return [filename for filename in os.listdir(output_dir) if filename.startswith('output') and filename.endswith('.csv')]
