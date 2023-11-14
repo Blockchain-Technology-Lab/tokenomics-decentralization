@@ -97,14 +97,14 @@ def analyze_snapshot(conn, ledger, snapshot):
                 else:
                     entries = get_balance_entries(cursor, snapshot_id)
 
-                if top_limit_type == 'percentage':
-                    total_entities = compute_functions['total entities'](entries, circulation)
-                    top_limit_percentage_value = int(total_entities * top_limit_value)
-                    entries = entries[:top_limit_percentage_value]
-                elif top_limit_type == 'absolute' and top_limit_value > 0:
-                    entries = entries[:top_limit_value]
-
                 if top_limit_value > 0:
+                    if top_limit_type == 'percentage':
+                        total_entities = compute_functions['total entities'](entries, circulation)
+                        top_limit_percentage_value = int(total_entities * top_limit_value)
+                        entries = entries[:top_limit_percentage_value]
+                    elif top_limit_type == 'absolute':
+                        entries = entries[:top_limit_value]
+
                     circulation = hlp.get_circulation_from_entries(entries)
 
             logging.info(f'Computing {flagged_metric}')
