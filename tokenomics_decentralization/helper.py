@@ -257,7 +257,7 @@ def get_top_limit_value():
                 raise ValueError('Malformed "top_limit_value" in config; should be non-negative')
         elif top_limit_type == 'percentage':
             if 0 <= config['analyze_flags']['top_limit_value'] <= 1:
-                return int(config['analyze_flags']['top_limit_value'])
+                return config['analyze_flags']['top_limit_value']
             else:
                 raise ValueError('Malformed "top_limit_value" in config; should be in [0, 1]')
     except KeyError:
