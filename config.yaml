@@ -69,7 +69,7 @@ plot_flags:
 # If granularity is also set, then the analysis will run on the timeframe of the two farthest snapshots.
 snapshot_dates:
   - "2010"
-  - "2020"
+  - "2023"
 
 # The granularity for the analysis when two dates are provided in the --snapshot_dates argument (which are then interpreted as start and end dates). 
 # It can be one of: "day", "week", "month", "year", or empty. If empty, then only the snapshots for the given dates will be analyzed.
