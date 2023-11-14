@@ -282,3 +282,11 @@ def get_exclude_contracts_flag():
         return config['analyze_flags']['exclude_contract_addresses']
     except KeyError:
         raise ValueError('Flag "exclude_contract_addresses" not in config file')
+
+
+def get_plot_config_data():
+    """
+    Retrieves the plot-related config parameters
+    :returns: dictionary
+    """
+    return get_config_data()['plot_flags']
