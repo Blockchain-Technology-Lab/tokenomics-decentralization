@@ -152,7 +152,7 @@ def get_plot_flag():
     """
     config = get_config_data()
     try:
-        return config['plot_flags']['plot']
+        return config['plot_parameters']['plot']
     except KeyError:
         raise ValueError('Flag "plot" not in config file')
 
@@ -291,7 +291,7 @@ def get_plot_config_data():
     Retrieves the plot-related config parameters
     :returns: dictionary
     """
-    return get_config_data()['plot_flags']
+    return get_config_data()['plot_parameters']
 
 
 def get_output_files():

@@ -31,7 +31,7 @@ analyze_flags:
   exclude_contract_addresses: false
 
 # Plot flags
-plot_flags:
+plot_parameters:
   plot: true
   ledgers:
     - bitcoin
