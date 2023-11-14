@@ -61,7 +61,6 @@ def plot():
     output_df = output_df.drop_duplicates(subset=['ledger', 'snapshot date'])
 
     params = {'legend.fontsize': 14,
-              'legend.title_fontsize': 0,
               'figure.titlesize': 40,
               'figure.figsize': (25, 13),
               'axes.labelsize': 'xx-large',
@@ -75,6 +74,7 @@ def plot():
         df_pivot = output_df.pivot(index='snapshot date', columns='ledger', values=metric)
         df_pivot.plot(figsize=(25, 13), grid=True, xlabel='Date', ylabel=metric, lw=2)
         plt.title(metric.upper(), fontsize=30)
+        plt.gca().legend().set_title('')
         plt.savefig(figures_path / f'{metric}.png', bbox_inches='tight')
 
 
