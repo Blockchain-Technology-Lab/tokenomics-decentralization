@@ -250,20 +250,23 @@ def get_top_limit_value():
     config = get_config_data()
     top_limit_type = get_top_limit_type()
     try:
-        if config['analyze_flags']['top_limit_value'] is None:
+        top_limit_value = config['analyze_flags']['top_limit_value']
+        if top_limit_value is None:
             return 0
         elif top_limit_type == 'absolute':
-            if config['analyze_flags']['top_limit_value'] >= 0:
-                return int(config['analyze_flags']['top_limit_value'])
+            if top_limit_value >= 0:
+                return int(top_limit_value)
             else:
                 raise ValueError('Malformed "top_limit_value" in config; should be non-negative')
         elif top_limit_type == 'percentage':
-            if 0 <= config['analyze_flags']['top_limit_value'] <= 1:
-                return config['analyze_flags']['top_limit_value']
+            if 0 <= top_limit_value <= 1:
+                return top_limit_value
             else:
                 raise ValueError('Malformed "top_limit_value" in config; should be in [0, 1]')
+        else:
+            raise ValueError('Malformed "top_limit_type" in config')
     except KeyError:
-        raise ValueError('Flag "top_limit_percentage" not in config file')
+        raise ValueError('Flag "top_limit_value" not in config file')
 
 
 def get_circulation_from_entries(entries):
