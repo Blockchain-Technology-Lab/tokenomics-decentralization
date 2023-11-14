@@ -97,12 +97,14 @@ def analyze_snapshot(conn, ledger, snapshot):
                 else:
                     entries = get_balance_entries(cursor, snapshot_id)
 
-                if top_limit_type == 'percentage':
-                    total_entities = compute_functions['total entities'](entries, circulation)
-                    top_limit_value = int(total_entities * top_limit_value)
-
                 if top_limit_value > 0:
-                    entries = entries[:top_limit_value]
+                    if top_limit_type == 'percentage':
+                        total_entities = compute_functions['total entities'](entries, circulation)
+                        top_limit_percentage_value = int(total_entities * top_limit_value)
+                        entries = entries[:top_limit_percentage_value]
+                    elif top_limit_type == 'absolute':
+                        entries = entries[:top_limit_value]
+
                     circulation = hlp.get_circulation_from_entries(entries)
 
             logging.info(f'Computing {flagged_metric}')
@@ -136,7 +138,8 @@ def get_output_row(ledger, date, metrics):
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
 
-    csv_row = [ledger, date]
+    csv_row = [ledger, date, no_clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value]
+
     for metric_name in hlp.get_metrics():
         val = metric_name
         if no_clustering:
@@ -150,11 +153,24 @@ def get_output_row(ledger, date, metrics):
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot date']
+    header = ['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type', 'top_limit_value']
     header += hlp.get_metrics()
 
+    no_clustering = hlp.get_no_clustering_flag()
+    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
+    top_limit_type = hlp.get_top_limit_type()
+    top_limit_value = hlp.get_top_limit_value()
+    output_filename = 'output'
+    if no_clustering:
+        output_filename += '-no_clustering'
+    if exclude_contract_addresses_flag:
+        output_filename += '-exclude_contract_addresses'
+    if top_limit_value:
+        output_filename += f'-{top_limit_type}_{top_limit_value}'
+    output_filename += '.csv'
+
     output_dir = hlp.get_output_directories()[0]
-    with open(output_dir / 'output.csv', 'w') as f:
+    with open(output_dir / output_filename, 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(header)
         csv_writer.writerows(output_rows)

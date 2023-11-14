@@ -2,6 +2,7 @@
 Module with helper functions
 """
 import pathlib
+import os
 import datetime
 import calendar
 import argparse
@@ -10,6 +11,9 @@ from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
 
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 MAPPING_INFO_DIR = ROOT_DIR / 'mapping_information'
+
+with open(ROOT_DIR / "config.yaml") as f:
+    config = safe_load(f)
 
 
 def valid_date(date_string):
@@ -56,8 +60,6 @@ def get_config_data():
     root directory of the project.
     :returns: a dictionary of configuration keys and values
     """
-    with open(ROOT_DIR / "config.yaml") as f:
-        config = safe_load(f)
     return config
 
 
@@ -150,7 +152,7 @@ def get_plot_flag():
     """
     config = get_config_data()
     try:
-        return config['plot_flags']['plot']
+        return config['plot_parameters']['plot']
     except KeyError:
         raise ValueError('Flag "plot" not in config file')
 
@@ -248,18 +250,23 @@ def get_top_limit_value():
     config = get_config_data()
     top_limit_type = get_top_limit_type()
     try:
-        if top_limit_type == 'absolute':
-            if config['analyze_flags']['top_limit_value'] >= 0:
-                return int(config['analyze_flags']['top_limit_value'])
+        top_limit_value = config['analyze_flags']['top_limit_value']
+        if top_limit_value is None:
+            return 0
+        elif top_limit_type == 'absolute':
+            if top_limit_value >= 0:
+                return int(top_limit_value)
             else:
                 raise ValueError('Malformed "top_limit_value" in config; should be non-negative')
         elif top_limit_type == 'percentage':
-            if 0 <= config['analyze_flags']['top_limit_value'] <= 1:
-                return int(config['analyze_flags']['top_limit_value'])
+            if 0 <= top_limit_value <= 1:
+                return top_limit_value
             else:
                 raise ValueError('Malformed "top_limit_value" in config; should be in [0, 1]')
+        else:
+            raise ValueError('Malformed "top_limit_type" in config')
     except KeyError:
-        raise ValueError('Flag "top_limit_percentage" not in config file')
+        raise ValueError('Flag "top_limit_value" not in config file')
 
 
 def get_circulation_from_entries(entries):
@@ -280,3 +287,20 @@ def get_exclude_contracts_flag():
         return config['analyze_flags']['exclude_contract_addresses']
     except KeyError:
         raise ValueError('Flag "exclude_contract_addresses" not in config file')
+
+
+def get_plot_config_data():
+    """
+    Retrieves the plot-related config parameters
+    :returns: dictionary
+    """
+    return get_config_data()['plot_parameters']
+
+
+def get_output_files():
+    """
+    Retrieves all output files produced by some run
+    :returns: a list of filenames
+    """
+    output_dir = str(get_output_directories()[0])
+    return [filename for filename in os.listdir(output_dir) if filename.startswith('output') and filename.endswith('.csv')]
