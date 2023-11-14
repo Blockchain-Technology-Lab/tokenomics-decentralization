@@ -4,12 +4,13 @@ from math import log
 def compute_tau(entries, circulation, threshold):
     """
     Calculates the tau index of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order
+    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
+    address is a string and balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :param threshold: float, the parameter of the tau index, i.e. the threshold for the market share
-        that is captured by the index
+    that is captured by the index
     :returns: list of length two, where the first element is the tau index (int) and the second is the
-        percentage of the total market share that is captured by the tau index (float)
+    percentage of the total market share that is captured by the tau index (float)
     """
     results = [0, 0]
 
@@ -26,7 +27,8 @@ def compute_tau(entries, circulation, threshold):
 def compute_gini(entries, circulation):
     """
     Calculates the Gini coefficient of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order
+    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
+    address is a string and balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float between 0 and 1 that represents the Gini coefficient of the given distribution
     """
@@ -45,7 +47,8 @@ def compute_gini(entries, circulation):
 def compute_hhi(entries, circulation):
     """
     Calculates the Herfindahl-Hirschman index (HHI) of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order
+    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
+    address is a string and balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float between 0 and 10,000 that represents the HHI of the given distribution
     """
@@ -60,7 +63,8 @@ def compute_hhi(entries, circulation):
 def compute_shannon_entropy(entries, circulation):
     """
     Calculates the Shannon entropy of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order
+    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
+    address is a string and balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float between 0 and 1 that represents the Shannon entropy of the given distribution
     """
@@ -76,7 +80,8 @@ def compute_shannon_entropy(entries, circulation):
 def compute_total_entities(entries, circulation):
     """
     Calculates the total number of entities in a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order
+    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
+    address is a string and balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: int that represents the total number of entities in the given distribution
     """
