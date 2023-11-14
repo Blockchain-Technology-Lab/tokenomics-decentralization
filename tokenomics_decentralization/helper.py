@@ -85,12 +85,11 @@ def get_dates_between(start_date, end_date, granularity):
     Determines the dates between the given start and end dates according to the given granularity
     :param start_date: a datetime.date object corresponding to the start date
     :param end_date: a datetime.date object corresponding to the end date
-    :param granularity: the granularity that will be used for the analysis. It can be one of: day, week, month, year, none
+    :param granularity: the granularity that will be used for the analysis. It can be one of: day, week, month, year
     :returns: a list of strings in YYYY-MM-DD format, corresponding to the dates between the given start and end dates based on the given granularity.
     Note that the end date may not be part of the list, depending on the start date and granularity.
-    If granularity is none then the list will only contain the start and end dates.
     :raises ValueError: if the end date preceeds start_date or if the granularity is not
-        one of: day, week, month, year, none
+    one of the allowed values (day, week, month, year)
     """
     if end_date < start_date:
         raise ValueError(f'Invalid start / end dates: {start_date, end_date}')
@@ -102,8 +101,6 @@ def get_dates_between(start_date, end_date, granularity):
         dates = [get_date_string_from_date(dt) for dt in rrule(freq=MONTHLY, dtstart=start_date, until=end_date)]
     elif granularity == 'year':
         dates = [get_date_string_from_date(dt) for dt in rrule(freq=YEARLY, dtstart=start_date, until=end_date)]
-    elif granularity == 'none':
-        dates = [get_date_string_from_date(start_date), get_date_string_from_date(end_date)]
     else:
         raise ValueError(f'Invalid granularity: {granularity}')
     return dates
@@ -147,8 +144,9 @@ def get_tau_thresholds():
 
 def get_plot_flag():
     """
-    Gets the flag whether to plot output
+    Gets the flag that determines whether generate plots for the output
     :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
     """
     config = get_config_data()
     try:
@@ -159,8 +157,9 @@ def get_plot_flag():
 
 def get_force_map_addresses_flag():
     """
-    Gets the flag whether to forcefully map addresses in db
+    Gets the flag that determines whether to forcefully map addresses in db
     :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
     """
     config = get_config_data()
     try:
@@ -171,8 +170,9 @@ def get_force_map_addresses_flag():
 
 def get_force_map_balances_flag():
     """
-    Gets the flag whether to forcefully map balances in db
+    Gets the flag that determines whether to forcefully map balances in db
     :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
     """
     config = get_config_data()
     try:
@@ -183,8 +183,9 @@ def get_force_map_balances_flag():
 
 def get_force_analyze_flag():
     """
-    Gets the flag whether to forcefully recreate metrics
+    Gets the flag that determines whether to forcefully recalculate metrics
     :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
     """
     config = get_config_data()
     try:
@@ -195,8 +196,9 @@ def get_force_analyze_flag():
 
 def get_no_clustering_flag():
     """
-    Gets the flag whether to forcefully recreate metrics
+    Gets the flag that determines whether to forcefully recreate metrics
     :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
     """
     config = get_config_data()
     try:
@@ -209,6 +211,7 @@ def get_metrics():
     """
     Retrieves the metrics to be analyzed
     :returns: list of strings of the metric names to be used
+    :raises ValueError: if the metrics are not set in the config file
     """
     try:
         return get_config_data()['metrics']
@@ -219,10 +222,15 @@ def get_metrics():
 def get_granularity():
     """
     Retrieves the granularity to be used in the analysis
-    :returns: string in ['day', 'week', 'month', 'year']
+    :returns: string in ['day', 'week', 'month', 'year'] or None
+    :raises ValueError: if the granularity is not set in the config file or if it is not one of the allowed values
     """
     try:
-        return get_config_data()['granularity']
+        granularity = get_config_data()['granularity']
+        if granularity in ['day', 'week', 'month', 'year']:
+            return granularity
+        else:
+            raise ValueError('Malformed "granularity" in config; should be one of: "day", "week", "month", "year", or empty')
     except KeyError:
         raise ValueError('"granularity" not in config file')
 
@@ -231,6 +239,7 @@ def get_top_limit_type():
     """
     Retrieves the type of top limit
     :returns: a string in ["absolute", "percentage"]
+    :raises ValueError: if the top limit type is not set in the config file or if it is not one of the allowed values
     """
     config = get_config_data()
     try:
@@ -246,6 +255,7 @@ def get_top_limit_value():
     """
     Retrieves the value of the top limit to be applied
     :returns: a positive integer if the limit type is 'absolute', else a float in [0, 1] if type is 'percentage'
+    :raises ValueError: if the top limit value is not set in the config file or if it is not one of the allowed values
     """
     config = get_config_data()
     top_limit_type = get_top_limit_type()
@@ -274,13 +284,14 @@ def get_circulation_from_entries(entries):
     Computes the aggregate value of a list of db entries
     :returns: integer
     """
-    return sum([int(i[1]) for i in entries])
+    return sum([int(entry[1]) for entry in entries])
 
 
 def get_exclude_contracts_flag():
     """
     Retrieves the flag on whether to exclude contract addresses from analysis
     :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
     """
     config = get_config_data()
     try:
