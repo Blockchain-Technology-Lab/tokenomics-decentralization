@@ -11,6 +11,9 @@ from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 MAPPING_INFO_DIR = ROOT_DIR / 'mapping_information'
 
+with open(ROOT_DIR / "config.yaml") as f:
+    config = safe_load(f)
+
 
 def valid_date(date_string):
     """
@@ -56,8 +59,6 @@ def get_config_data():
     root directory of the project.
     :returns: a dictionary of configuration keys and values
     """
-    with open(ROOT_DIR / "config.yaml") as f:
-        config = safe_load(f)
     return config
 
 
