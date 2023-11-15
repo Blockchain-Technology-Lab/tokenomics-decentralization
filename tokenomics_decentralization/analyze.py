@@ -10,8 +10,9 @@ import csv
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def get_non_clustered_balance_entries(cursor, snapshot_id):
-    exclude_contract_addresses = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
+def get_non_clustered_balance_entries(cursor, snapshot_id, ledger):
+    exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
+    special_addresses_clause = f'AND addresses.name NOT IN {tuple(hlp.get_special_addresses(ledger))}'
 
     start = time()
     query = f'''
@@ -19,7 +20,8 @@ def get_non_clustered_balance_entries(cursor, snapshot_id):
         FROM balances
         LEFT JOIN addresses ON balances.address_id=addresses.id
         WHERE snapshot_id=?
-        {exclude_contract_addresses}
+        {exclude_contract_addresses_clause}
+        {special_addresses_clause}
         ORDER BY balance DESC
     '''
 
@@ -29,8 +31,9 @@ def get_non_clustered_balance_entries(cursor, snapshot_id):
     return entries
 
 
-def get_balance_entries(cursor, snapshot_id):
-    exclude_contract_addresses = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
+def get_balance_entries(cursor, snapshot_id, ledger):
+    exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
+    special_addresses_clause = f'AND addresses.name NOT IN {tuple(hlp.get_special_addresses(ledger))}'
 
     start = time()
     query = f'''
@@ -39,7 +42,8 @@ def get_balance_entries(cursor, snapshot_id):
         LEFT JOIN addresses ON balances.address_id=addresses.id
         LEFT JOIN entities ON addresses.entity_id=entities.id
         WHERE snapshot_id=?
-        {exclude_contract_addresses}
+        {exclude_contract_addresses_clause}
+        {special_addresses_clause}
         GROUP BY entity
         ORDER BY aggregate_balance DESC
     '''
@@ -93,9 +97,9 @@ def analyze_snapshot(conn, ledger, snapshot):
         else:
             if not entries:
                 if no_clustering:
-                    entries = get_non_clustered_balance_entries(cursor, snapshot_id)
+                    entries = get_non_clustered_balance_entries(cursor, snapshot_id, ledger)
                 else:
-                    entries = get_balance_entries(cursor, snapshot_id)
+                    entries = get_balance_entries(cursor, snapshot_id, ledger)
 
                 if top_limit_value > 0:
                     if top_limit_type == 'percentage':

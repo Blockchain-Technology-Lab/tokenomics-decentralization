@@ -6,6 +6,7 @@ import os
 import datetime
 import calendar
 import argparse
+import json
 from yaml import safe_load
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
 
@@ -315,3 +316,16 @@ def get_output_files():
     """
     output_dir = str(get_output_directories()[0])
     return [filename for filename in os.listdir(output_dir) if filename.startswith('output') and filename.endswith('.csv')]
+
+
+def get_special_addresses(ledger):
+    """
+    Retrieves the ledger's special addresses that should be excluded from the analysis
+    :returns: a list of addresses
+    """
+    try:
+        with open(MAPPING_INFO_DIR / 'special_addresses' / f'{ledger}.json') as f:
+            special_addresses = json.load(f)
+        return [entry['address'] for entry in special_addresses]
+    except FileNotFoundError:
+        return []
