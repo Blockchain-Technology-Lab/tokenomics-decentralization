@@ -1,0 +1,132 @@
+[
+    {
+        "address": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
+        "source": "https://ethereum.org/en/staking/deposit-contract",
+        "extra_info": "Ethereum staking contract"
+    },
+    {
+        "address": "0x000000000000000000000000000000000000dEaD",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000000",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000001",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000002",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000003",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000004",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000005",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000006",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000007",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000008",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0000000000000000000000000000000000000009",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x00000000000000000000045261D4Ee77acdb3286",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x0123456789012345678901234567890123456789",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x1111111111111111111111111111111111111111",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x1234567890123456789012345678901234567890",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x2222222222222222222222222222222222222222",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x3333333333333333333333333333333333333333",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x4444444444444444444444444444444444444444",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x6666666666666666666666666666666666666666",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0x8888888888888888888888888888888888888888",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0xdEAD000000000000000042069420694206942069",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    },
+    {
+        "address": "0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa",
+        "source": "https://etherscan.io",
+        "extra_info": "Burn address"
+    }
+]
