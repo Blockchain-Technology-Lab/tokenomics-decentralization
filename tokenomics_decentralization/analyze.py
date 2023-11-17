@@ -159,6 +159,7 @@ def analyze_snapshot(conn, ledger, snapshot):
 def get_output_row(ledger, date, metrics):
     no_clustering = hlp.get_no_clustering_flag()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
+    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
 
@@ -170,6 +171,8 @@ def get_output_row(ledger, date, metrics):
             val = 'non-clustered ' + val
         if exclude_contract_addresses_flag:
             val = 'exclude_contracts ' + val
+        if exclude_below_fees_flag:
+            val = 'exclude_below_fees ' + val
         if top_limit_value > 0:
             val = f'top-{top_limit_value}_{top_limit_type} ' + val
         csv_row.append(metrics[val])
