@@ -54,6 +54,8 @@ def plot():
             output_df.at[i, 'ledger'] += '_nocontracts'
         if row['top_limit_value'] > 0:
             limit_val = row['top_limit_value']
+            if row['top_limit_type'] == 'absolute':
+                limit_val = int(limit_val)
             output_df.at[i, 'ledger'] += f'_top_{limit_val}'
 
     output_df['snapshot date'] = pd.to_datetime(output_df['snapshot date'])
