@@ -12,6 +12,7 @@ from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
 
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 MAPPING_INFO_DIR = ROOT_DIR / 'mapping_information'
+TX_FEES_DIR = ROOT_DIR / 'tx_fees'
 
 with open(ROOT_DIR / "config.yaml") as f:
     config = safe_load(f)
@@ -290,7 +291,7 @@ def get_circulation_from_entries(entries):
 
 def get_exclude_contracts_flag():
     """
-    Retrieves the flag on whether to exclude contract addresses from analysis
+    Retrieves the flag on whether to exclude contract addresses from the analysis
     :returns: boolean
     :raises ValueError: if the flag is not set in the config file
     """
@@ -299,6 +300,20 @@ def get_exclude_contracts_flag():
         return config['analyze_flags']['exclude_contract_addresses']
     except KeyError:
         raise ValueError('Flag "exclude_contract_addresses" not in config file')
+    
+
+def get_exclude_below_fees_flag():
+    """
+    Retrieves the flag on whether to exclude from the analysis addresses with 
+    balances lower than the median transaction fees
+    :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
+    """
+    config = get_config_data()
+    try:
+        return config['analyze_flags']['exclude_below_fees']
+    except KeyError:
+        raise ValueError('Flag "exclude_below_fees" not in config file')
 
 
 def get_plot_config_data():
@@ -329,3 +344,26 @@ def get_special_addresses(ledger):
         return [entry['address'] for entry in special_addresses]
     except FileNotFoundError:
         return []
+
+def get_median_tx_fee(ledger, date):
+    """
+    Retrieves the median transaction fee for the given ledger and date
+    :returns: an integer representing the median transaction fee in the 
+    smallest unit of the ledger's currency
+    """
+    granularity = get_granularity()
+    with open(TX_FEES_DIR / ledger / f'median_tx_fees_{granularity}.json') as f:
+        fees = json.load(f)
+    if granularity == 'year':
+        date = date[:4]
+    elif granularity == 'month':
+        date = date[:7]
+    elif granularity == 'week':
+        # get date of that week's Monday
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        date = date - datetime.timedelta(days=date.weekday())
+        date = get_date_string_from_date(date)
+    try:
+        return fees[date]
+    except KeyError:
+        raise ValueError(f'No median tx fee found for {ledger} on {date}')

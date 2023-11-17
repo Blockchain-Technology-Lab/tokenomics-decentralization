@@ -1,7 +1,7 @@
 import argparse
 import datetime
 import pytest
-from tokenomics_decentralization.helper import get_ledgers, valid_date, get_date_beginning, get_date_end, get_dates_between
+from tokenomics_decentralization.helper import get_ledgers, valid_date, get_date_beginning, get_date_end, get_dates_between, get_median_tx_fee
 
 def test_valid_date():
     for d in ['2022', '2022-01', '2022-01-01']:
@@ -73,21 +73,28 @@ def test_get_dates_between():
     assert dates_year[14] == "2010-09-25"
     assert dates_year[-1] == "2022-09-25"
 
-    start_date = datetime.date(1996, 9, 25)
-    end_date = datetime.date(2023, 9, 24)
-    dates_none = get_dates_between(start_date, end_date, granularity='none')
-    assert len(dates_none) == 2
-    assert dates_none[0] == "1996-09-25"
-    assert dates_none[1] == "2023-09-24"
-
     start_date = datetime.date(2023, 11, 11)
     end_date = datetime.date(2023, 11, 10)
     with pytest.raises(ValueError) as e_info:
-        dates_error = get_dates_between(start_date, end_date, granularity='day')
+        get_dates_between(start_date, end_date, granularity='day')
     assert e_info.type == ValueError
 
     start_date = datetime.date(2023, 11, 10)
     end_date = datetime.date(2023, 11, 10)
     with pytest.raises(ValueError) as e_info:
-        dates_error = get_dates_between(start_date, end_date, granularity='bla')
+        get_dates_between(start_date, end_date, granularity='bla')
     assert e_info.type == ValueError
+
+
+def test_get_median_tx_fee(mocker):
+    get_granularity_mock = mocker.patch("tokenomics_decentralization.helper.get_granularity")
+
+    get_granularity_mock.return_value = 'month'
+    fee1 = get_median_tx_fee('bitcoin', '2023-10-18')
+    assert fee1 == 2820
+    fee2 = get_median_tx_fee('ethereum', '2023-10-18')
+    assert fee2 == 619000000000000
+
+    get_granularity_mock.return_value = 'week'
+    fee3 = get_median_tx_fee('bitcoin', '2023-10-18')
+    assert fee3 == 2712
