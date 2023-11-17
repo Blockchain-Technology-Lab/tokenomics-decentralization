@@ -30,12 +30,13 @@ def save_tx_fee_data_to_file(api_response, ledger, group_by):
     data_dir = hlp.ROOT_DIR / "tx_fees" / ledger.replace("-", "_")
     data_dir.mkdir(parents=True, exist_ok=True)
 
+    if group_by == "date":
+        group_by = "day"
     with open(data_dir / f"median_tx_fees_{group_by}.json", "w") as f:
         json.dump(data, f, indent=4)
 
 if __name__ == '__main__':
     ledgers = ["bitcoin", "bitcoin-cash", "dogecoin", "ethereum", "litecoin", "zcash"]
-    ledgers = ["bitcoin-cash"]
     granularities = ["date", "week", "month", "year"]
     for ledger in ledgers:
         print(f"Retrieving transaction fee data for {ledger}..")
