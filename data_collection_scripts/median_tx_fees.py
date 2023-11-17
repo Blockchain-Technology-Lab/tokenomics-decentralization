@@ -25,7 +25,7 @@ def get_median_tx_fees(ledger, group_by):
 
 def save_tx_fee_data_to_file(api_response, ledger, group_by):
     data = api_response["data"]
-    data = {data[i][group_by]: data[i]["median(fee)"] for i in range(len(data))}
+    data = {data[i][group_by]: int(data[i]["median(fee)"]) for i in range(len(data))}
 
     data_dir = hlp.ROOT_DIR / "tx_fees" / ledger.replace("-", "_")
     data_dir.mkdir(parents=True, exist_ok=True)
