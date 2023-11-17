@@ -12,7 +12,13 @@ logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:
 
 def get_non_clustered_balance_entries(cursor, snapshot_id, ledger):
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
-    special_addresses_clause = f'AND addresses.name NOT IN {tuple(hlp.get_special_addresses(ledger))}'
+    special_addresses = hlp.get_special_addresses(ledger)
+    if len(special_addresses) == 0:
+        special_addresses_clause = ''
+    elif len(special_addresses) == 1:
+        special_addresses_clause = f'AND addresses.name NOT IN ("{special_addresses[0]}")'
+    else:
+        special_addresses_clause = f'AND addresses.name NOT IN {tuple(special_addresses)}'
 
     start = time()
     query = f'''
@@ -33,7 +39,13 @@ def get_non_clustered_balance_entries(cursor, snapshot_id, ledger):
 
 def get_balance_entries(cursor, snapshot_id, ledger):
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
-    special_addresses_clause = f'AND addresses.name NOT IN {tuple(hlp.get_special_addresses(ledger))}'
+    special_addresses = hlp.get_special_addresses(ledger)
+    if len(special_addresses) == 0:
+        special_addresses_clause = ''
+    elif len(special_addresses) == 1:
+        special_addresses_clause = f'AND addresses.name NOT IN ("{special_addresses[0]}")'
+    else:
+        special_addresses_clause = f'AND addresses.name NOT IN {tuple(special_addresses)}'
 
     start = time()
     query = f'''
