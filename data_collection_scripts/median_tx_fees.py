@@ -27,6 +27,9 @@ def save_tx_fee_data_to_file(api_response, ledger, group_by):
     data = api_response["data"]
     data = {data[i][group_by]: int(data[i]["median(fee)"]) for i in range(len(data))}
 
+    if ledger == "ethereum":  # For Ethereum, store the tx fees in Gwei
+        data = {k: int(v / 1e9) for k, v in data.items()}
+
     data_dir = hlp.ROOT_DIR / "tx_fees" / ledger.replace("-", "_")
     data_dir.mkdir(parents=True, exist_ok=True)
 
