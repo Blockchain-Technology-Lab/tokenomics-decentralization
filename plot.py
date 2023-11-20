@@ -37,6 +37,9 @@ def plot():
             top_limits[top_limit_type] = [-1]
     if top_limits['absolute'][0] == -1 and top_limits['percentage'][0] == -1:
         top_limits['absolute'] = top_limits['percentage'] = [0]
+    elif top_limits['absolute'][0] == 0 or top_limits['percentage'][0] == 0:
+        top_limits['absolute'].append(0)
+        top_limits['percentage'].append(0)
 
     output_df = output_df[
         ((output_df['top_limit_type'] == 'absolute') & (output_df['top_limit_value'].isin(top_limits['absolute']))) |
