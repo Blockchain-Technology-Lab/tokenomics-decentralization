@@ -2,6 +2,7 @@ import tokenomics_decentralization.helper as hlp
 import logging
 import matplotlib.pyplot as plt
 import pandas as pd
+from cycler import cycler
 
 
 def plot():
@@ -106,6 +107,7 @@ def plot():
               'xtick.labelsize': 'x-large',
               'ytick.labelsize': 'x-large'}
     plt.rcParams.update(params)
+    plt.rc('axes', prop_cycle=(cycler('color', list('rbgk')) * cycler('linestyle', ['-', '--', ':', '-.'])))
 
     metric_cols = output_df.columns[6:]
     for metric in metric_cols:
