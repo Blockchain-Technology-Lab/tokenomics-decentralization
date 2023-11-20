@@ -56,6 +56,33 @@ def plot():
         elif len(plot_line_params[flag]) != 2 or any([item not in plot_line_params[flag] for item in [True, False]]):
             raise ValueError(f'Invalid arguments in {flag} plotting flag')
 
+    if plot_line_params['combine_params'] is False:
+        dataframes = []
+        for flag_value in plot_line_params['no_clustering']:
+            dataframes.append(output_df[
+                (output_df['no_clustering'] == flag_value) &
+                (output_df['exclude_contract_addresses'] == False) &  # noqa
+                (output_df['top_limit_value'] == 0)
+            ])
+        for flag_value in plot_line_params['exclude_contract_addresses']:
+            dataframes.append(output_df[
+                (output_df['no_clustering'] == False) &  # noqa
+                (output_df['exclude_contract_addresses'] == flag_value) &
+                (output_df['top_limit_value'] == 0)
+            ])
+        for limit_type in top_limits.keys():
+            for limit_val in top_limits[limit_type]:
+                dataframes.append(output_df[
+                    (output_df['no_clustering'] == False) &  # noqa
+                    (output_df['exclude_contract_addresses'] == False) &  # noqa
+                    (output_df['top_limit_type'] == limit_type) &
+                    (output_df['top_limit_value'] == limit_val)
+                ])
+
+        output_df = pd.concat(dataframes)
+    elif plot_line_params['combine_params'] is not True:
+        raise ValueError('Plot param combine_params should be set to either true or false')
+
     for i, row in output_df.iterrows():
         if row['no_clustering']:
             output_df.at[i, 'ledger'] += '_nocluster'

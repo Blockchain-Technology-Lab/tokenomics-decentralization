@@ -49,6 +49,7 @@ plot_parameters:
     - tau=0.5
     - tau=0.66
   plot_line_params:
+    combine_params: false
     no_clustering:
       - true
       - false
