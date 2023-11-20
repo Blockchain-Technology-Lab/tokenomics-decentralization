@@ -47,7 +47,11 @@ def plot():
         if plot_line_params[flag] is None:
             plot_line_params[flag] = [False]
         if len(plot_line_params[flag]) == 1:
+            if plot_line_params[flag][0] not in [True, False]:
+                raise ValueError(f'Invalid arguments in {flag} plotting flag')
             output_df = output_df[output_df[flag] == plot_line_params[flag][0]]
+        elif len(plot_line_params[flag]) != 2 or any([item not in plot_line_params[flag] for item in [True, False]]):
+            raise ValueError(f'Invalid arguments in {flag} plotting flag')
 
     for i, row in output_df.iterrows():
         if row['no_clustering']:
