@@ -349,6 +349,9 @@ def get_special_addresses(ledger):
 def get_median_tx_fee(ledger, date):
     """
     Retrieves the median transaction fee for the given ledger and date
+    :param ledger: string that represents the ledger to retrieve the data for (e.g. bitcoin)
+    :param date: string that represents the date to retrieve the data for 
+    (it should be in YYYY-MM-DD format, e.g. 2021-01-01)
     :returns: an integer representing the median transaction fee in the 
     smallest unit of the ledger's currency or 0 if no median tx fee 
     is found for the given ledger and date
