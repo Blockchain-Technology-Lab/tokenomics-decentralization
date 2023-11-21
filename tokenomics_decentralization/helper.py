@@ -7,6 +7,7 @@ import datetime
 import calendar
 import argparse
 import json
+import logging
 from yaml import safe_load
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
 
@@ -349,11 +350,16 @@ def get_median_tx_fee(ledger, date):
     """
     Retrieves the median transaction fee for the given ledger and date
     :returns: an integer representing the median transaction fee in the 
-    smallest unit of the ledger's currency
+    smallest unit of the ledger's currency or 0 if no median tx fee 
+    is found for the given ledger and date
     """
     granularity = get_granularity()
-    with open(TX_FEES_DIR / ledger / f'median_tx_fees_{granularity}.json') as f:
-        fees = json.load(f)
+    try:
+        with open(TX_FEES_DIR / ledger / f'median_tx_fees_{granularity}.json') as f:
+            fees = json.load(f)
+    except FileNotFoundError:
+        logging.warning(f'No median tx fees found for {ledger}')
+        return 0
     if granularity == 'year':
         date = date[:4]
     elif granularity == 'month':
@@ -366,4 +372,5 @@ def get_median_tx_fee(ledger, date):
     try:
         return fees[date]
     except KeyError:
-        raise ValueError(f'No median tx fee found for {ledger} on {date}')
+        logging.warning(f'No median tx fee found for {ledger} on {date}')
+        return 0

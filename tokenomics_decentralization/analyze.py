@@ -84,8 +84,10 @@ def analyze_snapshot(conn, ledger, snapshot):
 
     snapshot_info = cursor.execute("SELECT * FROM snapshots WHERE name=? AND ledger_id=?", (snapshot, ledger_id)).fetchone()
     snapshot_id = snapshot_info[0]
-    snapshot_date = snapshot_info[1]
     circulation = int(float(snapshot_info[3]))
+
+    snapshot_date = snapshot_info[1]
+    median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=snapshot_date) if hlp.get_exclude_below_fees_flag() else -1
 
     compute_functions = {
         'hhi': compute_hhi,
@@ -116,7 +118,6 @@ def analyze_snapshot(conn, ledger, snapshot):
             metric_value = val[0]
         else:
             if not entries:
-                median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=snapshot_date) if hlp.get_exclude_below_fees_flag() else -1
                 if no_clustering:
                     entries = get_non_clustered_balance_entries(cursor, snapshot_id, ledger, balance_threshold=median_tx_fee)
                 else:
