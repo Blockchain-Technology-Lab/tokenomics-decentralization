@@ -7,8 +7,7 @@ def get_median_tx_fees(ledger, group_by):
     """
     Retrieves the median transaction fees for a ledger 
     (in its lowest denomination, e.g. satoshis for Bitcoin)
-    from the Blockchair API
-    and saves the data to a json file
+    from the Blockchair API and saves the data to a json file
     :param ledger: the ledger to retrieve the data for (e.g. bitcoin)
     :param group_by: the granularity of the data (date, week, month, year)
     """

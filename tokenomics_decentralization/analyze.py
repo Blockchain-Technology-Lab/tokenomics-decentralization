@@ -12,7 +12,7 @@ logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:
 
 def get_non_clustered_balance_entries(cursor, snapshot_id, ledger, balance_threshold):
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
-    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >=0 else ''
+    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
     special_addresses = hlp.get_special_addresses(ledger)
     if len(special_addresses) == 0:
         special_addresses_clause = ''
@@ -39,9 +39,9 @@ def get_non_clustered_balance_entries(cursor, snapshot_id, ledger, balance_thres
     return entries
 
 
-def get_balance_entries(cursor, snapshot_id, ledger,balance_threshold):
+def get_balance_entries(cursor, snapshot_id, ledger, balance_threshold):
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
-    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >=0 else ''
+    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
     special_addresses = hlp.get_special_addresses(ledger)
     if len(special_addresses) == 0:
         special_addresses_clause = ''
