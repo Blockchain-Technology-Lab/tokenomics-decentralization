@@ -1,5 +1,6 @@
 import requests
 import json
+import tokenomics_decentralization.helper as hlp
 
 
 def get_address_info():
@@ -69,7 +70,8 @@ def parse_aliases(address_info):
                 break
 
     # save to json file
-    with open('addresses/tezos.json', 'w') as f:
+    data_dir = hlp.ROOT_DIR / "addresses"
+    with open(data_dir / 'tezos.json', 'w') as f:
         json.dump(address_info, f, indent=4)
     return address_info
 

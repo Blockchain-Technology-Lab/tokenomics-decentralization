@@ -10,8 +10,9 @@ import csv
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def get_non_clustered_balance_entries(cursor, snapshot_id, ledger):
+def get_non_clustered_balance_entries(cursor, snapshot_id, ledger, balance_threshold):
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
+    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
     special_addresses = hlp.get_special_addresses(ledger)
     if len(special_addresses) == 0:
         special_addresses_clause = ''
@@ -26,6 +27,7 @@ def get_non_clustered_balance_entries(cursor, snapshot_id, ledger):
         FROM balances
         LEFT JOIN addresses ON balances.address_id=addresses.id
         WHERE snapshot_id=?
+        {exclude_below_threshold_clause}
         {exclude_contract_addresses_clause}
         {special_addresses_clause}
         ORDER BY balance DESC
@@ -37,8 +39,9 @@ def get_non_clustered_balance_entries(cursor, snapshot_id, ledger):
     return entries
 
 
-def get_balance_entries(cursor, snapshot_id, ledger):
+def get_balance_entries(cursor, snapshot_id, ledger, balance_threshold):
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
+    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
     special_addresses = hlp.get_special_addresses(ledger)
     if len(special_addresses) == 0:
         special_addresses_clause = ''
@@ -54,6 +57,7 @@ def get_balance_entries(cursor, snapshot_id, ledger):
         LEFT JOIN addresses ON balances.address_id=addresses.id
         LEFT JOIN entities ON addresses.entity_id=entities.id
         WHERE snapshot_id=?
+        {exclude_below_threshold_clause}
         {exclude_contract_addresses_clause}
         {special_addresses_clause}
         GROUP BY entity
@@ -69,9 +73,10 @@ def get_balance_entries(cursor, snapshot_id, ledger):
 def analyze_snapshot(conn, ledger, snapshot):
     force_analyze = hlp.get_force_analyze_flag()
     no_clustering = hlp.get_no_clustering_flag()
-    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
+    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
+    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
 
     cursor = conn.cursor()
 
@@ -80,6 +85,9 @@ def analyze_snapshot(conn, ledger, snapshot):
     snapshot_info = cursor.execute("SELECT * FROM snapshots WHERE name=? AND ledger_id=?", (snapshot, ledger_id)).fetchone()
     snapshot_id = snapshot_info[0]
     circulation = int(float(snapshot_info[3]))
+
+    snapshot_date = snapshot_info[1]
+    median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=snapshot_date) if hlp.get_exclude_below_fees_flag() else -1
 
     compute_functions = {
         'hhi': compute_hhi,
@@ -100,6 +108,8 @@ def analyze_snapshot(conn, ledger, snapshot):
             flagged_metric = 'non-clustered ' + flagged_metric
         if exclude_contract_addresses_flag:
             flagged_metric = 'exclude_contracts ' + flagged_metric
+        if exclude_below_fees_flag:
+            flagged_metric = 'exclude_below_fees ' + flagged_metric
         if top_limit_value > 0:
             flagged_metric = f'top-{top_limit_value}_{top_limit_type} ' + flagged_metric
 
@@ -109,9 +119,9 @@ def analyze_snapshot(conn, ledger, snapshot):
         else:
             if not entries:
                 if no_clustering:
-                    entries = get_non_clustered_balance_entries(cursor, snapshot_id, ledger)
+                    entries = get_non_clustered_balance_entries(cursor, snapshot_id, ledger, balance_threshold=median_tx_fee)
                 else:
-                    entries = get_balance_entries(cursor, snapshot_id, ledger)
+                    entries = get_balance_entries(cursor, snapshot_id, ledger, balance_threshold=median_tx_fee)
 
                 if top_limit_value > 0:
                     if top_limit_type == 'percentage':
@@ -137,7 +147,6 @@ def analyze_snapshot(conn, ledger, snapshot):
                     cursor.execute("UPDATE metrics SET value=? WHERE name=? AND snapshot_id=?", (metric_value, flagged_metric, snapshot_id))
                 else:
                     raise e
-
             conn.commit()
 
         if any(['tau' in default_metric_name, 'total entities' in default_metric_name]):
@@ -151,6 +160,7 @@ def analyze_snapshot(conn, ledger, snapshot):
 def get_output_row(ledger, date, metrics):
     no_clustering = hlp.get_no_clustering_flag()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
+    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
 
@@ -162,6 +172,8 @@ def get_output_row(ledger, date, metrics):
             val = 'non-clustered ' + val
         if exclude_contract_addresses_flag:
             val = 'exclude_contracts ' + val
+        if exclude_below_fees_flag:
+            val = 'exclude_below_fees ' + val
         if top_limit_value > 0:
             val = f'top-{top_limit_value}_{top_limit_type} ' + val
         csv_row.append(metrics[val])
