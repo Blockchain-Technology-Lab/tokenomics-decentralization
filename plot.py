@@ -5,6 +5,16 @@ import pandas as pd
 from cycler import cycler
 
 
+tickers = {
+    'bitcoin': 'BTC',
+    'bitcoin_cash': 'BCH',
+    'dogecoin': 'DOGE',
+    'ethereum': 'ETH',
+    'litecoin': 'LTC',
+    'tezos': 'XTZ',
+}
+
+
 def plot():
     """
     Plots the data contained in the output file
@@ -85,6 +95,7 @@ def plot():
         raise ValueError('Plot param combine_params should be set to either true or false')
 
     for i, row in output_df.iterrows():
+        output_df.at[i, 'ledger'] = tickers[row['ledger']]
         if row['no_clustering']:
             output_df.at[i, 'ledger'] += '_nocluster'
         if row['exclude_contract_addresses']:
