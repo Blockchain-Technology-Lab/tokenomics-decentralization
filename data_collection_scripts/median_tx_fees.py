@@ -1,5 +1,6 @@
 import requests
 import json
+import logging
 import tokenomics_decentralization.helper as hlp
 
 
@@ -18,9 +19,10 @@ def get_median_tx_fees(ledger, group_by):
     if response.status_code == 200:
         return response.json()        
     else:        
-        print(f"Error: Failed to retrieve data from {url}")
-        print("Error code:", response.status_code)
-        print("Error message:", response.text)
+        logging.info(f"Error: Failed to retrieve data from {url}")
+        logging.info("Error code:", response.status_code)
+        logging.info("Error message:", response.text)
+        return None
 
 def save_tx_fee_data_to_file(api_response, ledger, group_by):
     data = api_response["data"]
@@ -44,4 +46,5 @@ if __name__ == '__main__':
         print(f"Retrieving transaction fee data for {ledger}..")
         for granularity in granularities:
             tx_fee_data = get_median_tx_fees(ledger=ledger, group_by=granularity)
-            save_tx_fee_data_to_file(api_response=tx_fee_data, ledger=ledger, group_by=granularity)
+            if tx_fee_data:
+                save_tx_fee_data_to_file(api_response=tx_fee_data, ledger=ledger, group_by=granularity)
