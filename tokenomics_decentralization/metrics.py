@@ -86,3 +86,15 @@ def compute_total_entities(entries, circulation):
     :returns: int that represents the total number of entities in the given distribution
     """
     return len(entries)
+
+
+def compute_max_power_ratio(entries, circulation):
+    """
+    Calculates the maximum power ratio of a distribution of balances
+    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
+    address is a string and balance is a numeric type (int or float)
+    :param circulation: int, the total amount of tokens in circulation
+    :returns: float that represents the maximum power ratio among all token holders
+    """
+    max_balance = entries[0][1]
+    return max_balance / circulation
