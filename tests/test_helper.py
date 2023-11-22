@@ -93,7 +93,7 @@ def test_get_median_tx_fee(mocker):
     fee1 = get_median_tx_fee('bitcoin', '2023-10-18')
     assert fee1 == 2820
     fee2 = get_median_tx_fee('ethereum', '2023-10-18')
-    assert fee2 == 619000000000000
+    assert fee2 == 626000
 
     get_granularity_mock.return_value = 'week'
     fee3 = get_median_tx_fee('bitcoin', '2023-10-18')
