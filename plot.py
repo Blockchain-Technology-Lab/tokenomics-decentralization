@@ -26,13 +26,16 @@ def plot():
     if not figures_path.is_dir():
         figures_path.mkdir()
 
+    # Combine all output files in a single dataframe
     output_df = pd.concat([pd.read_csv(output_dir / filename) for filename in hlp.get_output_files()], ignore_index=True)
 
     plot_config = hlp.get_plot_config_data()
 
+    # Filter rows with ledgers defined in config
     ledgers = plot_config['ledgers']
     output_df = output_df[output_df['ledger'].isin(ledgers)]
 
+    # Filter rows with metrics defined in config
     metrics = plot_config['metrics']
     metric_cols = output_df.columns[6:]
     for metric in metric_cols:
@@ -41,6 +44,8 @@ def plot():
 
     plot_line_params = plot_config['plot_line_params']
 
+    # Filter rows with top limit params defined in config
+    # If no top limit is defined in either 'absolute' or 'percentage', then 0 is used by default
     top_limits = {}
     for top_limit_type in ['absolute', 'percentage']:
         top_limits[top_limit_type] = plot_line_params[f'top_limit_{top_limit_type}']
@@ -57,6 +62,9 @@ def plot():
         ((output_df['top_limit_type'] == 'percentage') & (output_df['top_limit_value'].isin(top_limits['percentage'])))
     ]
 
+    # Filter rows with boolean flag params defined in config.
+    # If no value is set for a flag, False is used by default
+    # If the param consists of more than 2 and/or non-boolean entries, a ValueError is raised
     for flag in ['no_clustering', 'exclude_contract_addresses']:
         if plot_line_params[flag] is None:
             plot_line_params[flag] = [False]
@@ -67,6 +75,7 @@ def plot():
         elif len(plot_line_params[flag]) != 2 or any([item not in plot_line_params[flag] for item in [True, False]]):
             raise ValueError(f'Invalid arguments in {flag} plotting flag')
 
+    # Plot each param in a line sequentially (keeping the other params at the default), instead of plotting the param combinations
     if plot_line_params['combine_params'] is False:
         dataframes = []
         for flag_value in plot_line_params['no_clustering']:
@@ -94,6 +103,8 @@ def plot():
     elif plot_line_params['combine_params'] is not True:
         raise ValueError('Plot param combine_params should be set to either true or false')
 
+    # Update ledger column name to reflect params used with tickers
+    # This column will be used as the plot's legend
     for i, row in output_df.iterrows():
         output_df.at[i, 'ledger'] = tickers[row['ledger']]
         if row['no_clustering']:
@@ -118,7 +129,18 @@ def plot():
               'xtick.labelsize': 'x-large',
               'ytick.labelsize': 'x-large'}
     plt.rcParams.update(params)
-    plt.rc('axes', prop_cycle=(cycler('color', list('rbgk')) * cycler('linestyle', ['-', '--', ':', '-.'])))
+
+    # Define the styles of the lines to be plotted
+    # If multiple ledgers are plotted, then use one color per ledger and a different line style per param, when possible
+    # If a single ledger is plotted, then use solid lines and a different color per param
+    line_names = set([row['ledger'] for _, row in output_df.iterrows()])
+    lines_per_ledger = set(['_'.join(item.split('_')[1:]) for item in line_names])
+    if len(ledgers) > 1:
+        linestyles = ['-', '--', ':', '-.'][:len(lines_per_ledger)]
+    else:
+        linestyles = ['-']
+    colorstyles = list('rbgkcmy') + ['tab:orange', 'tab:pink', 'tab:gray', 'tab:brown', 'tab:purple']
+    plt.rc('axes', prop_cycle=(cycler('color', colorstyles) * cycler('linestyle', linestyles)))
 
     metric_cols = output_df.columns[6:]
     for metric in metric_cols:

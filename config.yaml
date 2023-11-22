@@ -49,7 +49,10 @@ plot_parameters:
     - tau=0.5
     - tau=0.66
   plot_line_params:
-    combine_params: false
+    # boolean to plot combinations of the other params
+    # if true, then all possible combinations of all params are plotted
+    # if false, then starting from a baseline where bools are false and top limits are 0, each other param is plotted sequencially while keeping the rest on the default
+    combine_params: false  
     no_clustering:
       - true
       - false
