@@ -1,5 +1,5 @@
 from tokenomics_decentralization.metrics import compute_gini, compute_hhi, compute_shannon_entropy, \
-    compute_tau, compute_total_entities
+    compute_tau, compute_total_entities, compute_max_power_ratio
 
 
 def test_tau_50():
@@ -131,3 +131,21 @@ def test_total_entities():
     tokens_per_entity = [('a', 1)]
     total_entities = compute_total_entities(tokens_per_entity, circulation=1)
     assert total_entities == 1
+
+
+def test_compute_max_power_ratio():
+    tokens_per_entity = [('a', 3.0), ('b', 2), ('c', 1)]
+    max_mpr = compute_max_power_ratio(tokens_per_entity, circulation=6)
+    assert max_mpr == 0.5
+
+    tokens_per_entity = [('a', 3), ('b', 2), ('c', 1), ('d', 1), ('e', 1), ('f', 1)]
+    max_mpr = compute_max_power_ratio(tokens_per_entity, circulation=9)
+    assert max_mpr == 1 / 3
+
+    tokens_per_entity = [('a', 1)]
+    max_mpr = compute_max_power_ratio(tokens_per_entity, circulation=1)
+    assert max_mpr == 1
+
+    tokens_per_entity = [('a', 1), ('b', 1), ('c', 1)]
+    max_mpr = compute_max_power_ratio(tokens_per_entity, circulation=3)
+    assert max_mpr == 1 / 3

@@ -1,5 +1,5 @@
 from tokenomics_decentralization.schema import get_connector
-from tokenomics_decentralization.metrics import compute_hhi, compute_tau, compute_gini, compute_shannon_entropy, compute_total_entities
+from tokenomics_decentralization.metrics import compute_hhi, compute_tau, compute_gini, compute_shannon_entropy, compute_total_entities, compute_max_power_ratio
 import tokenomics_decentralization.helper as hlp
 from time import time
 import sqlite3
@@ -94,6 +94,7 @@ def analyze_snapshot(conn, ledger, snapshot):
         'shannon entropy': compute_shannon_entropy,
         'gini': compute_gini,
         'total entities': compute_total_entities,
+        'mpr': compute_max_power_ratio,
     }
     for threshold in hlp.get_tau_thresholds():
         compute_functions[f'tau={threshold}'] = compute_tau

@@ -346,6 +346,7 @@ def get_special_addresses(ledger):
     except FileNotFoundError:
         return []
 
+
 def get_median_tx_fee(ledger, date):
     """
     Retrieves the median transaction fee for the given ledger and date

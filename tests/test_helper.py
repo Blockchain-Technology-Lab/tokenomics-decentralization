@@ -3,6 +3,7 @@ import datetime
 import pytest
 from tokenomics_decentralization.helper import get_ledgers, valid_date, get_date_beginning, get_date_end, get_dates_between, get_median_tx_fee
 
+
 def test_valid_date():
     for d in ['2022', '2022-01', '2022-01-01']:
         assert valid_date(d)
@@ -30,7 +31,7 @@ def test_get_date_end():
 
 def test_get_ledgers():
     ledgers = get_ledgers()
-    assert type(ledgers) == list
+    assert isinstance(ledgers, list)
     assert len(ledgers) > 0
 
 
