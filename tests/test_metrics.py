@@ -117,7 +117,7 @@ def test_shannon_entropy():
     tokens_per_entity = [('a', 1), ('b', 1), ('c', 1)]
     entropy = compute_shannon_entropy(tokens_per_entity, circulation=3)
     assert round(entropy, 3) == 1.585
-    
+
 
 def test_total_entities():
     tokens_per_entity = [('a', 3.0), ('b', 2), ('c', 1)]

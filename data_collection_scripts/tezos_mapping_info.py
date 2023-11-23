@@ -9,7 +9,7 @@ def get_address_info():
         with open(filename) as f:
             return json.load(f)
     except FileNotFoundError:
-        # retrieve data from API      
+        # retrieve data from API
         base_url = "https://api.tzkt.io/"
         accounts_endpoint = "v1/accounts/"
         count_endpoint = "count"
@@ -53,12 +53,12 @@ def parse_aliases(address_info):
     }
 
     single_aliases = ['Vested funds', 'Binance', 'Kraken', 'Coinbase', 'Huobi', 'OKEx', 'HitBTC', 'Bitfinex', 'BitMax',
-                       'Bithumb', 'Bittrex', 'Upbit', 'KuCoin', 'Gate.io', 'Kolibri', 'Skull', 'Ageur', 'Vault', 
-                       '3Route', 'DNAG', 'DOGAMI', 'Dashmaster', 'FXHASH', 'Gill', 'Hover Labs', 'Here and Now', 
-                       'Lucid Mining', 'MATEUS', 'MATIC', 'PayTezos', 'Polychain Labs', 'QuipuSwap', 'Stake House',
-                       'Tez Baker', 'Tezocracy', 'Tezos Capital Legacy', 'Ubinetic', 'Werenode EVSE', 'Youves',
-                       'concierge', 'priyamistry', '8bidou', 'Chorus One', 'XTZMaster', 'Coinone']
-    
+                      'Bithumb', 'Bittrex', 'Upbit', 'KuCoin', 'Gate.io', 'Kolibri', 'Skull', 'Ageur', 'Vault',
+                      '3Route', 'DNAG', 'DOGAMI', 'Dashmaster', 'FXHASH', 'Gill', 'Hover Labs', 'Here and Now',
+                      'Lucid Mining', 'MATEUS', 'MATIC', 'PayTezos', 'Polychain Labs', 'QuipuSwap', 'Stake House',
+                      'Tez Baker', 'Tezocracy', 'Tezos Capital Legacy', 'Ubinetic', 'Werenode EVSE', 'Youves',
+                      'concierge', 'priyamistry', '8bidou', 'Chorus One', 'XTZMaster', 'Coinone']
+
     for alias in single_aliases:
         aliases[alias] = alias
 

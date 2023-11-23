@@ -299,11 +299,11 @@ def get_exclude_contracts_flag():
         return config['analyze_flags']['exclude_contract_addresses']
     except KeyError:
         raise ValueError('Flag "exclude_contract_addresses" not in config file')
-    
+
 
 def get_exclude_below_fees_flag():
     """
-    Retrieves the flag on whether to exclude from the analysis addresses with 
+    Retrieves the flag on whether to exclude from the analysis addresses with
     balances lower than the median transaction fees
     :returns: boolean
     :raises ValueError: if the flag is not set in the config file
@@ -349,10 +349,10 @@ def get_median_tx_fee(ledger, date):
     """
     Retrieves the median transaction fee for the given ledger and date
     :param ledger: string that represents the ledger to retrieve the data for (e.g. bitcoin)
-    :param date: string that represents the date to retrieve the data for 
+    :param date: string that represents the date to retrieve the data for
     (it should be in YYYY-MM-DD format, e.g. 2021-01-01)
-    :returns: an integer representing the median transaction fee in the 
-    smallest unit of the ledger's currency or 0 if no median tx fee 
+    :returns: an integer representing the median transaction fee in the
+    smallest unit of the ledger's currency or 0 if no median tx fee
     is found for the given ledger and date
     """
     granularity = get_granularity()
