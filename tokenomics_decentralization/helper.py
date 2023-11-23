@@ -225,7 +225,7 @@ def get_metrics():
 def get_granularity():
     """
     Retrieves the granularity to be used in the analysis
-    :returns: string in ['day', 'week', 'month', 'year'] or None
+    :returns: string in ['day', 'week', 'month', 'year']
     :raises ValueError: if the granularity is not set in the config file or if it is not one of the allowed values
     """
     try:
