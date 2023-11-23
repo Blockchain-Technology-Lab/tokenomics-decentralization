@@ -276,8 +276,6 @@ def get_top_limit_value():
                 return top_limit_value
             else:
                 raise ValueError('Malformed "top_limit_value" in config; should be in [0, 1]')
-        else:
-            raise ValueError('Malformed "top_limit_type" in config')
     except KeyError:
         raise ValueError('Flag "top_limit_value" not in config file')
 
