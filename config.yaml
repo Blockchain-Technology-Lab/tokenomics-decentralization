@@ -8,6 +8,7 @@ metrics:
   - tau=0.5
   - tau=0.66
   - mpr
+  - theil
 
 # The ledgers for which an analysis should be performed.
 ledgers:
@@ -51,6 +52,7 @@ plot_parameters:
     - tau=0.5
     - tau=0.66
     - mpr
+    - theil
   plot_line_params:
     # boolean to plot combinations of the other params
     # if true, then all possible combinations of all params are plotted
