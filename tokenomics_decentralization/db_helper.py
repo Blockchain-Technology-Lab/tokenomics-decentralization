@@ -137,8 +137,10 @@ def insert_metric(conn, ledger, snapshot, metric_name, metric_value):
             raise e
 
 
-def get_non_clustered_balance_entries(conn, snapshot_id, ledger, balance_threshold):
+def get_non_clustered_balance_entries(conn, snapshot, ledger, balance_threshold):
     cursor = conn.cursor()
+
+    snapshot_id = get_snapshot_info(conn, ledger, snapshot)[0]
 
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
     exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
@@ -168,8 +170,10 @@ def get_non_clustered_balance_entries(conn, snapshot_id, ledger, balance_thresho
     return entries
 
 
-def get_balance_entries(conn, snapshot_id, ledger, balance_threshold):
+def get_balance_entries(conn, snapshot, ledger, balance_threshold):
     cursor = conn.cursor()
+
+    snapshot_id = get_snapshot_info(conn, ledger, snapshot)[0]
 
     exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
     exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
