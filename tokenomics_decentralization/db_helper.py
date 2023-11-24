@@ -30,10 +30,103 @@ def get_metric_value(conn, ledger, snapshot, metric):
     return val
 
 
+def insert_ledger(conn, ledger):
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("INSERT INTO ledgers(name) VALUES (?)", (ledger, ))
+        commit_database()
+    except sqlite3.IntegrityError as e:
+        if 'UNIQUE constraint failed' in str(e):
+            pass
+        else:
+            raise e
+
+
+def insert_snapshot(conn, ledger, snapshot):
+    cursor = conn.cursor()
+
+    ledger_id = get_ledger_id(conn, ledger)
+
+    try:
+        cursor.execute("INSERT INTO snapshots(name, ledger_id) VALUES (?, ?)", (snapshot, ledger_id))
+    except sqlite3.IntegrityError as e:
+        if 'UNIQUE constraint failed' in str(e):
+            pass
+        else:
+            raise e
+
+
+def insert_entity(conn, ledger, entity):
+    cursor = conn.cursor()
+
+    ledger_id = get_ledger_id(conn, ledger)
+    try:
+        cursor.execute("INSERT INTO entities(name, ledger_id) VALUES (?, ?)", (entity, ledger_id))
+        commit_database()
+    except sqlite3.IntegrityError as e:
+        if 'UNIQUE constraint failed' in str(e):
+            pass
+        else:
+            raise e
+
+
+def insert_address_without_update(conn, ledger, address):
+    cursor = conn.cursor()
+
+    ledger_id = get_ledger_id(conn, ledger)
+
+    try:
+        cursor.execute("INSERT INTO addresses(name, ledger_id) VALUES (?, ?)", (address, ledger_id))
+    except sqlite3.IntegrityError as e:
+        if 'UNIQUE constraint failed' in str(e):
+            pass
+        else:
+            raise e
+
+
+def insert_update_address(conn, ledger, address, entity, is_contract):
+    cursor = conn.cursor()
+
+    ledger_id = get_ledger_id(conn, ledger)
+    entity_id = cursor.execute("SELECT id FROM entities WHERE name=? AND ledger_id=?", (entity, ledger_id)).fetchone()[0]
+
+    try:
+        cursor.execute("INSERT INTO addresses(name, ledger_id, entity_id, is_contract) VALUES (?, ?, ?)", (address, ledger_id, entity_id, is_contract))
+    except sqlite3.IntegrityError as e:
+        if 'UNIQUE constraint failed' in str(e):
+            cursor.execute("UPDATE addresses SET entity_id=?, is_contract=? WHERE name=? AND ledger_id=?", (entity_id, is_contract, address, ledger_id))
+        else:
+            raise e
+
+
+def insert_balance(conn, ledger, snapshot, address, balance):
+    cursor = conn.cursor()
+
+    ledger_id = get_ledger_id(conn, ledger)
+    snapshot_id = get_snapshot_info(conn, ledger, snapshot)[0]
+    address_id = cursor.execute("SELECT id FROM addresses WHERE ledger_id=? AND name=?", (ledger_id, address)).fetchone()[0]
+
+    try:
+        cursor.execute("INSERT INTO balances(balance, snapshot_id, address_id) VALUES (?, ?, ?)", (balance, snapshot_id, address_id))
+    except sqlite3.IntegrityError as e:
+        if 'UNIQUE constraint failed' in str(e):
+            pass
+        else:
+            raise e
+
+
+def update_circulation(conn, ledger, snapshot, circulation):
+    cursor = conn.cursor()
+
+    snapshot_id = get_snapshot_info(conn, ledger, snapshot)[0]
+
+    cursor.execute("UPDATE snapshots SET circulation=? WHERE id=?", (str(circulation), snapshot_id))
+
+
 def insert_metric(conn, ledger, snapshot, metric_name, metric_value):
     cursor = conn.cursor()
-    ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
-    snapshot_id = cursor.execute("SELECT id FROM snapshots WHERE name=? AND ledger_id=?", (snapshot, ledger_id)).fetchone()[0]
+    snapshot_id = get_snapshot_info(conn, ledger, snapshot)[0]
 
     try:
         cursor.execute("INSERT INTO metrics(name, value, snapshot_id) VALUES (?, ?, ?)", (metric_name, metric_value, snapshot_id))
