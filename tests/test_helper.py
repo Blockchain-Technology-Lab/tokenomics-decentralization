@@ -170,6 +170,10 @@ def test_get_granularity(mocker):
     granularity = hlp.get_granularity()
     assert isinstance(granularity, str)
 
+    get_config_mock.return_value = {'granularity': ''}
+    granularity = hlp.get_granularity()
+    assert granularity is None
+
     get_config_mock.return_value = {'granularity': 'blah'}
     with pytest.raises(ValueError):
         hlp.get_granularity()

@@ -225,15 +225,20 @@ def get_metrics():
 def get_granularity():
     """
     Retrieves the granularity to be used in the analysis
-    :returns: string in ['day', 'week', 'month', 'year']
-    :raises ValueError: if the granularity is not set in the config file or if it is not one of the allowed values
+    :returns: string in ['day', 'week', 'month', 'year'] that represents the chosen granularity
+    or None if the relevant field is empty in the config file
+    :raises ValueError: if the granularity field is missing from the config file or if 
+    the chosen value is not one of the allowed ones
     """
     try:
         granularity = get_config_data()['granularity']
-        if granularity in ['day', 'week', 'month', 'year']:
-            return granularity
+        if granularity:
+            if granularity in ['day', 'week', 'month', 'year']:
+                return granularity
+            else:
+                raise ValueError('Malformed "granularity" in config; should be one of: "day", "week", "month", "year", or empty')
         else:
-            raise ValueError('Malformed "granularity" in config; should be one of: "day", "week", "month", "year", or empty')
+            return None
     except KeyError:
         raise ValueError('"granularity" not in config file')
 
