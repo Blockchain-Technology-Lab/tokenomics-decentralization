@@ -1,73 +1,12 @@
 from tokenomics_decentralization.schema import get_connector
 from tokenomics_decentralization.metrics import compute_hhi, compute_tau, compute_gini, compute_shannon_entropy, compute_total_entities, compute_max_power_ratio
 import tokenomics_decentralization.helper as hlp
-from time import time
-import sqlite3
+import tokenomics_decentralization.db_helper as db_hlp
 import os
 import logging
 import csv
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
-
-
-def get_non_clustered_balance_entries(cursor, snapshot_id, ledger, balance_threshold):
-    exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
-    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
-    special_addresses = hlp.get_special_addresses(ledger)
-    if len(special_addresses) == 0:
-        special_addresses_clause = ''
-    elif len(special_addresses) == 1:
-        special_addresses_clause = f'AND addresses.name NOT IN ("{special_addresses[0]}")'
-    else:
-        special_addresses_clause = f'AND addresses.name NOT IN {tuple(special_addresses)}'
-
-    start = time()
-    query = f'''
-        SELECT addresses.name, balance
-        FROM balances
-        LEFT JOIN addresses ON balances.address_id=addresses.id
-        WHERE snapshot_id=?
-        {exclude_below_threshold_clause}
-        {exclude_contract_addresses_clause}
-        {special_addresses_clause}
-        ORDER BY balance DESC
-    '''
-
-    entries = cursor.execute(query, (snapshot_id, )).fetchall()
-    logging.info(f'Retrieving entries took about {time() - start} seconds')
-
-    return entries
-
-
-def get_balance_entries(cursor, snapshot_id, ledger, balance_threshold):
-    exclude_contract_addresses_clause = 'AND addresses.is_contract=0' if hlp.get_exclude_contracts_flag() else ''
-    exclude_below_threshold_clause = f'AND balance >= {balance_threshold}' if balance_threshold >= 0 else ''
-    special_addresses = hlp.get_special_addresses(ledger)
-    if len(special_addresses) == 0:
-        special_addresses_clause = ''
-    elif len(special_addresses) == 1:
-        special_addresses_clause = f'AND addresses.name NOT IN ("{special_addresses[0]}")'
-    else:
-        special_addresses_clause = f'AND addresses.name NOT IN {tuple(special_addresses)}'
-
-    start = time()
-    query = f'''
-        SELECT IFNULL(entities.name, addresses.name) AS entity, SUM(CAST(balance AS REAL)) AS aggregate_balance
-        FROM balances
-        LEFT JOIN addresses ON balances.address_id=addresses.id
-        LEFT JOIN entities ON addresses.entity_id=entities.id
-        WHERE snapshot_id=?
-        {exclude_below_threshold_clause}
-        {exclude_contract_addresses_clause}
-        {special_addresses_clause}
-        GROUP BY entity
-        ORDER BY aggregate_balance DESC
-    '''
-
-    entries = cursor.execute(query, (snapshot_id, )).fetchall()
-    logging.info(f'Retrieving entries took about {time() - start} seconds')
-
-    return entries
 
 
 def analyze_snapshot(conn, ledger, snapshot):
@@ -78,11 +17,7 @@ def analyze_snapshot(conn, ledger, snapshot):
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
 
-    cursor = conn.cursor()
-
-    ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
-
-    snapshot_info = cursor.execute("SELECT * FROM snapshots WHERE name=? AND ledger_id=?", (snapshot, ledger_id)).fetchone()
+    snapshot_info = db_hlp.get_snapshot_info(conn, ledger, snapshot)
     snapshot_id = snapshot_info[0]
     circulation = int(float(snapshot_info[3]))
 
@@ -114,15 +49,15 @@ def analyze_snapshot(conn, ledger, snapshot):
         if top_limit_value > 0:
             flagged_metric = f'top-{top_limit_value}_{top_limit_type} ' + flagged_metric
 
-        val = cursor.execute('SELECT value FROM metrics WHERE snapshot_id=? and name=?', (snapshot_id, flagged_metric)).fetchone()
+        val = db_hlp.get_metric_value(conn, ledger, snapshot, flagged_metric)
         if val and not force_analyze:
             metric_value = val[0]
         else:
             if not entries:
                 if no_clustering:
-                    entries = get_non_clustered_balance_entries(cursor, snapshot_id, ledger, balance_threshold=median_tx_fee)
+                    entries = db_hlp.get_non_clustered_balance_entries(conn, snapshot_id, ledger, balance_threshold=median_tx_fee)
                 else:
-                    entries = get_balance_entries(cursor, snapshot_id, ledger, balance_threshold=median_tx_fee)
+                    entries = db_hlp.get_balance_entries(conn, snapshot_id, ledger, balance_threshold=median_tx_fee)
 
                 if top_limit_value > 0:
                     if top_limit_type == 'percentage':
@@ -141,14 +76,9 @@ def analyze_snapshot(conn, ledger, snapshot):
             else:
                 metric_value = compute_functions[default_metric_name](entries, circulation)
 
-            try:
-                cursor.execute("INSERT INTO metrics(name, value, snapshot_id) VALUES (?, ?, ?)", (flagged_metric, metric_value, snapshot_id))
-            except sqlite3.IntegrityError as e:
-                if 'UNIQUE constraint failed' in str(e):
-                    cursor.execute("UPDATE metrics SET value=? WHERE name=? AND snapshot_id=?", (metric_value, flagged_metric, snapshot_id))
-                else:
-                    raise e
-            conn.commit()
+            db_hlp.insert_metric(conn, ledger, snapshot, flagged_metric, metric_value)
+
+            db_hlp.commit_database(conn)
 
         if any(['tau' in default_metric_name, 'total entities' in default_metric_name]):
             metric_value = int(metric_value)

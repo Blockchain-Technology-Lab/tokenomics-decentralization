@@ -1,7 +1,7 @@
 from tokenomics_decentralization.schema import get_connector
 import tokenomics_decentralization.helper as hlp
+import tokenomics_decentralization.db_helper as db_hlp
 import os
-import sqlite3
 import json
 import csv
 import logging
@@ -10,69 +10,30 @@ logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:
 
 
 def fill_db_with_addresses(conn, ledger):
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("INSERT INTO ledgers(name) VALUES (?)", (ledger, ))
-        conn.commit()
-    except sqlite3.IntegrityError as e:
-        if 'UNIQUE constraint failed' in str(e):
-            pass
-        else:
-            raise e
-
-    ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
+    db_hlp.insert_ledger(conn, ledger)
+    db_hlp.get_ledger_id(conn, ledger)
 
     try:
         with open(hlp.MAPPING_INFO_DIR / f'addresses/{ledger}.json') as f:
             address_entities = json.load(f)
             for addr, info in address_entities.items():
                 entity = info['name']
-                try:
-                    cursor.execute("INSERT INTO entities(name, ledger_id) VALUES (?, ?)", (entity, ledger_id))
-                    conn.commit()
-                except sqlite3.IntegrityError as e:
-                    if 'UNIQUE constraint failed' in str(e):
-                        pass
-                    else:
-                        raise e
+                db_hlp.insert_entity(conn, ledger, entity)
+                is_contract = 'is_contract' in info.keys() and info['is_contract']
 
-                entity_id = cursor.execute("SELECT id FROM entities WHERE name=? AND ledger_id=?", (entity, ledger_id)).fetchone()[0]
-
-                try:
-                    cursor.execute("INSERT INTO addresses(name, ledger_id, entity_id) VALUES (?, ?, ?)", (addr, ledger_id, entity_id))
-                except sqlite3.IntegrityError as e:
-                    if 'UNIQUE constraint failed' in str(e):
-                        cursor.execute("UPDATE addresses SET entity_id=? WHERE name=? AND ledger_id=?", (entity_id, addr, ledger_id))
-                    else:
-                        raise e
-
-                if 'is_contract' in info.keys() and info['is_contract']:
-                    cursor.execute("UPDATE addresses SET is_contract=? WHERE name=? AND ledger_id=?", (info['is_contract'], addr, ledger_id))
-        conn.commit()
+                db_hlp.insert_update_address(conn, ledger, addr, entity, is_contract)
+        db_hlp.commit_database()
     except FileNotFoundError:
         return
 
 
 def fill_db_with_balances(conn, ledger, snapshot):
-    cursor = conn.cursor()
-
-    ledger_id = cursor.execute("SELECT id FROM ledgers WHERE name=?", (ledger, )).fetchone()[0]
-
     input_paths = [input_dir / f'{ledger}_{snapshot}_raw_data.csv' for input_dir in hlp.get_input_directories()]
     for input_filename in input_paths:
         if os.path.isfile(input_filename):
             with open(input_filename) as f:
                 csv_reader = csv.reader(f, delimiter=',')
-                try:
-                    cursor.execute("INSERT INTO snapshots(name, ledger_id) VALUES (?, ?)", (snapshot, ledger_id))
-                except sqlite3.IntegrityError as e:
-                    if 'UNIQUE constraint failed' in str(e):
-                        pass
-                    else:
-                        raise e
-
-                snapshot_id = cursor.execute("SELECT id FROM snapshots WHERE ledger_id=? AND name=?", (ledger_id, snapshot)).fetchone()[0]
+                db_hlp.insert_snapshot(conn, ledger, snapshot)
 
                 circulation = 0
                 next(csv_reader, None)  # skip header
@@ -87,28 +48,11 @@ def fill_db_with_balances(conn, ledger, snapshot):
                         continue
 
                     circulation += balance
+                    db_hlp.insert_address_without_update(conn, ledger, address)
+                    db_hlp.insert_balance(conn, ledger, snapshot, address, balance)
 
-                    try:
-                        cursor.execute("INSERT INTO addresses(name, ledger_id) VALUES (?, ?)", (address, ledger_id))
-                    except sqlite3.IntegrityError as e:
-                        if 'UNIQUE constraint failed' in str(e):
-                            pass
-                        else:
-                            raise e
-
-                    address_id = cursor.execute("SELECT id FROM addresses WHERE ledger_id=? AND name=?", (ledger_id, address)).fetchone()[0]
-                    try:
-                        cursor.execute("INSERT INTO balances(balance, snapshot_id, address_id) VALUES (?, ?, ?)", (balance, snapshot_id, address_id))
-                    except sqlite3.IntegrityError as e:
-                        if 'UNIQUE constraint failed' in str(e):
-                            pass
-                        else:
-                            raise e
-
-                cursor.execute("UPDATE snapshots SET circulation=? WHERE id=?", (str(circulation), snapshot_id))
-
-                conn.commit()
-
+                db_hlp.update_circulation(conn, ledger, snapshot, circulation)
+                db_hlp.commit_database()
             return
 
 
