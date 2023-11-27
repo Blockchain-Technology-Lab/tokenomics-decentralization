@@ -18,7 +18,6 @@ def analyze_snapshot(conn, ledger, snapshot):
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
 
     snapshot_info = db_hlp.get_snapshot_info(conn, ledger, snapshot)
-    snapshot_id = snapshot_info[0]
     circulation = int(float(snapshot_info[3]))
 
     snapshot_date = snapshot_info[1]
@@ -56,9 +55,9 @@ def analyze_snapshot(conn, ledger, snapshot):
         else:
             if not entries:
                 if no_clustering:
-                    entries = db_hlp.get_non_clustered_balance_entries(conn, snapshot_id, ledger, balance_threshold=median_tx_fee)
+                    entries = db_hlp.get_non_clustered_balance_entries(conn, snapshot, ledger, balance_threshold=median_tx_fee)
                 else:
-                    entries = db_hlp.get_balance_entries(conn, snapshot_id, ledger, balance_threshold=median_tx_fee)
+                    entries = db_hlp.get_balance_entries(conn, snapshot, ledger, balance_threshold=median_tx_fee)
 
                 if top_limit_value > 0:
                     if top_limit_type == 'percentage':
