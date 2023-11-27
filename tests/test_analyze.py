@@ -1,4 +1,5 @@
-from tokenomics_decentralization.analyze import get_output_row, analyze_snapshot
+from tokenomics_decentralization.analyze import get_output_row, analyze_snapshot, analyze
+import pathlib
 
 
 def test_get_output_row(mocker):
@@ -111,3 +112,34 @@ def test_analyze_snapshot(mocker):
 
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
     assert output == {'exclude_below_fees exclude_contracts tau=0.5': 1}
+
+
+def test_analyze(mocker):
+    get_output_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_output_directories')
+    get_output_directories_mock.return_value = [pathlib.Path(__file__).resolve()]
+
+    is_file_mock = mocker.patch('os.path.isfile')
+    is_file_mock.return_value = True
+
+    get_db_connector_mock = mocker.patch('tokenomics_decentralization.schema.get_connector')
+    get_db_connector_mock.return_value = None
+
+    analyze_snapshot_mock = mocker.patch('tokenomics_decentralization.analyze.analyze_snapshot')
+    analyze_snapshot_mock.return_value = {'hhi': 1}
+
+    write_csv_output_mock = mocker.patch('tokenomics_decentralization.analyze.write_csv_output')
+    write_csv_output_mock.return_value = None
+
+    get_output_row_mock = mocker.patch('tokenomics_decentralization.analyze.get_output_row')
+    get_output_row_mock.return_value = 'row'
+
+    output_rows = analyze(['bitcoin'], ['2010-01-01'])
+    assert output_rows == ['row']
+    analyze_snapshot_mock.assert_called_with(None, 'bitcoin', '2010-01-01')
+
+    output_rows = analyze(['bitcoin', 'ethereum'], ['2010-01-01', '2011-01-01'])
+    assert output_rows == ['row', 'row', 'row', 'row']
+
+    is_file_mock.return_value = False
+    output_rows = analyze(['bitcoin', 'ethereum'], ['2010-01-01', '2011-01-01'])
+    assert output_rows == []
