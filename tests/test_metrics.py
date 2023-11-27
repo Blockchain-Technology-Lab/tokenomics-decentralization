@@ -1,5 +1,5 @@
 from tokenomics_decentralization.metrics import compute_gini, compute_hhi, compute_shannon_entropy, \
-    compute_tau, compute_total_entities, compute_max_power_ratio
+    compute_tau, compute_total_entities, compute_max_power_ratio, compute_theil_index
 
 
 def test_tau_50():
@@ -149,3 +149,27 @@ def test_compute_max_power_ratio():
     tokens_per_entity = [('a', 1), ('b', 1), ('c', 1)]
     max_mpr = compute_max_power_ratio(tokens_per_entity, circulation=3)
     assert max_mpr == 1 / 3
+
+
+def test_compute_theil_index():
+    """
+    Ensure that the results of the compute_theil_index function are consistent with online calculators,
+    such as: http://www.poorcity.richcity.org/calculator/
+    """
+    decimals = 3
+
+    tokens_per_entity = [('a', 3.0), ('b', 2), ('c', 1)]
+    theil_t = compute_theil_index(tokens_per_entity, 6)
+    assert round(theil_t, decimals) == 0.087
+
+    tokens_per_entity = [('a', 3), ('b', 2), ('c', 1), ('d', 1), ('e', 1), ('f', 1)]
+    theil_t = compute_theil_index(tokens_per_entity, 9)
+    assert round(theil_t, decimals) == 0.115
+
+    tokens_per_entity = {('a', 432), ('b', 0), ('c', 0), ('d', 0)}
+    theil_t = compute_theil_index(tokens_per_entity, 432)
+    assert round(theil_t, decimals) == 1.386
+
+    tokens_per_entity = {('a', 432)}
+    theil_t = compute_theil_index(tokens_per_entity, 432)
+    assert round(theil_t, decimals) == 0

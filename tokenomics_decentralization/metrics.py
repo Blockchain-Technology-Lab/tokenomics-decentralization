@@ -97,4 +97,25 @@ def compute_max_power_ratio(entries, circulation):
     :returns: float that represents the maximum power ratio among all token holders
     """
     max_balance = entries[0][1]
-    return max_balance / circulation
+    return max_balance / circulation if circulation > 0 else 0
+
+
+def compute_theil_index(entries, circulation):
+    """
+    Calculates the Theil-T index of a distribution of balances
+    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
+    address is a string and balance is a numeric type (int or float)
+    :param circulation: int, the total amount of tokens in circulation
+    :returns: float that represents the Thiel index of the given distribution
+    """
+    N = len(entries)
+    if N == 0:
+        return 0
+    mu = circulation / N
+    theil = 0
+    for entry in entries:
+        x = entry[1] / mu
+        if x > 0:
+            theil += x * log(x)
+    theil /= N
+    return theil
