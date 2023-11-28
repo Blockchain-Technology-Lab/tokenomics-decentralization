@@ -1,4 +1,4 @@
-from tokenomics_decentralization.map import fill_db_with_addresses, apply_mapping
+from tokenomics_decentralization.map import fill_db_with_addresses, apply_mapping, fill_db_with_balances
 from unittest.mock import call
 import pathlib
 
@@ -33,6 +33,44 @@ def test_fill_db_with_addresses(mocker):
     assert call('connector', 'bitcoin', 'address 1', 'Entity Name 1', False) in db_insert_update_address_mock.call_args_list
     assert call('connector', 'bitcoin', 'address 2', 'Entity Name 2', True) in db_insert_update_address_mock.call_args_list
     db_commit_mock.assert_called_with()
+
+
+def test_fill_db_with_balances(mocker):
+    get_input_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_input_directories')
+    get_input_directories_mock.return_value = [pathlib.Path('/input').resolve()]
+
+    os_isfile_mock = mocker.patch('os.path.isfile')
+    os_isfile_mock.return_value = True
+
+    db_insert_address_without_update_mock = mocker.patch('tokenomics_decentralization.db_helper.insert_address_without_update')
+    db_insert_snapshot_mock = mocker.patch('tokenomics_decentralization.db_helper.insert_snapshot')
+    db_insert_balance_mock = mocker.patch('tokenomics_decentralization.db_helper.insert_balance')
+    db_update_circulation_mock = mocker.patch('tokenomics_decentralization.db_helper.update_circulation')
+    db_commit_mock = mocker.patch('tokenomics_decentralization.db_helper.commit_database')
+
+    mocker.patch('builtins.open', mocker.mock_open(read_data='address,type,balance\naddr1,pubkey,100\naddr2,pubkey,200'))
+
+    fill_db_with_balances('connector', 'bitcoin', '2010-01-01')
+    assert db_insert_snapshot_mock.call_args_list == [call('connector', 'bitcoin', '2010-01-01')]
+    assert db_insert_address_without_update_mock.call_args_list == [call('connector', 'bitcoin', 'addr1'), call('connector', 'bitcoin', 'addr2')]
+    assert db_insert_balance_mock.call_args_list == [call('connector', 'bitcoin', '2010-01-01', 'addr1', 100), call('connector', 'bitcoin', '2010-01-01', 'addr2', 200)]
+    assert db_update_circulation_mock.call_args_list == [call('connector', 'bitcoin', '2010-01-01', 300)]
+    assert db_commit_mock.call_args_list == [call()]
+
+    db_insert_address_without_update_mock.reset_mock()
+    db_insert_snapshot_mock.reset_mock()
+    db_insert_balance_mock.reset_mock()
+    db_update_circulation_mock.reset_mock()
+    db_commit_mock.reset_mock()
+
+    mocker.patch('builtins.open', mocker.mock_open(read_data='address,balance\naddr1,0\naddr2,1000000000'))
+
+    fill_db_with_balances('connector', 'ethereum', '2010-01-01')
+    assert db_insert_snapshot_mock.call_args_list == [call('connector', 'ethereum', '2010-01-01')]
+    assert db_insert_address_without_update_mock.call_args_list == [call('connector', 'ethereum', 'addr2')]
+    assert db_insert_balance_mock.call_args_list == [call('connector', 'ethereum', '2010-01-01', 'addr2', 1)]
+    assert db_update_circulation_mock.call_args_list == [call('connector', 'ethereum', '2010-01-01', 1)]
+    assert db_commit_mock.call_args_list == [call()]
 
 
 def test_apply_mapping(mocker):
