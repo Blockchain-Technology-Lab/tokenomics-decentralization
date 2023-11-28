@@ -60,6 +60,9 @@ def test_analyze_snapshot(mocker):
     db_insert_mock = mocker.patch('tokenomics_decentralization.db_helper.insert_metric')
     db_commit_mock = mocker.patch('tokenomics_decentralization.db_helper.commit_database')
 
+    compute_hhi_mock = mocker.patch('tokenomics_decentralization.analyze.compute_hhi')
+    compute_tau_mock = mocker.patch('tokenomics_decentralization.analyze.compute_tau')
+
     get_force_analyze_mock.return_value = False
     get_no_clustering_mock.return_value = False
     get_exclude_contracts_mock.return_value = False
@@ -94,30 +97,35 @@ def test_analyze_snapshot(mocker):
     db_insert_mock.return_value = None
     db_commit_mock.return_value = None
 
+    compute_hhi_mock.return_value = 2
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'top-1_absolute exclude_below_fees exclude_contracts non-clustered hhi': 10000}
+    assert output == {'top-1_absolute exclude_below_fees exclude_contracts non-clustered hhi': 2}
 
     get_no_clustering_mock.return_value = False
 
+    compute_hhi_mock.return_value = 3
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'top-1_absolute exclude_below_fees exclude_contracts hhi': 10000}
+    assert output == {'top-1_absolute exclude_below_fees exclude_contracts hhi': 3}
 
     get_top_limit_value_mock.return_value = 0
 
+    compute_hhi_mock.return_value = 4
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'exclude_below_fees exclude_contracts hhi': 5000}
+    assert output == {'exclude_below_fees exclude_contracts hhi': 4}
 
     get_top_limit_type_mock.return_value = 'percentage'
     get_top_limit_value_mock.return_value = 0.5
 
+    compute_hhi_mock.return_value = 5
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'top-0.5_percentage exclude_below_fees exclude_contracts hhi': 10000}
+    assert output == {'top-0.5_percentage exclude_below_fees exclude_contracts hhi': 5}
 
     get_top_limit_value_mock.return_value = 0
     get_metrics_mock.return_value = ['tau=0.5']
 
+    compute_tau_mock.return_value = [100, None]
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'exclude_below_fees exclude_contracts tau=0.5': 1}
+    assert output == {'exclude_below_fees exclude_contracts tau=0.5': 100}
 
 
 def test_analyze(mocker):
@@ -127,8 +135,8 @@ def test_analyze(mocker):
     is_file_mock = mocker.patch('os.path.isfile')
     is_file_mock.return_value = True
 
-    get_db_connector_mock = mocker.patch('tokenomics_decentralization.schema.get_connector')
-    get_db_connector_mock.return_value = None
+    get_db_connector_mock = mocker.patch('tokenomics_decentralization.analyze.get_connector')
+    get_db_connector_mock.return_value = 'connector'
 
     analyze_snapshot_mock = mocker.patch('tokenomics_decentralization.analyze.analyze_snapshot')
     analyze_snapshot_mock.return_value = {'hhi': 1}
@@ -141,7 +149,7 @@ def test_analyze(mocker):
 
     output_rows = analyze(['bitcoin'], ['2010-01-01'])
     assert output_rows == ['row']
-    analyze_snapshot_mock.assert_called_with(None, 'bitcoin', '2010-01-01')
+    analyze_snapshot_mock.assert_called_with('connector', 'bitcoin', '2010-01-01')
 
     output_rows = analyze(['bitcoin', 'ethereum'], ['2010-01-01', '2011-01-01'])
     assert output_rows == ['row', 'row', 'row', 'row']
