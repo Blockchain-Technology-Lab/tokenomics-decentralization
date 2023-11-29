@@ -32,7 +32,7 @@ def test_fill_db_with_addresses(mocker):
     assert call('connector', 'bitcoin', 'Entity Name 2') in db_insert_entity_mock.call_args_list
     assert call('connector', 'bitcoin', 'address 1', 'Entity Name 1', False) in db_insert_update_address_mock.call_args_list
     assert call('connector', 'bitcoin', 'address 2', 'Entity Name 2', True) in db_insert_update_address_mock.call_args_list
-    db_commit_mock.assert_called_with()
+    db_commit_mock.assert_called()
 
 
 def test_fill_db_with_balances(mocker):

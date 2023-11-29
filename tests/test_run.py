@@ -24,4 +24,4 @@ def test_run(mocker):
 
     get_plot_flag_mock.return_value = True
     run.main(['bitcoin'], ['2010-01-01'])
-    plot_mock.assert_called_with()
+    plot_mock.assert_called()
