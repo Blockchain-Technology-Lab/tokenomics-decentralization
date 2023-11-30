@@ -1,5 +1,6 @@
-from tokenomics_decentralization.analyze import get_output_row, analyze_snapshot, analyze
+from tokenomics_decentralization.analyze import get_output_row, analyze_snapshot, analyze, write_csv_output
 import pathlib
+import os
 
 
 def test_get_output_row(mocker):
@@ -20,22 +21,28 @@ def test_get_output_row(mocker):
 
     metrics = {'hhi': 1, 'gini': 0}
     csv_row = get_output_row('bitcoin', '2010-01-01', metrics)
-    assert csv_row == ['bitcoin', '2010-01-01', False, False, 'absolute', 0, 1, 0]
+    assert csv_row == ['bitcoin', '2010-01-01', False, False, 'absolute', 0, False, 1, 0]
 
     get_no_clustering_mock.return_value = True
     metrics = {'non-clustered hhi': 1, 'non-clustered gini': 0}
     csv_row = get_output_row('bitcoin', '2010-01-01', metrics)
-    assert csv_row == ['bitcoin', '2010-01-01', True, False, 'absolute', 0, 1, 0]
+    assert csv_row == ['bitcoin', '2010-01-01', True, False, 'absolute', 0, False, 1, 0]
 
     get_exclude_contracts_mock.return_value = True
     metrics = {'exclude_contracts non-clustered hhi': 1, 'exclude_contracts non-clustered gini': 0}
     csv_row = get_output_row('bitcoin', '2010-01-01', metrics)
-    assert csv_row == ['bitcoin', '2010-01-01', True, True, 'absolute', 0, 1, 0]
+    assert csv_row == ['bitcoin', '2010-01-01', True, True, 'absolute', 0, False, 1, 0]
 
     get_top_limit_value_mock.return_value = 1
     metrics = {'top-1_absolute exclude_contracts non-clustered hhi': 1, 'top-1_absolute exclude_contracts non-clustered gini': 0}
     csv_row = get_output_row('bitcoin', '2010-01-01', metrics)
-    assert csv_row == ['bitcoin', '2010-01-01', True, True, 'absolute', 1, 1, 0]
+    assert csv_row == ['bitcoin', '2010-01-01', True, True, 'absolute', 1, False, 1, 0]
+
+    get_exclude_below_fees_mock.return_value = True
+    get_top_limit_value_mock.return_value = 1
+    metrics = {'top-1_absolute exclude_below_fees exclude_contracts non-clustered hhi': 1, 'top-1_absolute exclude_below_fees exclude_contracts non-clustered gini': 0}
+    csv_row = get_output_row('bitcoin', '2010-01-01', metrics)
+    assert csv_row == ['bitcoin', '2010-01-01', True, True, 'absolute', 1, True, 1, 0]
 
 
 def test_analyze_snapshot(mocker):
@@ -53,6 +60,9 @@ def test_analyze_snapshot(mocker):
     get_nonclustered_entries_mock = mocker.patch('tokenomics_decentralization.db_helper.get_non_clustered_balance_entries')
     db_insert_mock = mocker.patch('tokenomics_decentralization.db_helper.insert_metric')
     db_commit_mock = mocker.patch('tokenomics_decentralization.db_helper.commit_database')
+
+    compute_hhi_mock = mocker.patch('tokenomics_decentralization.analyze.compute_hhi')
+    compute_tau_mock = mocker.patch('tokenomics_decentralization.analyze.compute_tau')
 
     get_force_analyze_mock.return_value = False
     get_no_clustering_mock.return_value = False
@@ -88,41 +98,94 @@ def test_analyze_snapshot(mocker):
     db_insert_mock.return_value = None
     db_commit_mock.return_value = None
 
+    compute_hhi_mock.return_value = 2
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'top-1_absolute exclude_below_fees exclude_contracts non-clustered hhi': 10000}
+    assert output == {'top-1_absolute exclude_below_fees exclude_contracts non-clustered hhi': 2}
 
     get_no_clustering_mock.return_value = False
 
+    compute_hhi_mock.return_value = 3
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'top-1_absolute exclude_below_fees exclude_contracts hhi': 10000}
+    assert output == {'top-1_absolute exclude_below_fees exclude_contracts hhi': 3}
 
     get_top_limit_value_mock.return_value = 0
 
+    compute_hhi_mock.return_value = 4
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'exclude_below_fees exclude_contracts hhi': 5000}
+    assert output == {'exclude_below_fees exclude_contracts hhi': 4}
 
     get_top_limit_type_mock.return_value = 'percentage'
     get_top_limit_value_mock.return_value = 0.5
 
+    compute_hhi_mock.return_value = 5
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'top-0.5_percentage exclude_below_fees exclude_contracts hhi': 10000}
+    assert output == {'top-0.5_percentage exclude_below_fees exclude_contracts hhi': 5}
 
     get_top_limit_value_mock.return_value = 0
     get_metrics_mock.return_value = ['tau=0.5']
 
+    compute_tau_mock.return_value = [100, None]
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
-    assert output == {'exclude_below_fees exclude_contracts tau=0.5': 1}
+    assert output == {'exclude_below_fees exclude_contracts tau=0.5': 100}
+
+
+def test_write_csv_output(mocker):
+    get_metrics_mock = mocker.patch('tokenomics_decentralization.helper.get_metrics')
+    get_metrics_mock.return_value = ['hhi']
+
+    get_output_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_output_directories')
+    get_output_directories_mock.return_value = [pathlib.Path(__file__).resolve().parent]
+
+    get_no_clustering_mock = mocker.patch('tokenomics_decentralization.helper.get_no_clustering_flag')
+    get_exclude_contracts_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_contracts_flag')
+    get_exclude_below_fees_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_below_fees_flag')
+    get_top_limit_type_mock = mocker.patch('tokenomics_decentralization.helper.get_top_limit_type')
+    get_top_limit_value_mock = mocker.patch('tokenomics_decentralization.helper.get_top_limit_value')
+
+    get_no_clustering_mock.return_value = False
+    get_exclude_contracts_mock.return_value = False
+    get_exclude_below_fees_mock.return_value = False
+    get_top_limit_type_mock.return_value = 'absolute'
+    get_top_limit_value_mock.return_value = 0
+
+    write_csv_output([
+        ['bitcoin', '2010-01-01', False, False, 'absolute', 0, False, 100],
+        ['ethereum', '2010-01-01', False, False, 'absolute', 0, False, 200],
+        ])
+    with open(pathlib.Path(__file__).resolve().parent / 'output.csv') as f:
+        lines = f.readlines()
+        assert lines[0] == ','.join(['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type', 'top_limit_value', 'exclude_below_fees', 'hhi']) + '\n'
+        assert lines[1] == ','.join(['bitcoin', '2010-01-01', 'False', 'False', 'absolute', '0', 'False', '100']) + '\n'
+        assert lines[2] == ','.join(['ethereum', '2010-01-01', 'False', 'False', 'absolute', '0', 'False', '200']) + '\n'
+    os.remove(pathlib.Path(__file__).resolve().parent / 'output.csv')
+
+    get_no_clustering_mock.return_value = True
+    get_exclude_contracts_mock.return_value = True
+    get_exclude_below_fees_mock.return_value = True
+    get_top_limit_type_mock.return_value = 'absolute'
+    get_top_limit_value_mock.return_value = 10
+
+    write_csv_output([
+        ['bitcoin', '2010-01-01', False, False, 'absolute', 0, False, 100],
+        ['ethereum', '2010-01-01', False, False, 'absolute', 0, False, 200],
+        ])
+    with open(pathlib.Path(__file__).resolve().parent / 'output-no_clustering-exclude_contract_addresses-absolute_10-exclude_below_fees.csv') as f:
+        lines = f.readlines()
+        assert lines[0] == ','.join(['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type', 'top_limit_value', 'exclude_below_fees', 'hhi']) + '\n'
+        assert lines[1] == ','.join(['bitcoin', '2010-01-01', 'False', 'False', 'absolute', '0', 'False', '100']) + '\n'
+        assert lines[2] == ','.join(['ethereum', '2010-01-01', 'False', 'False', 'absolute', '0', 'False', '200']) + '\n'
+    os.remove(pathlib.Path(__file__).resolve().parent / 'output-no_clustering-exclude_contract_addresses-absolute_10-exclude_below_fees.csv')
 
 
 def test_analyze(mocker):
     get_output_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_output_directories')
-    get_output_directories_mock.return_value = [pathlib.Path(__file__).resolve()]
+    get_output_directories_mock.return_value = [pathlib.Path(__file__).resolve().parent]
 
     is_file_mock = mocker.patch('os.path.isfile')
     is_file_mock.return_value = True
 
-    get_db_connector_mock = mocker.patch('tokenomics_decentralization.schema.get_connector')
-    get_db_connector_mock.return_value = None
+    get_db_connector_mock = mocker.patch('tokenomics_decentralization.analyze.get_connector')
+    get_db_connector_mock.return_value = 'connector'
 
     analyze_snapshot_mock = mocker.patch('tokenomics_decentralization.analyze.analyze_snapshot')
     analyze_snapshot_mock.return_value = {'hhi': 1}
@@ -135,7 +198,7 @@ def test_analyze(mocker):
 
     output_rows = analyze(['bitcoin'], ['2010-01-01'])
     assert output_rows == ['row']
-    analyze_snapshot_mock.assert_called_with(None, 'bitcoin', '2010-01-01')
+    analyze_snapshot_mock.assert_called_with('connector', 'bitcoin', '2010-01-01')
 
     output_rows = analyze(['bitcoin', 'ethereum'], ['2010-01-01', '2011-01-01'])
     assert output_rows == ['row', 'row', 'row', 'row']

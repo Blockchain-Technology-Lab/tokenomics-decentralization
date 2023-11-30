@@ -95,7 +95,7 @@ def get_output_row(ledger, date, metrics):
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
 
-    csv_row = [ledger, date, no_clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value]
+    csv_row = [ledger, date, no_clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value, exclude_below_fees_flag]
 
     for metric_name in hlp.get_metrics():
         val = metric_name
@@ -112,13 +112,14 @@ def get_output_row(ledger, date, metrics):
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type', 'top_limit_value']
+    header = ['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type', 'top_limit_value', 'exclude_below_fees']
     header += hlp.get_metrics()
 
     no_clustering = hlp.get_no_clustering_flag()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
+    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     output_filename = 'output'
     if no_clustering:
         output_filename += '-no_clustering'
@@ -126,6 +127,8 @@ def write_csv_output(output_rows):
         output_filename += '-exclude_contract_addresses'
     if top_limit_value:
         output_filename += f'-{top_limit_type}_{top_limit_value}'
+    if exclude_below_fees_flag:
+        output_filename += '-exclude_below_fees'
     output_filename += '.csv'
 
     output_dir = hlp.get_output_directories()[0]

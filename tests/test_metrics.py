@@ -173,3 +173,7 @@ def test_compute_theil_index():
     tokens_per_entity = {('a', 432)}
     theil_t = compute_theil_index(tokens_per_entity, 432)
     assert round(theil_t, decimals) == 0
+
+    tokens_per_entity = {}
+    theil_t = compute_theil_index(tokens_per_entity, 432)
+    assert theil_t == 0

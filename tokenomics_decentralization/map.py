@@ -11,7 +11,6 @@ logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:
 
 def fill_db_with_addresses(conn, ledger):
     db_hlp.insert_ledger(conn, ledger)
-    db_hlp.get_ledger_id(conn, ledger)
 
     try:
         with open(hlp.MAPPING_INFO_DIR / f'addresses/{ledger}.json') as f:
