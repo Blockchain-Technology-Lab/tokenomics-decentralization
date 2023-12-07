@@ -290,7 +290,10 @@ def get_circulation_from_entries(entries):
     Computes the aggregate value of a list of db entries
     :returns: integer
     """
-    return sum([int(entry[1]) for entry in entries])
+    circulation = 0
+    for entry in entries:
+        circulation += int(entry[1])
+    return circulation
 
 
 def get_exclude_contracts_flag():
