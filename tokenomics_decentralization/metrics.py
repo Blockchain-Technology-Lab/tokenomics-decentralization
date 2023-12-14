@@ -4,8 +4,7 @@ from math import log
 def compute_tau(entries, circulation, threshold):
     """
     Calculates the tau index of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
-    address is a string and balance is a numeric type (int or float)
+    :param entries: list of tuples (balance, ), sorted by balance in descending order, where balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :param threshold: float, the parameter of the tau index, i.e. the threshold for the market share
     that is captured by the index
@@ -15,7 +14,7 @@ def compute_tau(entries, circulation, threshold):
     results = [0, 0]
 
     for entry in entries:
-        market_share = int(entry[1]) / circulation
+        market_share = int(entry[0]) / circulation
         if results[1] >= threshold:
             break
         results[0] += 1
@@ -27,8 +26,7 @@ def compute_tau(entries, circulation, threshold):
 def compute_gini(entries, circulation):
     """
     Calculates the Gini coefficient of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
-    address is a string and balance is a numeric type (int or float)
+    :param entries: list of tuples (balance, ), sorted by balance in descending order, where balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float between 0 and 1 that represents the Gini coefficient of the given distribution
     """
@@ -37,7 +35,7 @@ def compute_gini(entries, circulation):
     gini = 1
     for entry in entries:
         richer_population_percentage = parsed_entries / population
-        market_share = int(entry[1]) / circulation
+        market_share = int(entry[0]) / circulation
         gini -= market_share * ((1 / population) + (2 * richer_population_percentage))
         parsed_entries += 1
 
@@ -47,14 +45,13 @@ def compute_gini(entries, circulation):
 def compute_hhi(entries, circulation):
     """
     Calculates the Herfindahl-Hirschman index (HHI) of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
-    address is a string and balance is a numeric type (int or float)
+    :param entries: list of tuples (balance, ), sorted by balance in descending order, where balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float between 0 and 10,000 that represents the HHI of the given distribution
     """
     hhi = 0
     for entry in entries:
-        market_share = int(entry[1]) / circulation * 100
+        market_share = int(entry[0]) / circulation * 100
         hhi += market_share**2
 
     return hhi
@@ -63,14 +60,13 @@ def compute_hhi(entries, circulation):
 def compute_shannon_entropy(entries, circulation):
     """
     Calculates the Shannon entropy of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
-    address is a string and balance is a numeric type (int or float)
+    :param entries: list of tuples (balance, ), sorted by balance in descending order, where balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float between 0 and 1 that represents the Shannon entropy of the given distribution
     """
     entropy = 0
     for entry in entries:
-        market_share = int(entry[1]) / circulation
+        market_share = int(entry[0]) / circulation
         if market_share > 0:
             entropy -= market_share * log(market_share, 2)
 
@@ -80,8 +76,7 @@ def compute_shannon_entropy(entries, circulation):
 def compute_total_entities(entries, circulation):
     """
     Calculates the total number of entities in a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
-    address is a string and balance is a numeric type (int or float)
+    :param entries: list of tuples (balance, ), sorted by balance in descending order, where balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: int that represents the total number of entities in the given distribution
     """
@@ -91,20 +86,18 @@ def compute_total_entities(entries, circulation):
 def compute_max_power_ratio(entries, circulation):
     """
     Calculates the maximum power ratio of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
-    address is a string and balance is a numeric type (int or float)
+    :param entries: list of tuples (balance, ), sorted by balance in descending order, where balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float that represents the maximum power ratio among all token holders
     """
-    max_balance = entries[0][1]
+    max_balance = entries[0][0]
     return max_balance / circulation if circulation > 0 else 0
 
 
 def compute_theil_index(entries, circulation):
     """
     Calculates the Theil-T index of a distribution of balances
-    :param entries: list of tuples (address, balance), sorted by balance in descending order, where
-    address is a string and balance is a numeric type (int or float)
+    :param entries: list of tuples (balance, ), sorted by balance in descending order, where balance is a numeric type (int or float)
     :param circulation: int, the total amount of tokens in circulation
     :returns: float that represents the Thiel index of the given distribution
     """
@@ -114,7 +107,7 @@ def compute_theil_index(entries, circulation):
     mu = circulation / N
     theil = 0
     for entry in entries:
-        x = entry[1] / mu
+        x = entry[0] / mu
         if x > 0:
             theil += x * log(x)
     theil /= N

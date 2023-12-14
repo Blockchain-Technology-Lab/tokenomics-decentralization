@@ -154,7 +154,7 @@ def get_non_clustered_balance_entries(conn, snapshot, ledger, balance_threshold)
 
     start = time()
     query = f'''
-        SELECT addresses.name, balance
+        SELECT balance
         FROM balances
         LEFT JOIN addresses ON balances.address_id=addresses.id
         WHERE snapshot_id=?
@@ -187,15 +187,19 @@ def get_balance_entries(conn, snapshot, ledger, balance_threshold):
 
     start = time()
     query = f'''
-        SELECT IFNULL(entities.name, addresses.name) AS entity, SUM(CAST(balance AS REAL)) AS aggregate_balance
-        FROM balances
-        LEFT JOIN addresses ON balances.address_id=addresses.id
-        LEFT JOIN entities ON addresses.entity_id=entities.id
-        WHERE snapshot_id=?
-        {exclude_below_threshold_clause}
-        {exclude_contract_addresses_clause}
-        {special_addresses_clause}
-        GROUP BY entity
+        WITH entries AS (
+            SELECT IFNULL(entities.name, addresses.name) AS entity, SUM(CAST(balance AS REAL)) AS aggregate_balance
+            FROM balances
+            LEFT JOIN addresses ON balances.address_id=addresses.id
+            LEFT JOIN entities ON addresses.entity_id=entities.id
+            WHERE snapshot_id=?
+            {exclude_below_threshold_clause}
+            {exclude_contract_addresses_clause}
+            {special_addresses_clause}
+            GROUP BY entity
+        )
+        SELECT aggregate_balance
+        FROM entries
         ORDER BY aggregate_balance DESC
     '''
 
