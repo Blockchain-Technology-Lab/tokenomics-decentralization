@@ -1,7 +1,8 @@
 """
-    This script can be used to run queries on BigQuery for any number of blockchains, and save the results in the input
-    directory of the project.
-    The relevant queries must be stored in a file named 'queries.yaml' in the root directory of the project.
+    This script can be used to run queries on BigQuery for any number of blockchains,
+    and save the results in the input directory of the project.
+    The relevant queries must be stored in a file named 'queries.yaml'
+    in the data_collection_scripts directory of the project.
 
     Attention! Before running this script, you need to generate service account credentials from Google, as described
     here (https://developers.google.com/workspace/guides/create-credentials#service-account) and save your key in the
@@ -22,7 +23,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
     if not input_dir.is_dir():
         input_dir.mkdir()
 
-    with open(root_dir / "queries.yaml") as f:
+    with open(root_dir / "data_collection_scripts/queries.yaml") as f:
         queries = safe_load(f)
 
     i = 0
@@ -44,7 +45,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
 
             while True:
                 try:
-                    client = bq.Client.from_service_account_json(json_credentials_path=root_dir / f"google-service-account-key-{i}.json")
+                    client = bq.Client.from_service_account_json(json_credentials_path=root_dir / f"data_collection_scripts/google-service-account-key-{i}.json")
                 except FileNotFoundError:
                     logging.info(f'Exhausted all {i} service account keys. Aborting..')
                     all_quota_exceeded = True

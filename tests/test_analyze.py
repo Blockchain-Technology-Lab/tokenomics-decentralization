@@ -90,8 +90,8 @@ def test_analyze_snapshot(mocker):
     output = analyze_snapshot(None, 'bitcoin', '2010-01-01')
     assert output == {'top-1_absolute exclude_below_fees exclude_contracts non-clustered hhi': 1}
 
-    get_clustered_entries_mock.return_value = [['entity', 4], ['entity 2', 4]]
-    get_nonclustered_entries_mock.return_value = [['address', 4], ['address 2', 4]]
+    get_clustered_entries_mock.return_value = [[4, ], [4, ]]
+    get_nonclustered_entries_mock.return_value = [[4, ], [4, ]]
 
     get_force_analyze_mock.return_value = True
 

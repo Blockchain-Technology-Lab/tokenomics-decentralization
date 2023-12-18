@@ -292,7 +292,7 @@ def get_circulation_from_entries(entries):
     """
     circulation = 0
     for entry in entries:
-        circulation += int(entry[1])
+        circulation += int(entry[0])
     return circulation
 
 
