@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Data Collection - Tokenomics Blockchain Decentralization - Docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Data Collection";
+        var mkdocs_page_input_path = "data.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Tokenomics Blockchain Decentralization - Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../setup/">How to use</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Data Collection</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#queries">Queries</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#bitcoin">Bitcoin</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#bitcoin-cash">Bitcoin Cash</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cardano">Cardano</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dogecoin">Dogecoin</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ethereum">Ethereum</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#litecoin">Litecoin</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#tezos">Tezos</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#zcash">Zcash</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#automating-the-data-collection-process">Automating the data collection process</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../metrics/">Metrics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contribute/">How to contribute</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Tokenomics Blockchain Decentralization - Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Data Collection</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="data-collection">Data collection</h1>
+<p>Currently, the data for the analysis of the different ledgers is collected through 
+<a href="https://console.cloud.google.com/bigquery">Google BigQuery</a> .</p>
+<h2 id="queries">Queries</h2>
+<p>One can retrieve the data directly from BigQuery using the queries below:</p>
+<h3 id="bitcoin">Bitcoin</h3>
+<pre><code>WITH double_entry_book AS (
+        SELECT array_to_string(inputs.addresses, &quot;,&quot;) as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin.inputs` as inputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, &quot;,&quot;) as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin.outputs` as outputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+    )
+    SELECT address, type, sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h3 id="bitcoin-cash">Bitcoin Cash</h3>
+<pre><code>WITH double_entry_book AS (
+        SELECT array_to_string(inputs.addresses, &quot;,&quot;) as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin_cash.inputs` as inputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, &quot;,&quot;) as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_bitcoin_cash.outputs` as outputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+    )
+    SELECT address, type, sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h3 id="cardano">Cardano</h3>
+<pre><code>SELECT *    
+    FROM
+    (
+        WITH blocks AS (
+          SELECT
+          slot_no AS block_number,
+          block_time
+          FROM `iog-data-analytics.cardano_mainnet.block`
+          WHERE block_time &lt; &quot;{{timestamp}}&quot;
+        ),
+        OUTPUTS AS (
+          SELECT
+          slot_no as output_slot_number,
+          CAST(JSON_VALUE(a, '$.out_address') AS STRING) AS address,
+          CAST(JSON_VALUE(a, '$.out_idx') AS INT64) as out_idx,
+          CAST(JSON_VALUE(a, '$.out_value') AS INT64 ) AS value
+          FROM `iog-data-analytics.cardano_mainnet.vw_tx_in_out_with_inputs_value`
+          JOIN blocks ON block_number = slot_no
+          JOIN UNNEST(JSON_QUERY_ARRAY(outputs)) AS a
+        ),
+        INPUTS AS (
+          SELECT
+          address,
+          CAST(JSON_VALUE(i, '$.out_value') AS INT64 ) AS value
+          FROM `iog-data-analytics.cardano_mainnet.vw_tx_in_out_with_inputs_value`
+          JOIN OUTPUTS ON slot_no = output_slot_number
+          JOIN UNNEST(JSON_QUERY_ARRAY(inputs)) AS i ON CAST(JSON_VALUE(i, '$.in_idx') AS INT64) = OUTPUTS.out_idx
+        ),
+        INCOMING AS (
+          SELECT address, SUM(CAST(value AS numeric)) as sum_incoming
+          FROM INPUTS
+          GROUP BY address
+        ),
+        OUTGOING AS (
+          SELECT address, SUM(CAST(value AS numeric)) as sum_outgoing
+          FROM OUTPUTS
+          GROUP BY address
+        )
+        SELECT i.address, i.sum_incoming - o.sum_outgoing AS balance
+        FROM INCOMING AS i
+        JOIN OUTGOING AS o ON i.address = o.address
+    )
+    WHERE balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h3 id="dogecoin">Dogecoin</h3>
+<pre><code>WITH double_entry_book AS (
+        SELECT array_to_string(inputs.addresses, &quot;,&quot;) as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_dogecoin.inputs` as inputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, &quot;,&quot;) as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_dogecoin.outputs` as outputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h3 id="ethereum">Ethereum</h3>
+<pre><code>WITH double_entry_book AS (
+        SELECT to_address as address, value AS value
+        FROM `bigquery-public-data.crypto_ethereum.traces`
+        WHERE to_address IS NOT null
+        AND status = 1
+        AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS null)
+        AND block_timestamp &lt; &quot;{{timestamp}}&quot;
+        UNION ALL
+        SELECT from_address as address, -value AS value
+        FROM `bigquery-public-data.crypto_ethereum.traces`
+        WHERE from_address IS NOT null
+        AND status = 1
+        AND (call_type NOT IN ('delegatecall', 'callcode', 'staticcall') OR call_type IS null)
+        AND block_timestamp &lt; &quot;{{timestamp}}&quot;
+        UNION ALL
+        SELECT miner AS address, sum(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) AS value
+        FROM `bigquery-public-data.crypto_ethereum.transactions` AS transactions
+        JOIN `bigquery-public-data.crypto_ethereum.blocks` AS blocks on blocks.number = transactions.block_number
+        WHERE transactions.block_timestamp &lt; &quot;{{timestamp}}&quot;
+        GROUP BY blocks.miner
+        UNION ALL
+        SELECT from_address AS address, -(cast(receipt_gas_used as numeric) * cast(gas_price as numeric)) AS value
+        FROM `bigquery-public-data.crypto_ethereum.transactions`
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+    )
+    SELECT address, sum(value) AS balance
+    FROM double_entry_book
+    GROUP BY address
+    HAVING balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h3 id="litecoin">Litecoin</h3>
+<pre><code>WITH double_entry_book AS (
+        SELECT array_to_string(inputs.addresses, &quot;,&quot;) as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_litecoin.inputs` as inputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, &quot;,&quot;) as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_litecoin.outputs` as outputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h3 id="tezos">Tezos</h3>
+<pre><code>WITH double_entry_book as (
+        SELECT IF(kind = 'contract', contract, delegate) AS address, change AS value
+        FROM `public-data-finance.crypto_tezos.balance_updates`
+        WHERE (status IS NULL OR status = 'applied') AND (timestamp &lt; &quot;{{timestamp}}&quot;)
+        UNION ALL
+        SELECT address, balance_change
+        FROM `public-data-finance.crypto_tezos.migrations`
+        WHERE timestamp &lt; &quot;{{timestamp}}&quot;
+    )
+    SELECT address, SUM(value) AS balance
+    FROM double_entry_book
+    GROUP BY address
+    HAVING balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h3 id="zcash">Zcash</h3>
+<pre><code>WITH double_entry_book AS (
+        SELECT array_to_string(inputs.addresses, &quot;,&quot;) as address, inputs.type, -inputs.value as value
+        FROM `bigquery-public-data.crypto_zcash.inputs` as inputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+        UNION ALL
+        SELECT array_to_string(outputs.addresses, &quot;,&quot;) as address, outputs.type, outputs.value as value
+        FROM `bigquery-public-data.crypto_zcash.outputs` as outputs
+        WHERE block_timestamp &lt; &quot;{{timestamp}}&quot;
+    )
+    SELECT address,   type,   sum(value) as balance
+    FROM double_entry_book
+    GROUP BY 1,2
+    HAVING balance &gt; 0
+    ORDER BY balance DESC
+</code></pre>
+<h2 id="automating-the-data-collection-process">Automating the data collection process</h2>
+<p>Instead of executing each of these queries separately on the BigQuery console and saving the results manually, it is
+also possible to automate the process using a
+<a href="https://github.com/Blockchain-Technology-Lab/tokenomics-decentralization/blob/main/data_collection_scripts/big_query_balance_data.py">script</a>
+and collect all relevant data in one go. Executing this script will run queries
+from <a href="https://github.com/Blockchain-Technology-Lab/tokenomics-decentralization/blob/main/data_collection_scripts/queries.yaml">this file</a>.</p>
+<p>IMPORTANT: the script uses service account credentials for authentication, therefore before running it, you need to
+generate the relevant credentials from Google, as described 
+<a href="https://developers.google.com/workspace/guides/create-credentials#service-account">here</a> and save your key in the
+<code>data_collections_scripts/</code> directory of the project under the name 'google-service-account-key-0.json'. Any additional
+keys should be named 'google-service-account-key-1.json', 'google-service-account-key-2.json', and so on.
+There is a
+<a href="https://github.com/Blockchain-Technology-Lab/tokenomics-decentralization/blob/main/data_collection_scripts/google-service-account-key-SAMPLE.json">sample file</a> 
+that you can consult, which shows what your credentials are supposed to look like (but note that this is for
+informational purposes only, this file is not used in the code).</p>
+<p>Once you have set up the credentials, you can just run the following command from the root
+directory to retrieve data for all supported blockchains:</p>
+<p><code>python -m data_collection_scripts.big_query_balance_data</code></p>
+<p>There are also three command line arguments that can be used to customize the data collection process:</p>
+<ul>
+<li><code>ledgers</code> accepts any number of the supported ledgers (case-insensitive). For example, adding <code>--ledgers bitcoin</code>
+  results in collecting data only for Bitcoin, while <code>--ledgers Bitcoin Ethereum</code> would collect data for
+  Bitcoin and Ethereum. If the <code>ledgers</code> argument is omitted, then the default value is used, which 
+  is taken from the
+  <a href="https://github.com/Blockchain-Technology-Lab/tokenomics-decentralization/blob/main/config.yaml">configuration file</a>
+  and typically corresponds to all supported blockchains.</li>
+<li><code>snapshot_dates</code> accepts any number of dates formatted as YYYY-MM-DD, YYYY-MM, or YYYY. Then, data is collected for
+  the specified date(s). Again, if this argument is omitted, the default value is taken from the 
+  <a href="https://github.com/Blockchain-Technology-Lab/tokenomics-decentralization/blob/main/config.yaml">configuration file</a>.</li>
+<li><code>--force-query</code> forces the collection of all raw data files, even if some or all of the files already
+  exist. By default, this flag is set to False and the script only fetches data for some blockchain if the
+  corresponding file does not already exist.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../setup/" class="btn btn-neutral float-left" title="How to use"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../metrics/" class="btn btn-neutral float-right" title="Metrics">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../setup/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../metrics/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

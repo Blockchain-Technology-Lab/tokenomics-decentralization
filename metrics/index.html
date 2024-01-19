@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Metrics - Tokenomics Blockchain Decentralization - Docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Metrics";
+        var mkdocs_page_input_path = "metrics.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Tokenomics Blockchain Decentralization - Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../setup/">How to use</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../data/">Data Collection</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Metrics</a>
+    <ul class="current">
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../contribute/">How to contribute</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Tokenomics Blockchain Decentralization - Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Metrics</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="metrics">Metrics</h1>
+<p>The metrics that have been implemented so far are the following:</p>
+<ol>
+<li><strong>Nakamoto coefficient</strong>: The Nakamoto coefficient represents the minimum number of entities that
+   collectively produce more than 50% of the total blocks within a given timeframe. The output of the metric is an
+   integer.</li>
+<li><strong>Gini coefficient</strong>: The Gini coefficient represents the degree of inequality in block production. The
+   output of the metric is a decimal number in [0,1]. Values close to 0 indicate equality (all entities in
+   the system produce the same number of blocks) and values close to 1 indicate inequality (one entity
+   produces most or all blocks).</li>
+<li><strong>Entropy</strong>: Entropy represents the expected amount of information in the distribution of blocks across entities.
+   The output of the metric is a real number. Typically, a higher value of entropy indicates higher decentralization
+   (lower predictability). Entropy is parameterized by a base rate α, which defines different types of entropy:<ul>
+<li>α = -1: min entropy</li>
+<li>α = 0: Hartley entropy</li>
+<li>α = 1: Shannon entropy (this is used by default)</li>
+<li>α = 2: collision entropy</li>
+</ul>
+</li>
+<li><strong>HHI</strong>: The Herfindahl-Hirschman Index (HHI) is a measure of market concentration. It is defined as the sum of the
+   squares of the market shares (as whole numbers, e.g. 40 for 40%) of the entities in the system. The output of the
+   metric is a real number in (0, 10000]. Values close to 0 indicate low concentration (many entities produce a similar
+   number of blocks) and values close to 1 indicate high concentration (one entity produces most or all blocks).
+   The U.S. Department of Justice has set the following thresholds for interpreting HHI values (in traditional markets):<ul>
+<li>(0, 1500): Competitive market</li>
+<li>[1500, 2500]: Moderately concentrated market</li>
+<li>(2500, 10000]: Highly concentrated market</li>
+</ul>
+</li>
+<li><strong>Theil index</strong>: The Theil index is another measure of entropy which is intended to capture the lack of diversity,
+   or the redundancy, in a population. In practice, it is calculated as the maximum possible entropy minus the observed
+   entropy. The output is a real number. Values close to 0 indicate equality and values towards infinity indicate
+   inequality. Therefore, a high Theil Index suggests a population that is highly centralized.</li>
+<li><strong>Max power ratio</strong>: The max power ratio represents the share of blocks that are produced by the most "powerful"
+   entity, i.e. the entity that produces the most blocks. The output of the metric is a decimal number in [0,1].</li>
+<li><strong>Tau-decentralization index</strong>: The tau-decentralization index is a generalization of the Nakamoto coefficient.
+   It is defined as the minimum number of entities that collectively produce more than a given threshold of the total
+   blocks within a given timeframe. The threshold parameter is a decimal in [0, 1] (0.66 by default) and the output of
+   the metric is an integer.</li>
+</ol>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../data/" class="btn btn-neutral float-left" title="Data Collection"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../contribute/" class="btn btn-neutral float-right" title="How to contribute">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../data/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../contribute/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
