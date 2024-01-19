@@ -1,0 +1,8 @@
+site_name: Tokenomics Blockchain Decentralization - Docs
+nav:
+        - Home: index.md
+        - How to use: setup.md
+        - Data Collection: data.md
+        - Metrics: metrics.md
+        - How to contribute: contribute.md
+theme: readthedocs

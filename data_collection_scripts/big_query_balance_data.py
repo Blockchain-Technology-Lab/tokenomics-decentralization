@@ -6,8 +6,8 @@
 
     Attention! Before running this script, you need to generate service account credentials from Google, as described
     here (https://developers.google.com/workspace/guides/create-credentials#service-account) and save your key in the
-    root directory of the project under the name 'google-service-account-key-0.json'. Any additional keys should be
-    named 'google-service-account-key-1.json', 'google-service-account-key-2.json', etc.
+    data_collection_scripts directory of the project under the name 'google-service-account-key-0.json'. Any additional
+    keys should be named 'google-service-account-key-1.json', 'google-service-account-key-2.json', etc.
 """
 import google.cloud.bigquery as bq
 import csv
