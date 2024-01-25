@@ -21,7 +21,7 @@ def fill_db_with_addresses(conn, ledger):
                 is_contract = 'is_contract' in info.keys() and info['is_contract']
 
                 db_hlp.insert_update_address(conn, ledger, addr, entity, is_contract)
-        db_hlp.commit_database()
+        db_hlp.commit_database(conn)
     except FileNotFoundError:
         return
 
@@ -51,7 +51,7 @@ def fill_db_with_balances(conn, ledger, snapshot):
                     db_hlp.insert_balance(conn, ledger, snapshot, address, balance)
 
                 db_hlp.update_circulation(conn, ledger, snapshot, circulation)
-                db_hlp.commit_database()
+                db_hlp.commit_database(conn)
             return
 
 

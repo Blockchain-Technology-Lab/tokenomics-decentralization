@@ -35,7 +35,7 @@ def insert_ledger(conn, ledger):
 
     try:
         cursor.execute("INSERT INTO ledgers(name) VALUES (?)", (ledger, ))
-        commit_database()
+        commit_database(conn)
     except sqlite3.IntegrityError as e:
         if 'UNIQUE constraint failed' in str(e):
             pass
@@ -63,7 +63,7 @@ def insert_entity(conn, ledger, entity):
     ledger_id = get_ledger_id(conn, ledger)
     try:
         cursor.execute("INSERT INTO entities(name, ledger_id) VALUES (?, ?)", (entity, ledger_id))
-        commit_database()
+        commit_database(conn)
     except sqlite3.IntegrityError as e:
         if 'UNIQUE constraint failed' in str(e):
             pass
@@ -92,7 +92,7 @@ def insert_update_address(conn, ledger, address, entity, is_contract):
     entity_id = cursor.execute("SELECT id FROM entities WHERE name=? AND ledger_id=?", (entity, ledger_id)).fetchone()[0]
 
     try:
-        cursor.execute("INSERT INTO addresses(name, ledger_id, entity_id, is_contract) VALUES (?, ?, ?)", (address, ledger_id, entity_id, is_contract))
+        cursor.execute("INSERT INTO addresses(name, ledger_id, entity_id, is_contract) VALUES (?, ?, ?, ?)", (address, ledger_id, entity_id, is_contract))
     except sqlite3.IntegrityError as e:
         if 'UNIQUE constraint failed' in str(e):
             cursor.execute("UPDATE addresses SET entity_id=?, is_contract=? WHERE name=? AND ledger_id=?", (entity_id, is_contract, address, ledger_id))
