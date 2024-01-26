@@ -55,7 +55,7 @@ def test_fill_db_with_balances(mocker):
     assert db_insert_address_without_update_mock.call_args_list == [call('connector', 'bitcoin', 'addr1'), call('connector', 'bitcoin', 'addr2')]
     assert db_insert_balance_mock.call_args_list == [call('connector', 'bitcoin', '2010-01-01', 'addr1', 100), call('connector', 'bitcoin', '2010-01-01', 'addr2', 200)]
     assert db_update_circulation_mock.call_args_list == [call('connector', 'bitcoin', '2010-01-01', 300)]
-    assert db_commit_mock.call_args_list == [call()]
+    assert db_commit_mock.call_args_list == [call('connector')]
 
     db_insert_address_without_update_mock.reset_mock()
     db_insert_snapshot_mock.reset_mock()
@@ -70,7 +70,7 @@ def test_fill_db_with_balances(mocker):
     assert db_insert_address_without_update_mock.call_args_list == [call('connector', 'ethereum', 'addr2')]
     assert db_insert_balance_mock.call_args_list == [call('connector', 'ethereum', '2010-01-01', 'addr2', 1)]
     assert db_update_circulation_mock.call_args_list == [call('connector', 'ethereum', '2010-01-01', 1)]
-    assert db_commit_mock.call_args_list == [call()]
+    assert db_commit_mock.call_args_list == [call('connector')]
 
 
 def test_apply_mapping(mocker):
