@@ -402,7 +402,7 @@ def get_median_tx_fee(ledger, date):
         return 0
 
 
-def get_usd_cent_equivalent(ledger, date):  # todo add test
+def get_usd_cent_equivalent(ledger, date):
     """
     Retrieves the amount of tokens that corresponds to one USD cent for the given ledger and date
     :param ledger: string that represents the ledger to retrieve the data for (e.g. bitcoin)
@@ -420,7 +420,7 @@ def get_usd_cent_equivalent(ledger, date):  # todo add test
         return 0
     try:
         price = prices[date]
-        denomination_price = price / 1e8
+        denomination_price = price / 1e8  # todo check if denomination applies to all ledgers
         cent_equivalent = 0.01 / denomination_price
         return cent_equivalent
     except KeyError:

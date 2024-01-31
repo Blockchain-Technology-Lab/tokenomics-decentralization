@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import os
 import pytest
 import tokenomics_decentralization.helper as hlp
 import pathlib
@@ -263,3 +264,17 @@ def test_get_special_addresses():
 def test_get_plot_config_data():
     plot_config = hlp.get_plot_config_data()
     assert isinstance(plot_config, dict)
+
+
+def test_get_usd_cent_equivalent():
+    with open(hlp.PRICE_DATA_DIR / 'test-USD.csv', 'w') as f:
+        f.write('2021-03-01,100\n')
+        f.write('2023-10-18,0.1\n')
+
+    balance_threshold = hlp.get_usd_cent_equivalent(ledger='test', date='2021-03-01')
+    assert balance_threshold == 1e4
+
+    balance_threshold = hlp.get_usd_cent_equivalent(ledger='test', date='2023-10-18')
+    assert balance_threshold == 1e7
+
+    os.remove(hlp.PRICE_DATA_DIR / 'test-USD.csv')
