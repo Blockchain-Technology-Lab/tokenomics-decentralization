@@ -1,6 +1,7 @@
 """
 Module with helper functions
 """
+import csv
 import pathlib
 import os
 import datetime
@@ -14,6 +15,7 @@ from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 MAPPING_INFO_DIR = ROOT_DIR / 'mapping_information'
 TX_FEES_DIR = ROOT_DIR / 'tx_fees'
+PRICE_DATA_DIR = ROOT_DIR / 'price_data'
 
 with open(ROOT_DIR / "config.yaml") as f:
     config = safe_load(f)
@@ -323,6 +325,20 @@ def get_exclude_below_fees_flag():
         raise ValueError('Flag "exclude_below_fees" not in config file')
 
 
+def get_exclude_below_usd_cent_flag():
+    """
+    Retrieves the flag on whether to exclude from the analysis addresses with
+    balances lower than the USD cent equivalent of the ledger's currency
+    :returns: boolean
+    :raises ValueError: if the flag is not set in the config file
+    """
+    config = get_config_data()
+    try:
+        return config['analyze_flags']['exclude_below_usd_cent']
+    except KeyError:
+        raise ValueError('Flag "exclude_below_usd_cent" not in config file')
+
+
 def get_plot_config_data():
     """
     Retrieves the plot-related config parameters
@@ -383,4 +399,30 @@ def get_median_tx_fee(ledger, date):
         return fees[date]
     except KeyError:
         logging.warning(f'No median tx fee found for {ledger} on {date}')
+        return 0
+
+
+def get_usd_cent_equivalent(ledger, date):  # todo add test
+    """
+    Retrieves the amount of tokens that corresponds to one USD cent for the given ledger and date
+    :param ledger: string that represents the ledger to retrieve the data for (e.g. bitcoin)
+    :param date: string that represents the date to retrieve the data for
+    (it should be in YYYY-MM-DD format, e.g. 2021-01-01)
+    :returns: an integer representing the USD cent equivalent of the ledger's currency
+    or 0 if no USD cent equivalent is found for the given ledger and date
+    """
+    try:
+        with open(PRICE_DATA_DIR / f'{ledger}-USD.csv') as f:
+            reader = csv.reader(f)
+            prices = {key: float(value) for key, value in reader}
+    except FileNotFoundError:
+        logging.warning(f'No price data found for {ledger}')
+        return 0
+    try:
+        price = prices[date]
+        denomination_price = price / 1e8
+        cent_equivalent = 0.01 / denomination_price
+        return cent_equivalent
+    except KeyError:
+        logging.warning(f'No price data found for {ledger} on {date}')
         return 0
