@@ -402,6 +402,27 @@ def get_median_tx_fee(ledger, date):
         return 0
 
 
+def get_denomination_from_coin(ledger):
+    """
+    Retrieves the denomination of the given ledger's currency that we use in the analysis
+    :param ledger: string that represents the ledger to retrieve the data for (e.g. bitcoin)
+    :returns: a float representing how much of the denomination corresponds to one coin or 1 if no denomination
+    information is found for the given ledger
+    """
+    denominations = {
+        'bitcoin': 1e8,
+        'bitcoin_cash': 1e8,
+        'ethereum': 1e9,
+        'litecoin': 1e8,
+        'tezos': 1e6
+    }
+    try:
+        return denominations[ledger]
+    except KeyError:
+        logging.warning(f'No denomination found for {ledger}')
+        return 1
+
+
 def get_usd_cent_equivalent(ledger, date):
     """
     Retrieves the amount of tokens that corresponds to one USD cent for the given ledger and date
@@ -420,7 +441,7 @@ def get_usd_cent_equivalent(ledger, date):
         return 0
     try:
         price = prices[date]
-        denomination_price = price / 1e8  # todo check if denomination applies to all ledgers
+        denomination_price = price / get_denomination_from_coin(ledger)
         cent_equivalent = 0.01 / denomination_price
         return cent_equivalent
     except KeyError:
