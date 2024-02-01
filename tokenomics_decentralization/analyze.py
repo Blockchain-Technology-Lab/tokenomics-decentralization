@@ -1,5 +1,6 @@
 from tokenomics_decentralization.schema import get_connector
-from tokenomics_decentralization.metrics import compute_hhi, compute_tau, compute_gini, compute_shannon_entropy, compute_total_entities, compute_max_power_ratio, compute_theil_index
+from tokenomics_decentralization.metrics import (compute_hhi, compute_tau, compute_gini, compute_shannon_entropy,
+                                                 compute_total_entities, compute_max_power_ratio, compute_theil_index)
 import tokenomics_decentralization.helper as hlp
 import tokenomics_decentralization.db_helper as db_hlp
 import os
@@ -16,12 +17,17 @@ def analyze_snapshot(conn, ledger, snapshot):
     top_limit_value = hlp.get_top_limit_value()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
+    exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
 
     snapshot_info = db_hlp.get_snapshot_info(conn, ledger, snapshot)
     circulation = int(float(snapshot_info[3]))
 
     snapshot_date = snapshot_info[1]
-    median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=snapshot_date) if hlp.get_exclude_below_fees_flag() else -1
+    median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=snapshot_date) \
+        if exclude_below_fees_flag else -1
+    usd_cent_equivalent = hlp.get_usd_cent_equivalent(ledger=ledger, date=snapshot_date) \
+        if exclude_below_usd_cent_flag else -1
+    balance_threshold = max(median_tx_fee, usd_cent_equivalent)
 
     compute_functions = {
         'hhi': compute_hhi,
@@ -46,6 +52,8 @@ def analyze_snapshot(conn, ledger, snapshot):
             flagged_metric = 'exclude_contracts ' + flagged_metric
         if exclude_below_fees_flag:
             flagged_metric = 'exclude_below_fees ' + flagged_metric
+        if exclude_below_usd_cent_flag:
+            flagged_metric = 'exclude_below_usd_cent ' + flagged_metric
         if top_limit_value > 0:
             flagged_metric = f'top-{top_limit_value}_{top_limit_type} ' + flagged_metric
 
@@ -55,9 +63,9 @@ def analyze_snapshot(conn, ledger, snapshot):
         else:
             if not entries:
                 if no_clustering:
-                    entries = db_hlp.get_non_clustered_balance_entries(conn, snapshot, ledger, balance_threshold=median_tx_fee)
+                    entries = db_hlp.get_non_clustered_balance_entries(conn, snapshot, ledger, balance_threshold=balance_threshold)
                 else:
-                    entries = db_hlp.get_balance_entries(conn, snapshot, ledger, balance_threshold=median_tx_fee)
+                    entries = db_hlp.get_balance_entries(conn, snapshot, ledger, balance_threshold=balance_threshold)
 
                 if top_limit_value > 0:
                     if top_limit_type == 'percentage':
@@ -92,10 +100,12 @@ def get_output_row(ledger, date, metrics):
     no_clustering = hlp.get_no_clustering_flag()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
+    exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
 
-    csv_row = [ledger, date, no_clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value, exclude_below_fees_flag]
+    csv_row = [ledger, date, no_clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value,
+               exclude_below_fees_flag, exclude_below_usd_cent_flag]
 
     for metric_name in hlp.get_metrics():
         val = metric_name
@@ -105,6 +115,8 @@ def get_output_row(ledger, date, metrics):
             val = 'exclude_contracts ' + val
         if exclude_below_fees_flag:
             val = 'exclude_below_fees ' + val
+        if exclude_below_usd_cent_flag:
+            val = 'exclude_below_usd_cent ' + val
         if top_limit_value > 0:
             val = f'top-{top_limit_value}_{top_limit_type} ' + val
         csv_row.append(metrics[val])
@@ -112,7 +124,8 @@ def get_output_row(ledger, date, metrics):
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type', 'top_limit_value', 'exclude_below_fees']
+    header = ['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type',
+              'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
     header += hlp.get_metrics()
 
     no_clustering = hlp.get_no_clustering_flag()
@@ -120,6 +133,7 @@ def write_csv_output(output_rows):
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
+    exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
     output_filename = 'output'
     if no_clustering:
         output_filename += '-no_clustering'
@@ -129,6 +143,8 @@ def write_csv_output(output_rows):
         output_filename += f'-{top_limit_type}_{top_limit_value}'
     if exclude_below_fees_flag:
         output_filename += '-exclude_below_fees'
+    if exclude_below_usd_cent_flag:
+        output_filename += '-exclude_below_usd_cent'
     output_filename += '.csv'
 
     output_dir = hlp.get_output_directories()[0]

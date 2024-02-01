@@ -15,8 +15,8 @@ ledgers:
   - bitcoin
   - bitcoin_cash
   - dogecoin
-  - ethereum  
-  - litecoin  
+  - ethereum
+  - litecoin
   - tezos
 
 # Execution flags
@@ -32,6 +32,7 @@ analyze_flags:
   top_limit_value: 0
   exclude_contract_addresses: false
   exclude_below_fees: false
+  exclude_below_usd_cent: true
 
 # Plot flags
 plot_parameters:
@@ -40,8 +41,8 @@ plot_parameters:
     - bitcoin
     - bitcoin_cash
     - dogecoin
-    - ethereum  
-    - litecoin  
+    - ethereum
+    - litecoin
     - tezos
   metrics:
     - hhi
