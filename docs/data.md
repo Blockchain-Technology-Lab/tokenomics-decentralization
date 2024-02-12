@@ -46,55 +46,6 @@ WITH double_entry_book AS (
     ORDER BY balance DESC
 ```
 
-### Cardano
-
-```
-SELECT *    
-    FROM
-    (
-        WITH blocks AS (
-          SELECT
-          slot_no AS block_number,
-          block_time
-          FROM `iog-data-analytics.cardano_mainnet.block`
-          WHERE block_time < "{{timestamp}}"
-        ),
-        OUTPUTS AS (
-          SELECT
-          slot_no as output_slot_number,
-          CAST(JSON_VALUE(a, '$.out_address') AS STRING) AS address,
-          CAST(JSON_VALUE(a, '$.out_idx') AS INT64) as out_idx,
-          CAST(JSON_VALUE(a, '$.out_value') AS INT64 ) AS value
-          FROM `iog-data-analytics.cardano_mainnet.vw_tx_in_out_with_inputs_value`
-          JOIN blocks ON block_number = slot_no
-          JOIN UNNEST(JSON_QUERY_ARRAY(outputs)) AS a
-        ),
-        INPUTS AS (
-          SELECT
-          address,
-          CAST(JSON_VALUE(i, '$.out_value') AS INT64 ) AS value
-          FROM `iog-data-analytics.cardano_mainnet.vw_tx_in_out_with_inputs_value`
-          JOIN OUTPUTS ON slot_no = output_slot_number
-          JOIN UNNEST(JSON_QUERY_ARRAY(inputs)) AS i ON CAST(JSON_VALUE(i, '$.in_idx') AS INT64) = OUTPUTS.out_idx
-        ),
-        INCOMING AS (
-          SELECT address, SUM(CAST(value AS numeric)) as sum_incoming
-          FROM INPUTS
-          GROUP BY address
-        ),
-        OUTGOING AS (
-          SELECT address, SUM(CAST(value AS numeric)) as sum_outgoing
-          FROM OUTPUTS
-          GROUP BY address
-        )
-        SELECT i.address, i.sum_incoming - o.sum_outgoing AS balance
-        FROM INCOMING AS i
-        JOIN OUTGOING AS o ON i.address = o.address
-    )
-    WHERE balance > 0
-    ORDER BY balance DESC
-```
-
 ### Dogecoin
 
 ```
