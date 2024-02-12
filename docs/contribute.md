@@ -50,3 +50,30 @@ comma-separated values:
 To contribute price information you can either update an existing file, by
 adding entries for days where data is missing, or create a new file for a
 newly-supported ledger and add historical price data.
+
+## Add metrics
+
+To add a new metric, you should do the following steps.
+
+First, create a relevant function in the script
+`tokenomics_decentralization/metrics.py`. The function should be named
+`compute_{metric_name}` and is given two parameters:
+(i) a list of tuples, where each tuple's first value is a numeric type that
+defines the balance of an address;
+(ii) an integer that defines the circulation (that is the sum of all address
+balances).
+
+Second, import this new function to `tokenomics_decentralization/analyze.py`.
+In this file, include the function as the value to the dictionary
+`compute_functions` of the `analyze_snapshot` function, using as a key the name
+of the function (which will be used in the config file).
+
+Third, add the name of the metric (which was used as the key to the dictionary
+in `analyze.py`) to the file `config.yaml` under `metrics`. You can optionally
+also add it under the plot parameters, if you want it to be included in the
+plots by default.
+
+Finally, you should add unit tests for the new metric
+[here](https://github.com/Blockchain-Technology-Lab/tokenomics-decentralization/tree/main/tests)
+and update the [corresponding documentation
+page](https://github.com/Blockchain-Technology-Lab/tokenomics-decentralization/blob/main/docs/metrics.md)
