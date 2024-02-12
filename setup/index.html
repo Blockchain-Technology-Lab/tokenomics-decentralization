@@ -103,8 +103,71 @@ project:</p>
 </code></pre>
 <h2 id="execution">Execution</h2>
 <p>The tokenomics decentralization analysis tool is a CLI tool.
-The following process describes the most typical workflow.</p>
-<p>...</p>
+To run the tool simply do:</p>
+<pre><code>python run.py
+</code></pre>
+<p>The execution is controlled and parameterized by the configuration file
+<code>config.yml</code> as follows.</p>
+<p><code>metrics</code> defines the metrics that should be computed in the analysis. By
+default all supported metrics are included here (to add support for a new metric
+see the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/">conributions
+page</a>).</p>
+<p><code>ledgers</code> defines the ledgers that should be analyzed. By default, all supported
+ledgers are included here (to add support for a new ledger see the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/">conributions
+page</a>).</p>
+<p><code>execution_flags</code> defines various flags that control the data handling:</p>
+<ul>
+<li><code>force_map_addresses</code>: the address helper data from the directory
+  <code>mapping_information</code> is re-computed; you should set this flag to true if the
+  data has been updated since the last execution for the given ledger</li>
+<li><code>force_map_balances</code>: the balance data of the ledger's addresses is
+  recomputed; you should set this flag to true if the data has been updated
+  since the last execution for the given ledger</li>
+<li><code>force_analyze</code>: the computation of a metric is recomputed; you should set
+  this flag to true if any type of data has been updated since the last
+  execution for the given ledger</li>
+</ul>
+<p><code>analyze_flags</code> defines various analysis-related flags:</p>
+<ul>
+<li><code>no_clustering</code>: a boolean that disables clustering of addresses (under the
+  same entity, as defined in the mapping information)</li>
+<li><code>top_limit_type</code>: a string of two values (<code>absolute</code> or <code>percentage</code>) that
+  enables applying a threshold on the addresses that will be considered</li>
+<li><code>top_limit_value</code>: the value of the top limit that should be applied; if 0,
+  then no limit is used (regardless of the value of <code>top_limit_type</code>); if the
+  type is <code>absolute</code>, then the <code>top_limit_value</code> should be an integer (e.g., if
+  set to 100, then only the 100 wealthiest entities/addresses will be considered
+  in the analysis); if the type is <code>percentage</code> the the <code>top_limit_value</code> should
+  be an integer (e.g., if set to 0.50, then only the top 50% of wealthiest
+  entities/addresses will be considered)</li>
+<li><code>exclude_contract_addresses</code>: a boolean value that enables the exclusion of
+  contract addresses from the analysis</li>
+<li><code>exclude_below_usd_cent</code>: a boolean value that enables the exclusion of
+  addresses, the balance of which at the analyzed point in time was less than
+  $0.01 (based on the historical price information in the directory
+  <code>price_data</code>)</li>
+</ul>
+<p><code>snapshot_dates</code> and <code>granularity</code> control the snapshots for which an analysis
+will be performed. <code>granularity</code> is a string that can be empty or one of <code>day</code>, <code>week</code>,
+<code>month</code>, <code>year</code>. If granularity is empty, then <code>snapshot_dates</code> define the exact
+time points for which an analysis will be conducted, in the form YYYY-MM-DD.
+Otherwise, if granularity is set, then the two farthest entries in
+<code>snapshot_dates</code> define the timeframe over which the analysis will be conducted,
+at the set granular rate. For example, if the farthest points are <code>2010</code> and
+<code>2023</code> and the granularity is set to <code>month</code>, then (the first day of) every
+month in the years 2010-2023 (inclusive) will be analyzed.</p>
+<p><code>input_directories</code> and <code>output_directories</code> are both lists of directories that
+define the source of data. <code>input_directories</code> defines the directories that
+contain raw address balance information, as obtained from BigQuery or a full
+node (for more information about this see the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/data/">data collection
+page</a>).
+<code>output_directories</code> defines the directories to store the databases which
+contain the mapping information and analyzed data. The first entry in the output
+directories is also used to store the output files of the analysis and the
+plots.</p>
+<p>Finally, <code>plot_parameters</code> contains various parameters that control the type and
+data that will be produced as plots.
+...</p>
               
             </div>
           </div><footer>
