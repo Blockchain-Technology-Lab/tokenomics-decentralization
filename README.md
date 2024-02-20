@@ -8,6 +8,7 @@ required input, produced output, and more.
 Currently, the supported blockchains are:
 - Bitcoin
 - Bitcoin Cash
+- Cardano
 - Dogecoin
 - Ethereum
 - Litecoin

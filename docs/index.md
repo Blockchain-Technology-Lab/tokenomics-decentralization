@@ -12,6 +12,7 @@ Currently, the supported ledgers are:
 
 - Bitcoin
 - Bitcoin Cash
+- Cardano
 - Dogecoin
 - Ethereum 
 - Litecoin
