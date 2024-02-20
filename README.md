@@ -27,6 +27,14 @@ project:
 
     python -m pip install -r requirements.txt
 
+### Mapping information
+
+The mapping information for Cardano is too large for Github.
+To retrieve it do the following:
+- Download the file from
+[here](https://uoe-my.sharepoint.com/:u:/g/personal/dkarakos_ed_ac_uk/ETgyf9W-JdtGlF5Ln8yj7zQB2uwtQLzB22oQDEfbvIn9Zg?e=HjXlxd&download=1).
+- Move the file to the folder `mapping_information/addresses/`. Note that the file should be named `cardano.json`.
+
 ## Run the tool
 
 Place all raw data (which could be collected from [BigQuery](https://cloud.google.com/bigquery/) for example) in the `input` directory. 
