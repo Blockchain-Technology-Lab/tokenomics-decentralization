@@ -13,12 +13,7 @@ def test_fill_db_with_addresses(mocker):
     db_commit_mock = mocker.patch('tokenomics_decentralization.db_helper.commit_database')
     db_commit_mock.return_value = None
 
-    json_load_mock = mocker.patch('json.load')
-
-    json_load_mock.return_value = {
-        'address 1': {'name': 'Entity Name 1', 'source': 'website'},
-        'address 2': {'name': 'Entity Name 2', 'source': 'website', 'is_contract': True},
-    }
+    json_load_mock = mocker.patch('json.loads')
 
     fill_db_with_addresses('connector', 'random ledger')
     assert json_load_mock.call_args_list == []
@@ -26,12 +21,11 @@ def test_fill_db_with_addresses(mocker):
     assert db_insert_update_address_mock.call_args_list == []
     assert db_commit_mock.call_args_list == []
 
+    json_load_mock.return_value = {'address': 'address 1', 'name': 'Entity Name 1', 'source': 'website'}
     fill_db_with_addresses('connector', 'bitcoin')
     db_insert_ledger_mock.assert_called_with('connector', 'bitcoin')
     assert call('connector', 'bitcoin', 'Entity Name 1') in db_insert_entity_mock.call_args_list
-    assert call('connector', 'bitcoin', 'Entity Name 2') in db_insert_entity_mock.call_args_list
     assert call('connector', 'bitcoin', 'address 1', 'Entity Name 1', False) in db_insert_update_address_mock.call_args_list
-    assert call('connector', 'bitcoin', 'address 2', 'Entity Name 2', True) in db_insert_update_address_mock.call_args_list
     db_commit_mock.assert_called()
 
 
