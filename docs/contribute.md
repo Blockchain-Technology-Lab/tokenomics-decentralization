@@ -16,13 +16,13 @@ and `special_addresses`.
 `addresses` contains information about the owner or manager of an address. This
 information should be publicly available and verifiable, for example it may come
 from a public explorer, social media or forum posts, articles, etc. Each file in
-this folder is named `<project_name>.json` (for the corresponding ledger) and
-contains a dictionary where the key is the address and the value is a dictionary
-with the following information:
-(i) the name of the entity (that controls the address);
-(ii) the source of the information (e.g., an explorer's URL);
-(iii) (optional) a boolean value `is_contract` (if omitted then it is assumed false);
-(iv) (optional) `extra_info` that might be relevant or interesting (not used for
+this folder is named `<project_name>.jsonl` (for the corresponding ledger) and
+contains a dictionary per line with the following information:
+(i) the address;
+(ii) the name of the entity (that controls the address);
+(iii) the source of the information (e.g., an explorer's URL);
+(iv) (optional) a boolean value `is_contract` (if omitted then it is assumed false);
+(v) (optional) `extra_info` that might be relevant or interesting (not used for
 the analysis).
 
 `special_addresses` contains information about addresses that should be treated

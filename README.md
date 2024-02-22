@@ -33,8 +33,8 @@ project:
 The mapping information for Cardano is too large for Github.
 To retrieve it do the following:
 - Download the file from
-[here](https://uoe-my.sharepoint.com/:u:/g/personal/dkarakos_ed_ac_uk/ETgyf9W-JdtGlF5Ln8yj7zQB2uwtQLzB22oQDEfbvIn9Zg?e=HjXlxd&download=1).
-- Move the file to the folder `mapping_information/addresses/`. Note that the file should be named `cardano.json`.
+[here](https://uoe-my.sharepoint.com/:u:/g/personal/dkarakos_ed_ac_uk/EXseoT-v1xBHn1TWG1IvqHIB2L3Pm35-UtKIcUKmk1IQZw?e=YgTfjR&download=1).
+- Move the file to the folder `mapping_information/addresses/`. Note that the file should be named `cardano.jsonl`.
 
 ## Run the tool
 
