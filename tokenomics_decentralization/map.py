@@ -13,9 +13,11 @@ def fill_db_with_addresses(conn, ledger):
     db_hlp.insert_ledger(conn, ledger)
 
     try:
-        with open(hlp.MAPPING_INFO_DIR / f'addresses/{ledger}.json') as f:
-            address_entities = json.load(f)
-            for addr, info in address_entities.items():
+        with open(hlp.MAPPING_INFO_DIR / f'addresses/{ledger}.jsonl') as f:
+            for line in f:
+                info = json.loads(line)
+
+                addr = info['address']
                 entity = info['name']
                 db_hlp.insert_entity(conn, ledger, entity)
                 is_contract = 'is_contract' in info.keys() and info['is_contract']
