@@ -106,13 +106,13 @@ and <code>special_addresses</code>.</p>
 <p><code>addresses</code> contains information about the owner or manager of an address. This
 information should be publicly available and verifiable, for example it may come
 from a public explorer, social media or forum posts, articles, etc. Each file in
-this folder is named <code>&lt;project_name&gt;.json</code> (for the corresponding ledger) and
-contains a dictionary where the key is the address and the value is a dictionary
-with the following information:
-(i) the name of the entity (that controls the address);
-(ii) the source of the information (e.g., an explorer's URL);
-(iii) (optional) a boolean value <code>is_contract</code> (if omitted then it is assumed false);
-(iv) (optional) <code>extra_info</code> that might be relevant or interesting (not used for
+this folder is named <code>&lt;project_name&gt;.jsonl</code> (for the corresponding ledger) and
+contains a dictionary per line with the following information:
+(i) the address;
+(ii) the name of the entity (that controls the address);
+(iii) the source of the information (e.g., an explorer's URL);
+(iv) (optional) a boolean value <code>is_contract</code> (if omitted then it is assumed false);
+(v) (optional) <code>extra_info</code> that might be relevant or interesting (not used for
 the analysis).</p>
 <p><code>special_addresses</code> contains information about addresses that should be treated
 specially, e.g., excluded from the analysis. This includes burn addresses,
