@@ -8,6 +8,7 @@ from cycler import cycler
 tickers = {
     'bitcoin': 'BTC',
     'bitcoin_cash': 'BCH',
+    'cardano': 'ADA',
     'dogecoin': 'DOGE',
     'ethereum': 'ETH',
     'litecoin': 'LTC',
