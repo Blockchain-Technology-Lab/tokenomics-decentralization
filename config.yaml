@@ -14,6 +14,7 @@ metrics:
 ledgers:
   - bitcoin
   - bitcoin_cash
+  - cardano
   - dogecoin
   - ethereum
   - litecoin
@@ -40,6 +41,7 @@ plot_parameters:
   ledgers:
     - bitcoin
     - bitcoin_cash
+    - cardano
     - dogecoin
     - ethereum
     - litecoin

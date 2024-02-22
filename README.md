@@ -8,6 +8,7 @@ required input, produced output, and more.
 Currently, the supported blockchains are:
 - Bitcoin
 - Bitcoin Cash
+- Cardano
 - Dogecoin
 - Ethereum
 - Litecoin
@@ -26,6 +27,14 @@ all of them in one go, run the following command from the root directory of the
 project:
 
     python -m pip install -r requirements.txt
+
+### Mapping information
+
+The mapping information for Cardano is too large for Github.
+To retrieve it do the following:
+- Download the file from
+[here](https://uoe-my.sharepoint.com/:u:/g/personal/dkarakos_ed_ac_uk/ETgyf9W-JdtGlF5Ln8yj7zQB2uwtQLzB22oQDEfbvIn9Zg?e=HjXlxd&download=1).
+- Move the file to the folder `mapping_information/addresses/`. Note that the file should be named `cardano.json`.
 
 ## Run the tool
 
