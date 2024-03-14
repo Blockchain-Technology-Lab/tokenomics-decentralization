@@ -412,6 +412,7 @@ def get_denomination_from_coin(ledger):
     denominations = {
         'bitcoin': 1e8,
         'bitcoin_cash': 1e8,
+        'cardano': 1e6,
         'ethereum': 1e9,
         'litecoin': 1e8,
         'tezos': 1e6
