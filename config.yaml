@@ -1,9 +1,9 @@
 # The metrics for which an analysis should be performed.
 metrics:
   - hhi
-  - shannon entropy
+  - shannon_entropy
   - gini
-  - total entities
+  - total_entities
   - tau=0.33
   - tau=0.5
   - tau=0.66
@@ -48,9 +48,9 @@ plot_parameters:
     - tezos
   metrics:
     - hhi
-    - shannon entropy
+    - shannon_entropy
     - gini
-    - total entities
+    - total_entities
     - tau=0.33
     - tau=0.5
     - tau=0.66

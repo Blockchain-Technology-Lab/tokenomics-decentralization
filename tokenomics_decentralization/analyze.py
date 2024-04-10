@@ -31,9 +31,9 @@ def analyze_snapshot(conn, ledger, snapshot):
 
     compute_functions = {
         'hhi': compute_hhi,
-        'shannon entropy': compute_shannon_entropy,
+        'shannon_entropy': compute_shannon_entropy,
         'gini': compute_gini,
-        'total entities': compute_total_entities,
+        'total_entities': compute_total_entities,
         'mpr': compute_max_power_ratio,
         'theil': compute_theil_index
     }
@@ -69,7 +69,7 @@ def analyze_snapshot(conn, ledger, snapshot):
 
                 if top_limit_value > 0:
                     if top_limit_type == 'percentage':
-                        total_entities = compute_functions['total entities'](entries, circulation)
+                        total_entities = compute_functions['total_entities'](entries, circulation)
                         top_limit_percentage_value = int(total_entities * top_limit_value)
                         entries = entries[:top_limit_percentage_value]
                     elif top_limit_type == 'absolute':
