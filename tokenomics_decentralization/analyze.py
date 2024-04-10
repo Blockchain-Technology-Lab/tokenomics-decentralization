@@ -88,7 +88,7 @@ def analyze_snapshot(conn, ledger, snapshot):
 
             db_hlp.commit_database(conn)
 
-        if any(['tau' in default_metric_name, 'total entities' in default_metric_name]):
+        if any(['tau' in default_metric_name, 'total_entities' in default_metric_name]):
             metric_value = int(metric_value)
 
         metrics_results[flagged_metric] = metric_value
