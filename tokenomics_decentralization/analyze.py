@@ -124,7 +124,7 @@ def get_output_row(ledger, date, metrics):
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type',
+    header = ['ledger', 'snapshot_date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type',
               'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
     header += hlp.get_metrics()
 
