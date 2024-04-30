@@ -12,7 +12,7 @@ logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:
 
 def analyze_snapshot(conn, ledger, snapshot):
     force_analyze = hlp.get_force_analyze_flag()
-    no_clustering = hlp.get_no_clustering_flag()
+    clustering = hlp.get_clustering_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
@@ -46,7 +46,7 @@ def analyze_snapshot(conn, ledger, snapshot):
     metrics_results = {}
     for default_metric_name in metric_names:
         flagged_metric = default_metric_name
-        if no_clustering:
+        if not clustering:
             flagged_metric = 'non-clustered ' + flagged_metric
         if exclude_contract_addresses_flag:
             flagged_metric = 'exclude_contracts ' + flagged_metric
@@ -62,7 +62,7 @@ def analyze_snapshot(conn, ledger, snapshot):
             metric_value = val[0]
         else:
             if not entries:
-                if no_clustering:
+                if not clustering:
                     entries = db_hlp.get_non_clustered_balance_entries(conn, snapshot, ledger, balance_threshold=balance_threshold)
                 else:
                     entries = db_hlp.get_balance_entries(conn, snapshot, ledger, balance_threshold=balance_threshold)
@@ -97,19 +97,19 @@ def analyze_snapshot(conn, ledger, snapshot):
 
 
 def get_output_row(ledger, date, metrics):
-    no_clustering = hlp.get_no_clustering_flag()
+    clustering = hlp.get_clustering_flag()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
 
-    csv_row = [ledger, date, no_clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value,
+    csv_row = [ledger, date, clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value,
                exclude_below_fees_flag, exclude_below_usd_cent_flag]
 
     for metric_name in hlp.get_metrics():
         val = metric_name
-        if no_clustering:
+        if not clustering:
             val = 'non-clustered ' + val
         if exclude_contract_addresses_flag:
             val = 'exclude_contracts ' + val
@@ -124,18 +124,18 @@ def get_output_row(ledger, date, metrics):
 
 
 def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot_date', 'no_clustering', 'exclude_contract_addresses', 'top_limit_type',
+    header = ['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses', 'top_limit_type',
               'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
     header += hlp.get_metrics()
 
-    no_clustering = hlp.get_no_clustering_flag()
+    clustering = hlp.get_clustering_flag()
     exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
     top_limit_type = hlp.get_top_limit_type()
     top_limit_value = hlp.get_top_limit_value()
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
     output_filename = 'output'
-    if no_clustering:
+    if not clustering:
         output_filename += '-no_clustering'
     if exclude_contract_addresses_flag:
         output_filename += '-exclude_contract_addresses'

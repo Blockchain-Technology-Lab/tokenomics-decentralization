@@ -49,8 +49,9 @@ page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/co
 
 `analyze_flags` defines various analysis-related flags:
 
-* `no_clustering`: a boolean that disables clustering of addresses (under the
-  same entity, as defined in the mapping information)
+* `clustering`: a boolean that determines whether addresses will be clustered into entities
+ (as defined in the mapping information). If set to False, no clustering takes
+  place and the addresses are treated as distinct entities.
 * `top_limit_type`: a string of two values (`absolute` or `percentage`) that
   enables applying a threshold on the addresses that will be considered
 * `top_limit_value`: the value of the top limit that should be applied; if 0,

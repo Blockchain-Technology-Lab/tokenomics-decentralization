@@ -28,7 +28,7 @@ execution_flags:
 
 # Analyze flags
 analyze_flags:
-  no_clustering: false
+  clustering: true
   top_limit_type: "absolute"  # one of two types: "absolute" or "percentage"; if absolute then value should be integer; if percentage then value should be float in [0, 1]
   top_limit_value: 0
   exclude_contract_addresses: false
@@ -61,7 +61,7 @@ plot_parameters:
     # if true, then all possible combinations of all params are plotted
     # if false, then starting from a baseline where bools are false and top limits are 0, each other param is plotted sequencially while keeping the rest on the default
     combine_params: false  
-    no_clustering:
+    clustering:
       - true
       - false
     top_limit_absolute:
