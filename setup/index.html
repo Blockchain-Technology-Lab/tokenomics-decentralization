@@ -44,7 +44,7 @@
                 </li>
               </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">How to use</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">How to use</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
     </li>
@@ -129,8 +129,9 @@ page</a>).</p>
 </ul>
 <p><code>analyze_flags</code> defines various analysis-related flags:</p>
 <ul>
-<li><code>no_clustering</code>: a boolean that disables clustering of addresses (under the
-  same entity, as defined in the mapping information)</li>
+<li><code>clustering</code>: a boolean that determines whether addresses will be clustered into entities
+ (as defined in the mapping information). If set to False, no clustering takes
+  place and the addresses are treated as distinct entities.</li>
 <li><code>top_limit_type</code>: a string of two values (<code>absolute</code> or <code>percentage</code>) that
   enables applying a threshold on the addresses that will be considered</li>
 <li><code>top_limit_value</code>: the value of the top limit that should be applied; if 0,
