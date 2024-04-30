@@ -135,7 +135,7 @@ def test_config_flags(mocker):
         hlp.get_force_map_addresses_flag,
         hlp.get_force_map_balances_flag,
         hlp.get_force_analyze_flag,
-        hlp.get_no_clustering_flag,
+        hlp.get_clustering_flag,
         hlp.get_exclude_contracts_flag,
         hlp.get_exclude_below_fees_flag,
     ]

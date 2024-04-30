@@ -66,7 +66,7 @@ def plot():
     # Filter rows with boolean flag params defined in config.
     # If no value is set for a flag, False is used by default
     # If the param consists of more than 2 and/or non-boolean entries, a ValueError is raised
-    for flag in ['no_clustering', 'exclude_contract_addresses']:
+    for flag in ['clustering', 'exclude_contract_addresses']:
         if plot_line_params[flag] is None:
             plot_line_params[flag] = [False]
         if len(plot_line_params[flag]) == 1:
@@ -79,22 +79,22 @@ def plot():
     # Plot each param in a line sequentially (keeping the other params at the default), instead of plotting the param combinations
     if plot_line_params['combine_params'] is False:
         dataframes = []
-        for flag_value in plot_line_params['no_clustering']:
+        for flag_value in plot_line_params['clustering']:
             dataframes.append(output_df[
-                (output_df['no_clustering'] == flag_value) &
+                (output_df['clustering'] == flag_value) &
                 (output_df['exclude_contract_addresses'] == False) &  # noqa
                 (output_df['top_limit_value'] == 0)
             ])
         for flag_value in plot_line_params['exclude_contract_addresses']:
             dataframes.append(output_df[
-                (output_df['no_clustering'] == False) &  # noqa
+                (output_df['clustering'] == True) &  # noqa
                 (output_df['exclude_contract_addresses'] == flag_value) &
                 (output_df['top_limit_value'] == 0)
             ])
         for limit_type in top_limits.keys():
             for limit_val in top_limits[limit_type]:
                 dataframes.append(output_df[
-                    (output_df['no_clustering'] == False) &  # noqa
+                    (output_df['clustering'] == True) &  # noqa
                     (output_df['exclude_contract_addresses'] == False) &  # noqa
                     (output_df['top_limit_type'] == limit_type) &
                     (output_df['top_limit_value'] == limit_val)
@@ -108,7 +108,7 @@ def plot():
     # This column will be used as the plot's legend
     for i, row in output_df.iterrows():
         output_df.at[i, 'ledger'] = tickers[row['ledger']]
-        if row['no_clustering']:
+        if not row['clustering']:
             output_df.at[i, 'ledger'] += '_nocluster'
         if row['exclude_contract_addresses']:
             output_df.at[i, 'ledger'] += '_nocontracts'
@@ -118,9 +118,9 @@ def plot():
                 limit_val = int(limit_val)
             output_df.at[i, 'ledger'] += f'_top_{limit_val}'
 
-    output_df['snapshot date'] = pd.to_datetime(output_df['snapshot date'])
+    output_df['snapshot_date'] = pd.to_datetime(output_df['snapshot_date'])
 
-    output_df = output_df.drop_duplicates(subset=['ledger', 'snapshot date'])
+    output_df = output_df.drop_duplicates(subset=['ledger', 'snapshot_date'])
 
     params = {'legend.fontsize': 14,
               'figure.titlesize': 40,
@@ -145,7 +145,7 @@ def plot():
 
     metric_cols = output_df.columns[6:]
     for metric in metric_cols:
-        df_pivot = output_df.pivot(index='snapshot date', columns='ledger', values=metric)
+        df_pivot = output_df.pivot(index='snapshot_date', columns='ledger', values=metric)
         df_pivot.plot(figsize=(25, 13), grid=True, xlabel='Date', ylabel=metric, lw=2)
         plt.title(metric.upper(), fontsize=30)
         plt.gca().legend().set_title('')

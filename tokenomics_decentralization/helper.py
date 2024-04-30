@@ -199,17 +199,17 @@ def get_force_analyze_flag():
         raise ValueError('Flag "force_analyze" not in config file')
 
 
-def get_no_clustering_flag():
+def get_clustering_flag():
     """
-    Gets the flag that determines whether to forcefully recreate metrics
+    Gets the flag that determines whether to cluster addresses into entities
     :returns: boolean
     :raises ValueError: if the flag is not set in the config file
     """
     config = get_config_data()
     try:
-        return config['analyze_flags']['no_clustering']
+        return config['analyze_flags']['clustering']
     except KeyError:
-        raise ValueError('Flag "no_clustering" not in config file')
+        raise ValueError('Flag "clustering" not in config file')
 
 
 def get_metrics():
