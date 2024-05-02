@@ -107,42 +107,43 @@ To run the tool simply do:</p>
 <pre><code>python run.py
 </code></pre>
 <p>The execution is controlled and parameterized by the configuration file
-<code>config.yml</code> as follows.</p>
-<p><code>metrics</code> defines the metrics that should be computed in the analysis. By
-default all supported metrics are included here (to add support for a new metric
+<code>config.yaml</code> as follows:</p>
+<p><code>metrics</code> defines the metrics that will be computed in the analysis. By
+default, <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/metrics">all supported metrics</a> are included here (to add support for a new metric
 see the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/">conributions
 page</a>).</p>
-<p><code>ledgers</code> defines the ledgers that should be analyzed. By default, all supported
+<p><code>ledgers</code> defines the ledgers that will be analyzed. By default, all supported
 ledgers are included here (to add support for a new ledger see the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/">conributions
 page</a>).</p>
-<p><code>execution_flags</code> defines various flags that control the data handling:</p>
+<p><code>execution_flags</code> defines various flags that control the data handling (all set to false by default):</p>
 <ul>
-<li><code>force_map_addresses</code>: the address helper data from the directory
+<li><code>force_map_addresses</code>: if set to true, the address helper data from the directory
   <code>mapping_information</code> is re-computed; you should set this flag to true if the
   data has been updated since the last execution for the given ledger</li>
-<li><code>force_map_balances</code>: the balance data of the ledger's addresses is
+<li><code>force_map_balances</code>: is set to true, the balance data of the ledger's addresses is
   recomputed; you should set this flag to true if the data has been updated
   since the last execution for the given ledger</li>
-<li><code>force_analyze</code>: the computation of a metric is recomputed; you should set
+<li><code>force_analyze</code>: if set to true, the computation of a metric is recomputed; you should set
   this flag to true if any type of data has been updated since the last
   execution for the given ledger</li>
 </ul>
 <p><code>analyze_flags</code> defines various analysis-related flags:</p>
 <ul>
 <li><code>clustering</code>: a boolean that determines whether addresses will be clustered into entities
- (as defined in the mapping information). If set to False, no clustering takes
+ (as defined in the mapping information). If set to false, no clustering takes
   place and the addresses are treated as distinct entities.</li>
-<li><code>top_limit_type</code>: a string of two values (<code>absolute</code> or <code>percentage</code>) that
+<li><code>top_limit_type</code>: a string that can take one of two values (<code>absolute</code> or <code>percentage</code>) that
   enables applying a threshold on the addresses that will be considered</li>
 <li><code>top_limit_value</code>: the value of the top limit that should be applied; if 0,
   then no limit is used (regardless of the value of <code>top_limit_type</code>); if the
   type is <code>absolute</code>, then the <code>top_limit_value</code> should be an integer (e.g., if
   set to 100, then only the 100 wealthiest entities/addresses will be considered
   in the analysis); if the type is <code>percentage</code> the the <code>top_limit_value</code> should
-  be an integer (e.g., if set to 0.50, then only the top 50% of wealthiest
+  be a value between 0 and 1 (e.g., if set to 0.50, then only the top 50% of wealthiest
   entities/addresses will be considered)</li>
 <li><code>exclude_contract_addresses</code>: a boolean value that enables the exclusion of
   contract addresses from the analysis</li>
+<li><code>exclude_below_fees</code>: a boolean value that enables the exclusion of addresses, the balance of which at the analyzed point in time was less than the average transaction fee</li>
 <li><code>exclude_below_usd_cent</code>: a boolean value that enables the exclusion of
   addresses, the balance of which at the analyzed point in time was less than
   $0.01 (based on the historical price information in the directory
@@ -166,9 +167,7 @@ page</a>).
 contain the mapping information and analyzed data. The first entry in the output
 directories is also used to store the output files of the analysis and the
 plots.</p>
-<p>Finally, <code>plot_parameters</code> contains various parameters that control the type and
-data that will be produced as plots.
-...</p>
+<p>Finally, <code>plot_parameters</code> contains various parameters that control whether plots will be produced for the results and for which configurations.</p>
               
             </div>
           </div><footer>
