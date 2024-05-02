@@ -24,45 +24,46 @@ To run the tool simply do:
     python run.py
 
 The execution is controlled and parameterized by the configuration file
-`config.yml` as follows.
+`config.yaml` as follows:
 
-`metrics` defines the metrics that should be computed in the analysis. By
-default all supported metrics are included here (to add support for a new metric
+`metrics` defines the metrics that will be computed in the analysis. By
+default, [all supported metrics](https://blockchain-technology-lab.github.io/tokenomics-decentralization/metrics) are included here (to add support for a new metric
 see the [conributions
 page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/)).
 
-`ledgers` defines the ledgers that should be analyzed. By default, all supported
+`ledgers` defines the ledgers that will be analyzed. By default, all supported
 ledgers are included here (to add support for a new ledger see the [conributions
 page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/)).
 
-`execution_flags` defines various flags that control the data handling:
+`execution_flags` defines various flags that control the data handling (all set to false by default):
 
-* `force_map_addresses`: the address helper data from the directory
+* `force_map_addresses`: if set to true, the address helper data from the directory
   `mapping_information` is re-computed; you should set this flag to true if the
   data has been updated since the last execution for the given ledger
-* `force_map_balances`: the balance data of the ledger's addresses is
+* `force_map_balances`: is set to true, the balance data of the ledger's addresses is
   recomputed; you should set this flag to true if the data has been updated
   since the last execution for the given ledger
-* `force_analyze`: the computation of a metric is recomputed; you should set
+* `force_analyze`: if set to true, the computation of a metric is recomputed; you should set
   this flag to true if any type of data has been updated since the last
   execution for the given ledger
 
 `analyze_flags` defines various analysis-related flags:
 
 * `clustering`: a boolean that determines whether addresses will be clustered into entities
- (as defined in the mapping information). If set to False, no clustering takes
+ (as defined in the mapping information). If set to false, no clustering takes
   place and the addresses are treated as distinct entities.
-* `top_limit_type`: a string of two values (`absolute` or `percentage`) that
+* `top_limit_type`: a string that can take one of two values (`absolute` or `percentage`) that
   enables applying a threshold on the addresses that will be considered
 * `top_limit_value`: the value of the top limit that should be applied; if 0,
   then no limit is used (regardless of the value of `top_limit_type`); if the
   type is `absolute`, then the `top_limit_value` should be an integer (e.g., if
   set to 100, then only the 100 wealthiest entities/addresses will be considered
   in the analysis); if the type is `percentage` the the `top_limit_value` should
-  be an integer (e.g., if set to 0.50, then only the top 50% of wealthiest
+  be a value between 0 and 1 (e.g., if set to 0.50, then only the top 50% of wealthiest
   entities/addresses will be considered)
 * `exclude_contract_addresses`: a boolean value that enables the exclusion of
   contract addresses from the analysis
+* `exclude_below_fees`: a boolean value that enables the exclusion of addresses, the balance of which at the analyzed point in time was less than the average transaction fee
 * `exclude_below_usd_cent`: a boolean value that enables the exclusion of
   addresses, the balance of which at the analyzed point in time was less than
   $0.01 (based on the historical price information in the directory
@@ -88,6 +89,4 @@ contain the mapping information and analyzed data. The first entry in the output
 directories is also used to store the output files of the analysis and the
 plots.
 
-Finally, `plot_parameters` contains various parameters that control the type and
-data that will be produced as plots.
-...
+Finally, `plot_parameters` contains various parameters that control whether plots will be produced for the results and for which configurations.

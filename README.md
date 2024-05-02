@@ -85,8 +85,6 @@ The tool is actively maintained by the following developers:
 - [Dimitris Karakostas](https://github.com/dimkarakostas)
 - [Christina Ovezik](https://github.com/LadyChristina)
 
-*Note*: When opening a Pull Request, you must request a review from at least *2*
-people in the above list.
 
 ## License
 
