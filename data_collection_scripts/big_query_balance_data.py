@@ -91,6 +91,20 @@ def get_from_dates(granularity):
     return from_dates
 
 
+def update_last_update(ledger_snapshot_dates):
+    """
+    Update the last update date for each ledger with the last date for which data was collected.
+    :param ledger_snapshot_dates: A dictionary with the ledgers for which data was collected as keys and the corresponding snapshot dates as values.
+    """
+    filepath = hlp.ROOT_DIR / "data_collection_scripts/last_update.json"
+    with open(filepath) as f:
+        last_update = json.load(f)
+    for ledger, snapshot_dates in ledger_snapshot_dates.items():
+        last_update[ledger] = snapshot_dates[-1]
+    with open(filepath, 'w') as f:
+        json.dump(last_update, f)
+
+
 if __name__ == '__main__':
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
@@ -116,3 +130,4 @@ if __name__ == '__main__':
         ledger_from_dates = get_from_dates(granularity=granularity)
         ledger_snapshot_dates = {ledger: hlp.get_dates_between(ledger_from_dates[ledger], to_date, granularity) for ledger in ledgers}
     collect_data(ledger_snapshot_dates=ledger_snapshot_dates, force_query=args.force_query)
+    update_last_update(ledger_snapshot_dates=ledger_snapshot_dates)
