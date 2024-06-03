@@ -30,15 +30,17 @@ def collect_data(ledger_snapshot_dates, force_query):
 
     i = 0
     all_quota_exceeded = False
+    ledger_last_updates = dict.fromkeys(ledger_snapshot_dates.keys())
 
     for ledger, snapshot_dates in ledger_snapshot_dates.items():
         for date in snapshot_dates:
             if all_quota_exceeded:
-                break
+                return ledger_last_updates
             file = input_dir / f'{ledger}_{date}_raw_data.csv'
             if not force_query and file.is_file():
                 logging.info(f'{ledger} data for {date} already exists locally. '
                              f'For querying {ledger} anyway please run the script using the flag --force-query')
+                ledger_last_updates[ledger] = date
                 continue
             logging.info(f"Querying {ledger} at snapshot {date}..")
 
@@ -51,7 +53,7 @@ def collect_data(ledger_snapshot_dates, force_query):
                 except FileNotFoundError:
                     logging.info(f'Exhausted all {i} service account keys. Aborting..')
                     all_quota_exceeded = True
-                    break
+                    return ledger_last_updates
                 query_job = client.query(query)
                 try:
                     rows = query_job.result()
@@ -74,6 +76,8 @@ def collect_data(ledger_snapshot_dates, force_query):
                     writer.writerow([field.name for field in rows.schema])
                     writer.writerows(rows)
                 logging.info(f'Done writing {ledger} data to file.\n')
+                ledger_last_updates[ledger] = date
+    return ledger_last_updates
 
 
 def get_from_dates(granularity):
@@ -91,16 +95,17 @@ def get_from_dates(granularity):
     return from_dates
 
 
-def update_last_update(ledger_snapshot_dates):
+def update_last_update(ledger_last_updates):
     """
-    Update the last update date for each ledger with the last date for which data was collected.
-    :param ledger_snapshot_dates: A dictionary with the ledgers for which data was collected as keys and the corresponding snapshot dates as values.
+    Update the last_update.json file with the last date for which data was collected for each ledger.
+    :param ledger_last_updates: A dictionary with the ledgers for which data was collected and the last date for which data was collected for each of them.
     """
     filepath = hlp.ROOT_DIR / "data_collection_scripts/last_update.json"
     with open(filepath) as f:
         last_update = json.load(f)
-    for ledger, snapshot_dates in ledger_snapshot_dates.items():
-        last_update[ledger] = snapshot_dates[-1]
+    for ledger, date in ledger_last_updates.items():
+        if date is not None:
+            last_update[ledger] = date
     with open(filepath, 'w') as f:
         json.dump(last_update, f)
 
@@ -129,5 +134,5 @@ if __name__ == '__main__':
     else:
         ledger_from_dates = get_from_dates(granularity=granularity)
         ledger_snapshot_dates = {ledger: hlp.get_dates_between(ledger_from_dates[ledger], to_date, granularity) for ledger in ledgers}
-    collect_data(ledger_snapshot_dates=ledger_snapshot_dates, force_query=args.force_query)
-    update_last_update(ledger_snapshot_dates=ledger_snapshot_dates)
+    ledger_last_updates = collect_data(ledger_snapshot_dates=ledger_snapshot_dates, force_query=args.force_query)
+    update_last_update(ledger_last_updates=ledger_last_updates)
