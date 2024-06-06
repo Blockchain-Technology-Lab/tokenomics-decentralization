@@ -85,13 +85,18 @@ def get_from_dates(granularity):
     Get the dates from which to start querying for each ledger, which corresponds to the last updated date + the granularity
     (e.g. the month following the last update if granularity is 'month').
     :param granularity: The granularity of the data collection. Can be 'day', 'week', 'month', or 'year'.
-    :return: A dictionary with ledgers as keys and the corresponding start dates as values.
+    :return: A dictionary with ledgers as keys and the corresponding start dates (or None if no date is set) as values.
     """
     with open(hlp.ROOT_DIR / "data_collection_scripts/last_update.json") as f:
         last_update = json.load(f)
+    last_update = last_update[granularity]
     from_dates = {}
     for ledger in last_update:
-        from_dates[ledger] = hlp.increment_date(date=hlp.get_date_beginning(last_update[ledger]), by=granularity)
+        ledger_from_date = last_update[ledger]
+        if ledger_from_date is None:
+            from_dates[ledger] = None
+        else:
+            from_dates[ledger] = hlp.increment_date(date=hlp.get_date_beginning(last_update[ledger]), by=granularity)
     return from_dates
 
 
@@ -130,9 +135,14 @@ if __name__ == '__main__':
     ledgers = args.ledgers
     granularity = hlp.get_granularity()
     if granularity is None:
+        # if no granularity is set, only the given snapshot date is queried
         ledger_snapshot_dates = {ledger: [hlp.get_date_string_from_date(to_date)] for ledger in ledgers}
     else:
+        default_from_date = hlp.get_date_beginning(hlp.get_snapshot_dates()[0])
         ledger_from_dates = get_from_dates(granularity=granularity)
-        ledger_snapshot_dates = {ledger: hlp.get_dates_between(ledger_from_dates[ledger], to_date, granularity) for ledger in ledgers}
+        ledger_snapshot_dates = dict()
+        for ledger in ledgers:
+            from_date = ledger_from_dates[ledger] if ledger in ledger_from_dates and ledger_from_dates[ledger] is not None else default_from_date
+            ledger_snapshot_dates[ledger] = hlp.get_dates_between(from_date, to_date, granularity)
     ledger_last_updates = collect_data(ledger_snapshot_dates=ledger_snapshot_dates, force_query=args.force_query)
     update_last_update(ledger_last_updates=ledger_last_updates)
