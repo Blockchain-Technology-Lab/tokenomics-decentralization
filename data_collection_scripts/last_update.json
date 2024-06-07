@@ -1,0 +1,38 @@
+{
+	"day": {
+		"bitcoin": null,
+		"bitcoin_cash": null,
+		"cardano": null,
+		"dogecoin": null,
+		"ethereum": null,
+		"litecoin": null,
+		"tezos": null
+	},
+	"week": {
+		"bitcoin": null,
+		"bitcoin_cash": null,
+		"cardano": null,
+		"dogecoin": null,
+		"ethereum": null,
+		"litecoin": null,
+		"tezos": null
+	},
+	"month": {
+		"bitcoin": "2023-11-01",
+		"bitcoin_cash": "2023-11-01",
+		"cardano": "2023-03-01",
+		"dogecoin": "2023-11-01",
+		"ethereum": "2023-08-01",
+		"litecoin": "2023-11-01",
+		"tezos": "2023-11-01"
+	},
+	"year": {
+		"bitcoin": null,
+		"bitcoin_cash": null,
+		"cardano": null,
+		"dogecoin": null,
+		"ethereum": null,
+		"litecoin": null,
+		"tezos": null
+	}
+}

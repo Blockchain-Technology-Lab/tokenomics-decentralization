@@ -120,6 +120,26 @@ def get_date_string_from_date(date_object):
     return date_object.strftime('%Y-%m-%d')
 
 
+def increment_date(date, by):
+    """
+    Increments a date by a given time period
+    :param date: a datetime.date object
+    :param by: a string in ['day', 'week', 'month', 'year']
+    :returns: a datetime.date object that corresponds to the date incremented by the number of days that correspond to the given granularity
+    :raises ValueError: if the granularity is not one of the allowed values
+    """
+    if by == 'day':
+        return date + datetime.timedelta(days=1)
+    elif by == 'week':
+        return date + datetime.timedelta(weeks=1)
+    elif by == 'month':
+        return date + datetime.timedelta(days=calendar.monthrange(date.year, date.month)[1])
+    elif by == 'year':
+        return datetime.date(date.year + 1, date.month, date.day)
+    else:
+        raise ValueError(f'Invalid granularity: {by}')
+
+
 def get_output_directories():
     """
     Reads the config file and retrieves the output directories

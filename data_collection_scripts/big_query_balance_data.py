@@ -9,15 +9,17 @@
     data_collection_scripts directory of the project under the name 'google-service-account-key-0.json'. Any additional
     keys should be named 'google-service-account-key-1.json', 'google-service-account-key-2.json', etc.
 """
+import json
 import google.cloud.bigquery as bq
 import csv
 from yaml import safe_load
 import logging
 import argparse
 import tokenomics_decentralization.helper as hlp
+from datetime import datetime
 
 
-def collect_data(ledgers, snapshot_dates, force_query):
+def collect_data(ledger_snapshot_dates, force_query):
     input_dir = hlp.get_input_directories()[0]
     root_dir = hlp.ROOT_DIR
     if not input_dir.is_dir():
@@ -28,15 +30,17 @@ def collect_data(ledgers, snapshot_dates, force_query):
 
     i = 0
     all_quota_exceeded = False
+    ledger_last_updates = dict.fromkeys(ledger_snapshot_dates.keys())
 
-    for ledger in ledgers:
+    for ledger, snapshot_dates in ledger_snapshot_dates.items():
         for date in snapshot_dates:
             if all_quota_exceeded:
-                break
+                return ledger_last_updates
             file = input_dir / f'{ledger}_{date}_raw_data.csv'
             if not force_query and file.is_file():
                 logging.info(f'{ledger} data for {date} already exists locally. '
                              f'For querying {ledger} anyway please run the script using the flag --force-query')
+                ledger_last_updates[ledger] = date
                 continue
             logging.info(f"Querying {ledger} at snapshot {date}..")
 
@@ -49,7 +53,7 @@ def collect_data(ledgers, snapshot_dates, force_query):
                 except FileNotFoundError:
                     logging.info(f'Exhausted all {i} service account keys. Aborting..')
                     all_quota_exceeded = True
-                    break
+                    return ledger_last_updates
                 query_job = client.query(query)
                 try:
                     rows = query_job.result()
@@ -72,24 +76,73 @@ def collect_data(ledgers, snapshot_dates, force_query):
                     writer.writerow([field.name for field in rows.schema])
                     writer.writerows(rows)
                 logging.info(f'Done writing {ledger} data to file.\n')
+                ledger_last_updates[ledger] = date
+    return ledger_last_updates
+
+
+def get_from_dates(granularity):
+    """
+    Get the dates from which to start querying for each ledger, which corresponds to the last updated date + the granularity
+    (e.g. the month following the last update if granularity is 'month').
+    :param granularity: The granularity of the data collection. Can be 'day', 'week', 'month', or 'year'.
+    :return: A dictionary with ledgers as keys and the corresponding start dates (or None if no date is set) as values.
+    """
+    with open(hlp.ROOT_DIR / "data_collection_scripts/last_update.json") as f:
+        last_update = json.load(f)
+    last_update = last_update[granularity]
+    from_dates = {}
+    for ledger in last_update:
+        ledger_from_date = last_update[ledger]
+        if ledger_from_date is None:
+            from_dates[ledger] = None
+        else:
+            from_dates[ledger] = hlp.increment_date(date=hlp.get_date_beginning(last_update[ledger]), by=granularity)
+    return from_dates
+
+
+def update_last_update(ledger_last_updates):
+    """
+    Update the last_update.json file with the last date for which data was collected for each ledger.
+    :param ledger_last_updates: A dictionary with the ledgers for which data was collected and the last date for which data was collected for each of them.
+    """
+    filepath = hlp.ROOT_DIR / "data_collection_scripts/last_update.json"
+    with open(filepath) as f:
+        last_update = json.load(f)
+    for ledger, date in ledger_last_updates.items():
+        if date is not None:
+            last_update[ledger] = date
+    with open(filepath, 'w') as f:
+        json.dump(last_update, f)
 
 
 if __name__ == '__main__':
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
     default_ledgers = hlp.get_ledgers()
-    default_snapshot_dates = hlp.get_snapshot_dates()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--ledgers', nargs="*", type=str.lower, default=default_ledgers,
                         choices=[ledger for ledger in default_ledgers], help='The ledgers to collect data for.')
-    parser.add_argument('--snapshot_dates', nargs="*", type=hlp.valid_date, default=default_snapshot_dates,
-                        help='The dates to collect data for.')
+    parser.add_argument('--to_date', type=hlp.valid_date,
+                        default=datetime.today().strftime('%Y-%m-%d'),
+                        help='The date until which to get data for (YYYY-MM-DD format). Defaults to today.')
     parser.add_argument('--force-query', action='store_true',
                         help='Flag to specify whether to query for project data regardless if the relevant data '
                              'already exist.')
     args = parser.parse_args()
 
-    snapshot_dates = [hlp.get_date_string_from_date(hlp.get_date_beginning(date)) for date in args.snapshot_dates]
-
-    collect_data(ledgers=args.ledgers, snapshot_dates=snapshot_dates, force_query=args.force_query)
+    to_date = hlp.get_date_beginning(args.to_date)
+    ledgers = args.ledgers
+    granularity = hlp.get_granularity()
+    if granularity is None:
+        # if no granularity is set, only the given snapshot date is queried
+        ledger_snapshot_dates = {ledger: [hlp.get_date_string_from_date(to_date)] for ledger in ledgers}
+    else:
+        default_from_date = hlp.get_date_beginning(hlp.get_snapshot_dates()[0])
+        ledger_from_dates = get_from_dates(granularity=granularity)
+        ledger_snapshot_dates = dict()
+        for ledger in ledgers:
+            from_date = ledger_from_dates[ledger] if ledger in ledger_from_dates and ledger_from_dates[ledger] is not None else default_from_date
+            ledger_snapshot_dates[ledger] = hlp.get_dates_between(from_date, to_date, granularity)
+    ledger_last_updates = collect_data(ledger_snapshot_dates=ledger_snapshot_dates, force_query=args.force_query)
+    update_last_update(ledger_last_updates=ledger_last_updates)
