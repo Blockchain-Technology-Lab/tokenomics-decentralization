@@ -194,3 +194,9 @@ There are also three command line arguments that can be used to customize the da
 - `--force-query` forces the collection of all raw data files, even if some or all of the files already
   exist. By default, this flag is set to False and the script only fetches data for some blockchain if the
   corresponding file does not already exist.
+
+## Historical prices
+
+The historical market prices (available in `price_data`) were collected from
+[CoinMarketCap](https://coinmarketcap.com/) and
+[Statista](https://www.statista.com/).
