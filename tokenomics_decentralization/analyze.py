@@ -96,64 +96,6 @@ def analyze_snapshot(conn, ledger, snapshot):
     return metrics_results
 
 
-def get_output_row(ledger, date, metrics):
-    clustering = hlp.get_clustering_flag()
-    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
-    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
-    exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
-    top_limit_type = hlp.get_top_limit_type()
-    top_limit_value = hlp.get_top_limit_value()
-
-    csv_row = [ledger, date, clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value,
-               exclude_below_fees_flag, exclude_below_usd_cent_flag]
-
-    for metric_name in hlp.get_metrics():
-        val = metric_name
-        if not clustering:
-            val = 'non-clustered ' + val
-        if exclude_contract_addresses_flag:
-            val = 'exclude_contracts ' + val
-        if exclude_below_fees_flag:
-            val = 'exclude_below_fees ' + val
-        if exclude_below_usd_cent_flag:
-            val = 'exclude_below_usd_cent ' + val
-        if top_limit_value > 0:
-            val = f'top-{top_limit_value}_{top_limit_type} ' + val
-        csv_row.append(metrics[val])
-    return csv_row
-
-
-def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses', 'top_limit_type',
-              'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
-    header += hlp.get_metrics()
-
-    clustering = hlp.get_clustering_flag()
-    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
-    top_limit_type = hlp.get_top_limit_type()
-    top_limit_value = hlp.get_top_limit_value()
-    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
-    exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
-    output_filename = 'output'
-    if not clustering:
-        output_filename += '-no_clustering'
-    if exclude_contract_addresses_flag:
-        output_filename += '-exclude_contract_addresses'
-    if top_limit_value:
-        output_filename += f'-{top_limit_type}_{top_limit_value}'
-    if exclude_below_fees_flag:
-        output_filename += '-exclude_below_fees'
-    if exclude_below_usd_cent_flag:
-        output_filename += '-exclude_below_usd_cent'
-    output_filename += '.csv'
-
-    output_dir = hlp.get_output_directories()[0]
-    with open(output_dir / output_filename, 'w') as f:
-        csv_writer = csv.writer(f)
-        csv_writer.writerow(header)
-        csv_writer.writerows(output_rows)
-
-
 def analyze(ledgers, snapshot_dates):
     output_rows = []
     for ledger in ledgers:
@@ -172,9 +114,9 @@ def analyze(ledgers, snapshot_dates):
 
             conn = get_connector(db_file)
             metrics_values = analyze_snapshot(conn, ledger, date)
-            output_rows.append(get_output_row(ledger, date, metrics_values))
+            output_rows.append(hlp.get_output_row(ledger, date, metrics_values))
             for metric, value in metrics_values.items():
                 logging.info(f'{metric}: {value}')
 
-    write_csv_output(output_rows)
+    hlp.write_csv_output(output_rows)
     return output_rows
