@@ -307,7 +307,9 @@ def get_top_limit_value():
 
 def get_circulation_from_entries(entries):
     """
-    Computes the aggregate value of a list of db entries
+    Computes the aggregate value of a list of db entries.
+    Uses a greedy execution, instead of an one-liner that sums a list, to avoid memory consumption.
+    :param entries: a list of tuples (entry, ) where entry is an integer
     :returns: integer
     """
     circulation = 0
