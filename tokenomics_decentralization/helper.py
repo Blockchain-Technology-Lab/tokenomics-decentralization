@@ -8,6 +8,7 @@ import datetime
 import calendar
 import argparse
 import json
+from collections import defaultdict
 import logging
 from yaml import safe_load
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
@@ -564,3 +565,65 @@ def get_active_sources():
             active_sources.add(source)
 
     return active_sources
+
+
+def get_clusters(ledger):
+    """
+    Retrieves the clusters of addresses that form from the mapping information.
+    First identifies the addresses that are associated (in the mapping
+    information) with more than one entities.
+    Then it retrieves the set of all entities that each such address is
+    associated with and constructs the clusters by finding overlapping entities in these sets.
+    Finally it constructs a dictionary that maps entities to their cluster.
+    :param ledger: a string of the ledger's name
+    :returns: a dictionary where the key is an entity and the value is the cluster to which it belongs
+    """
+    # Find addresses that are associated with more than one entities.
+    # Note: If the mapping file is very large, loading the whole dictionary can result to running out of memory. Using this step consumes less memory but requires one extra pass of the file.
+    addresses = set()
+    multi_entity_addresses = set()
+    with open(MAPPING_INFO_DIR / f'addresses/{ledger}.jsonl') as f:
+        for line in f:
+            info = json.loads(line)
+            address = info['address']
+            if address in addresses:
+                multi_entity_addresses.add(address)
+            addresses.add(address)
+    del addresses
+
+    # Get the entities associated with the multi-entity addresses.
+    address_entities = defaultdict(set)
+    with open(MAPPING_INFO_DIR / f'addresses/{ledger}.jsonl') as f:
+        for line in f:
+            info = json.loads(line)
+            address = info['address']
+            if address in multi_entity_addresses:
+                source = info['source']
+                entity_name = info['name']
+                if source not in get_active_sources():
+                    continue
+                address_entities[address].add((entity_name, source))
+    del multi_entity_addresses
+
+    clusters = list(address_entities.values())
+    del address_entities
+
+    # If an entity is present in two entries, then these are merged.
+    # If an entry cannot be merged with any other entry, then it is finalized.
+    finalized_counter = 0
+    cluster_mapping = {}
+    while clusters:
+        cluster = clusters.pop()
+        merged_flag = False
+        for idx, new_item in enumerate(clusters):
+            if new_item.intersection(cluster):
+                merged_flag = True
+                clusters[idx] = new_item.union(cluster)
+                break
+        if not merged_flag:
+            finalized_counter += 1
+            cluster_name = f'-++-{finalized_counter}-++-'
+            for item in cluster:  # item = (entity, source)
+                cluster_mapping[item[0]] = cluster_name
+
+    return cluster_mapping
