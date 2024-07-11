@@ -194,32 +194,6 @@ def get_force_map_addresses_flag():
         raise ValueError('Flag "force_map_addresses" not in config file')
 
 
-def get_force_map_balances_flag():
-    """
-    Gets the flag that determines whether to forcefully map balances in db
-    :returns: boolean
-    :raises ValueError: if the flag is not set in the config file
-    """
-    config = get_config_data()
-    try:
-        return config['execution_flags']['force_map_balances']
-    except KeyError:
-        raise ValueError('Flag "force_map_balances" not in config file')
-
-
-def get_force_analyze_flag():
-    """
-    Gets the flag that determines whether to forcefully recalculate metrics
-    :returns: boolean
-    :raises ValueError: if the flag is not set in the config file
-    """
-    config = get_config_data()
-    try:
-        return config['execution_flags']['force_analyze']
-    except KeyError:
-        raise ValueError('Flag "force_analyze" not in config file')
-
-
 def get_clustering_flag():
     """
     Gets a flag that determines whether to cluster addresses into entities
