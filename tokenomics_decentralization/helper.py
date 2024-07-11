@@ -221,15 +221,13 @@ def get_force_analyze_flag():
 
 def get_clustering_flag():
     """
-    Gets the flag that determines whether to cluster addresses into entities
+    Gets a flag that determines whether to cluster addresses into entities
     :returns: boolean
     :raises ValueError: if the flag is not set in the config file
     """
-    config = get_config_data()
-    try:
-        return config['analyze_flags']['clustering']
-    except KeyError:
-        raise ValueError('Flag "clustering" not in config file')
+    if get_active_source_keywords():
+        return True
+    return False
 
 
 def get_metrics():

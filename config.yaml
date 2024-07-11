@@ -28,7 +28,6 @@ execution_flags:
 
 # Analyze flags
 analyze_flags:
-  clustering: true
   clustering_sources:
     - "Explorers"
     - "Staking Keys"
