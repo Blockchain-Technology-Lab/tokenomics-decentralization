@@ -468,3 +468,30 @@ def get_usd_cent_equivalent(ledger, date):
     except KeyError:
         logging.warning(f'No price data found for {ledger} on {date}')
         return 0
+
+
+def get_active_source_keywords():
+    """
+    Returns the keywords of the sources that should be used in the analysis based on the config parameters.
+    :returns: a list of strings of mapping information source keywords
+    """
+    try:
+        return get_config_data()['analyze_flags']['clustering_sources']
+    except KeyError:
+        raise ValueError('Clustering sources does not exist in analyze flags')
+
+
+def get_active_sources():
+    """
+    Returns the sources that should be used in the analysis based on the config parameters.
+    :returns: a list of strings of mapping information sources
+    """
+    with open(MAPPING_INFO_DIR / 'sources.json') as f:
+        source_keywords = json.load(f)
+
+    active_sources = set()
+    for kw in get_active_source_keywords():
+        for source in source_keywords[kw]:
+            active_sources.add(source)
+
+    return active_sources
