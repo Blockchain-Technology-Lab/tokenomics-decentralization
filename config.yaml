@@ -23,7 +23,6 @@ ledgers:
 # Execution flags
 execution_flags:
   force_map_addresses: false
-  force_map_balances: false
   force_analyze: false
 
 # Analyze flags

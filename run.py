@@ -9,8 +9,7 @@ logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:
 
 def main(ledgers, snapshot_dates):
     for ledger in ledgers:
-        for snapshot in snapshot_dates:
-            apply_mapping(ledger, snapshot)
+        apply_mapping(ledger)
 
     analyze(ledgers, snapshot_dates)
 
