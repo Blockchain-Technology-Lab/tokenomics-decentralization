@@ -28,44 +28,45 @@ project:
 
     python -m pip install -r requirements.txt
 
+### System requirements
+
+Running the tool requires loading the raw input data on memory. To avoid running
+out of memory, we recommend RAM at least double the largest raw data file.
+
 ### Mapping information
 
 The mapping information for Cardano is too large for Github.
 To retrieve it do the following:
 - Download the file from
 [here](https://uoe-my.sharepoint.com/:u:/g/personal/dkarakos_ed_ac_uk/EXseoT-v1xBHn1TWG1IvqHIB2L3Pm35-UtKIcUKmk1IQZw?e=YgTfjR&download=1).
-- Move the file to the folder `mapping_information/addresses/`. Note that the file should be named `cardano.jsonl`.
+- Move the file to the folder `mapping_information/addresses/`. The file _should be named_ `cardano.jsonl`.
 
 ## Run the tool
 
-Place all raw data (which could be collected from [BigQuery](https://cloud.google.com/bigquery/) for example) in the `input` directory. 
-Each file named as `<project_name>_<snapshot_date>_raw_data.json` (e.g. `bitcoin_{2023-01-01}_raw_data.json`). By default, there
-is a (very small) sample input file for some supported projects. To use the
-samples, remove the prefix `sample_`. For more extended raw data and instructions on how to retrieve it, see
-[here](https://blockchain-technology-lab.github.io/tokenomics-decentralization/data/).
+Place all raw data (which could be collected from
+[BigQuery](https://cloud.google.com/bigquery/) for example) in the `input`
+directory.  Each file named as `<project_name>_<snapshot_date>_raw_data.json`
+(e.g.  `bitcoin_{2023-01-01}_raw_data.json`). By default, there is a (very
+small) sample input file for some supported projects. To use the samples, remove
+the prefix `sample_`. For more extended raw data and instructions on how to
+retrieve it, see [here](https://blockchain-technology-lab.github.io/tokenomics-decentralization/data/).
 
-Run `python run.py --ledgers <ledger_1> ... <ledger_n> --snapshots <date_1> <date_2>` to produce and analyze the database files.
-For each ledger and for each snapshot one SQLite file is created, which contains the address mapping and the balance information.
-Note that both arguments are optional, so it's possible to omit one or both of them (in which case the default values
-will be used). Specifically:
+Edit the configuration file `config.yaml` to choose which ledgers to analyze,
+for which snapshots, with which metrics, etc (see
+[here](https://blockchain-technology-lab.github.io/tokenomics-decentralization/setup/)
+for more information on each parameter).
 
-- The `ledgers` argument accepts any number of supported ledgers (case-insensitive). 
-For example, `--ledgers bitcoin` runs the analysis for Bitcoin, `--ledgers Bitcoin Ethereum Cardano` runs the analysis 
-for Bitcoin, Ethereum and Cardano, etc. Ledgers with  more words should be defined with an underscore; for example 
-Bitcoin Cash should be set as `bitcoin_cash`.
-- The `snapshots` argument should be of the form `YYYY-MM-DD`. 
-For example, `--snapshots 2022-02-01` runs it for 1 February 2022.
+Run `python run.py` to perform the analysis and print on stdout the output of
+each implemented metric for the specified ledgers and snapshot.
 
-`run.py` prints on stdout the output of each implemented metric for the specified ledgers and snapshot.
+For each ledger and for the chosen combination of mapping sources, a SQLite file
+is created in `mapping_information/addresses`, which contains the address
+mapping information.
 
-To mass produce and analyze data, omit one or both arguments. If some arguments
-are omitted, the default values from `config.yaml` will be used. If only the
-`ledgers` is given, all snapshots for which a raw data and/or database file exists will be
-analyzed. If only the timeframe is specified, all ledgers will be analyzed for
-the given timeframe (if the raw data and/or database files exist).
-
-A single file `output.csv` is also created in the `output` directory, containing the output data from the 
-last execution of `run.py`.
+A single file `output_{params}.csv` is also created in the `output` directory,
+containing the output data from the last execution of `run.py`. Here, "params"
+corresponds to analysis parameters like whether to apply clustering,
+thresholding, etc.
 
 ## Contributing
 
