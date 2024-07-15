@@ -13,6 +13,7 @@ Currently, the supported blockchains are:
 - Ethereum
 - Litecoin
 - Tezos
+
 We intend to add more ledgers to this list in the future.
 
 ## Installation
@@ -46,7 +47,7 @@ To retrieve it do the following:
 Place all raw data (which could be collected from
 [BigQuery](https://cloud.google.com/bigquery/) for example) in the `input`
 directory.  Each file named as `<project_name>_<snapshot_date>_raw_data.json`
-(e.g.  `bitcoin_{2023-01-01}_raw_data.json`). By default, there is a (very
+(e.g.  `bitcoin_2023-01-01_raw_data.json`). By default, there is a (very
 small) sample input file for some supported projects. To use the samples, remove
 the prefix `sample_`. For more extended raw data and instructions on how to
 retrieve it, see [here](https://blockchain-technology-lab.github.io/tokenomics-decentralization/data/).
