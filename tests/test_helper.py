@@ -485,3 +485,4 @@ def test_get_clusters(mocker):
     assert clusters['entity1'] == clusters['entity2']
     assert clusters['entity1'] == clusters['entity3']
     assert clusters['entity4'] == clusters['entity5']
+    assert 'entity7' not in clusters.keys()
