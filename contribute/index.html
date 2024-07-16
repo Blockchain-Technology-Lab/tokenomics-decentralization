@@ -125,6 +125,14 @@ list of dictionaries with the following information:
 <p>To contribute mapping information you can either update an existing file, by
 changing and/or adding some entries, or create a new file for a newly-supported
 ledger.</p>
+<p>Note: If you add an entry in <code>mapping_addresses</code> with a source that does not
+already exist, you should also add this source in the file
+<code>mapping_information/sources.json</code>. Specifically, if it comes from a
+publicly-available website you should add it under "Explorers", otherwise either
+use an existing appropriate keyword or create a new one. If you create a new
+one, make sure to also include it in the configuration file <code>config.yaml</code> and in
+the description of the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/setup/">Setup
+page</a>).</p>
 <h3 id="price-information">Price information</h3>
 <p>The directory <code>price_data/</code> contains information about the supported ledgers'
 market price. Each file in this folder is named <code>&lt;project_name&gt;.csv</code> (for the

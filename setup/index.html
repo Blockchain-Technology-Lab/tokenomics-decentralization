@@ -115,23 +115,19 @@ page</a>).</p>
 <p><code>ledgers</code> defines the ledgers that will be analyzed. By default, all supported
 ledgers are included here (to add support for a new ledger see the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/">conributions
 page</a>).</p>
-<p><code>execution_flags</code> defines various flags that control the data handling (all set to false by default):</p>
+<p><code>execution_flags</code> defines flags that control the data handling (all set to false by default):</p>
 <ul>
-<li><code>force_map_addresses</code>: if set to true, the address helper data from the directory
+<li><code>force_map_addresses</code>: if set to true, the address mapping data from the directory
   <code>mapping_information</code> is re-computed; you should set this flag to true if the
-  data has been updated since the last execution for the given ledger</li>
-<li><code>force_map_balances</code>: is set to true, the balance data of the ledger's addresses is
-  recomputed; you should set this flag to true if the data has been updated
-  since the last execution for the given ledger</li>
-<li><code>force_analyze</code>: if set to true, the computation of a metric is recomputed; you should set
-  this flag to true if any type of data has been updated since the last
-  execution for the given ledger</li>
+  mapping data has been updated since the last execution for the given ledger</li>
 </ul>
 <p><code>analyze_flags</code> defines various analysis-related flags:</p>
 <ul>
-<li><code>clustering</code>: a boolean that determines whether addresses will be clustered into entities
- (as defined in the mapping information). If set to false, no clustering takes
-  place and the addresses are treated as distinct entities.</li>
+<li><code>clustering_sources</code>: a list of sources that should be used to compute the
+  address mapping information. If empty, no clustering takes place and the
+  addresses are treated as distinct entities. The list should contain any
+  combination of the following options (<em>case sensitive</em>): "Explorers", "Staking
+  Keys", "Multi-input transactions".</li>
 <li><code>top_limit_type</code>: a string that can take one of two values (<code>absolute</code> or <code>percentage</code>) that
   enables applying a threshold on the addresses that will be considered</li>
 <li><code>top_limit_value</code>: the value of the top limit that should be applied; if 0,
@@ -163,10 +159,8 @@ define the source of data. <code>input_directories</code> defines the directorie
 contain raw address balance information, as obtained from BigQuery or a full
 node (for more information about this see the <a href="https://blockchain-technology-lab.github.io/tokenomics-decentralization/data/">data collection
 page</a>).
-<code>output_directories</code> defines the directories to store the databases which
-contain the mapping information and analyzed data. The first entry in the output
-directories is also used to store the output files of the analysis and the
-plots.</p>
+<code>output_directories</code> defines the directory to store the output files of the
+analysis and the plots.</p>
 <p>Finally, <code>plot_parameters</code> contains various parameters that control whether plots will be produced for the results and for which configurations.</p>
               
             </div>
