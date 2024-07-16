@@ -95,6 +95,9 @@ def test_get_entries(mocker):
     get_exclude_below_usd_cent_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_below_usd_cent_flag')
     get_exclude_below_usd_cent_mock.return_value = False
 
+    get_exclude_contracts_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_contracts_flag')
+    get_exclude_contracts_mock.return_value = False
+
     get_median_tx_fee_mock = mocker.patch('tokenomics_decentralization.helper.get_median_tx_fee')
     get_median_tx_fee_mock.return_value = 0
     get_usd_cent_equivalent_mock = mocker.patch('tokenomics_decentralization.helper.get_usd_cent_equivalent')
@@ -112,10 +115,7 @@ def test_get_entries(mocker):
     mocker.patch('builtins.open', mocker.mock_open(read_data='address,balance\naddr1,1\naddr2,2'))
 
     get_address_entity_mock = mocker.patch('tokenomics_decentralization.db_helper.get_address_entity')
-    get_address_entity_mock.side_effect = {
-        'addr1': 'entity1',
-        'addr2': 'entity2',
-    }.get
+    get_address_entity_mock.side_effect = [('entity1', 1), ('entity2', 0)]
 
     entries = get_entries('bitcoin', '2010-01-01', 'test_filename')
     assert entries == [(1,)]

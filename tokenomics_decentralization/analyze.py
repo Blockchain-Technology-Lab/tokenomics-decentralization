@@ -80,6 +80,7 @@ def get_entries(ledger, date, filename):
     """
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
+    exclude_contracts_flag = hlp.get_exclude_contracts_flag()
 
     median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=date) \
         if exclude_below_fees_flag else 0
@@ -98,8 +99,9 @@ def get_entries(ledger, date, filename):
             address, balance = line[0], int(line[-1])
             if address in special_addresses:
                 continue
-            entity = db_hlp.get_address_entity(conn, address)
-            clustered_balances[entity] += balance
+            entity, is_contract = db_hlp.get_address_entity(conn, address)
+            if not (exclude_contracts_flag and is_contract):
+                clustered_balances[entity] += balance
 
     entries = []
     while clustered_balances:

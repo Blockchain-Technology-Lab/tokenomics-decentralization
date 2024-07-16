@@ -39,7 +39,7 @@ def insert_mapping(conn, address, entity, is_contract):
         c.execute('INSERT INTO mapping(address, entity, is_contract) VALUES (?, ?, ?)', (address, entity, is_contract))
     except sqlite3.IntegrityError as e:
         if 'UNIQUE constraint failed' in str(e):
-            existing_entity = get_address_entity(conn, address)
+            existing_entity = get_address_entity(conn, address)[0]
             if existing_entity == entity:
                 pass
             else:
@@ -50,7 +50,7 @@ def insert_mapping(conn, address, entity, is_contract):
 
 def get_address_entity(conn, address):
     c = conn.cursor()
-    entry = c.execute('SELECT entity FROM mapping WHERE address=?', (address, )).fetchone()
+    entry = c.execute('SELECT entity, is_contract FROM mapping WHERE address=?', (address, )).fetchone()
     if entry is not None:
-        return entry[0]
-    return address
+        return entry
+    return (address, 0)

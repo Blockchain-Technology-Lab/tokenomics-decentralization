@@ -58,11 +58,13 @@ def test_insert_mapping(setup_and_cleanup):
 def test_get_address_entity(setup_and_cleanup):
     db_filename = db_hlp.get_db_filename('test')
     conn = db_hlp.get_connector(db_filename)
-    db_hlp.insert_mapping(conn, 'a1', 'e1', False)
+    db_hlp.insert_mapping(conn, 'a1', 'e1', True)
     db_hlp.commit_database(conn)
 
-    entity = db_hlp.get_address_entity(conn, 'a1')
+    entity, is_contract = db_hlp.get_address_entity(conn, 'a1')
     assert entity == 'e1'
+    assert is_contract == 1
 
-    entity = db_hlp.get_address_entity(conn, 'blah')
+    entity, is_contract = db_hlp.get_address_entity(conn, 'blah')
     assert entity == 'blah'
+    assert is_contract == 0
