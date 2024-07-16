@@ -296,7 +296,7 @@ def test_get_top_limit_value(mocker):
 
 
 def test_get_circulation_from_entries():
-    entries = [[10, ], [11, ]]
+    entries = [10, 11]
     circulation = hlp.get_circulation_from_entries(entries)
     assert circulation == 21
 

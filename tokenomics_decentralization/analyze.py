@@ -14,7 +14,7 @@ def analyze_snapshot(entries):
     """
     Applies thresholding based on the config parameters and then applies
     the metrics on the given entries.
-    :param entries: a list of tuples (balance, ), where balance is an integer, in descending order
+    :param entries: a list of integers in descending order
     :returns: a dictionary where the key is the name of the computed metric prefixed with the applied thresholds and the value is a number
     """
     compute_functions = {
@@ -76,7 +76,7 @@ def get_entries(ledger, date, filename):
     :param ledger: a string of a ledger's name
     :param date: a string in YYYY-MM-DD format of the snapshot that is retrieved
     :param filename: the path of the file that stores the snapshot's raw data
-    :returns: a list of tuples (balance, ), where balance is an integer, in descending order
+    :returns: a list of integers in descending order
     """
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
@@ -107,8 +107,8 @@ def get_entries(ledger, date, filename):
     while clustered_balances:
         item = clustered_balances.popitem()
         if item[1] > balance_threshold:
-            entries.append((item[1], ))
-    entries.sort(key=lambda x: x[0], reverse=True)
+            entries.append(item[1])
+    entries.sort(reverse=True)
 
     return entries
 

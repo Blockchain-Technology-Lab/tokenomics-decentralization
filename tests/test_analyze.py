@@ -118,7 +118,7 @@ def test_get_entries(mocker):
     get_address_entity_mock.side_effect = [('entity1', 1), ('entity2', 0)]
 
     entries = get_entries('bitcoin', '2010-01-01', 'test_filename')
-    assert entries == [(1,)]
+    assert entries == [1]
     assert get_db_connector_mock.call_args_list == [call('bitcoin_Test.db')]
 
 
@@ -138,7 +138,7 @@ def test_analyze(mocker):
     get_db_connector_mock.return_value = 'connector'
 
     get_entries_mock = mocker.patch('tokenomics_decentralization.analyze.get_entries')
-    entries = [(1, ), (2, )]
+    entries = [1, 2]
     get_entries_mock.return_value = entries
 
     analyze_snapshot_mock = mocker.patch('tokenomics_decentralization.analyze.analyze_snapshot')

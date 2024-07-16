@@ -293,13 +293,10 @@ def get_circulation_from_entries(entries):
     """
     Computes the aggregate value of a list of db entries.
     Uses a greedy execution, instead of an one-liner that sums a list, to avoid memory consumption.
-    :param entries: a list of tuples (entry, ) where entry is an integer
+    :param entries: a list of integers
     :returns: integer
     """
-    circulation = 0
-    for entry in entries:
-        circulation += int(entry[0])
-    return circulation
+    return sum(entries)
 
 
 def get_exclude_contracts_flag():
