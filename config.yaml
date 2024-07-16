@@ -23,17 +23,18 @@ ledgers:
 # Execution flags
 execution_flags:
   force_map_addresses: false
-  force_map_balances: false
-  force_analyze: false
 
 # Analyze flags
 analyze_flags:
-  clustering: true
+  clustering_sources:
+    - "Explorers"
+    - "Staking Keys"
+    - "Multi-input transactions"
   top_limit_type: "absolute"  # one of two types: "absolute" or "percentage"; if absolute then value should be integer; if percentage then value should be float in [0, 1]
   top_limit_value: 0
   exclude_contract_addresses: false
   exclude_below_fees: false
-  exclude_below_usd_cent: true
+  exclude_below_usd_cent: false
 
 # The snapshots for which an analysis should be performed.
 # Each snapshot is a string of the form YYYY-MM-DD.
@@ -57,7 +58,7 @@ output_directories:
 
 # Plot flags
 plot_parameters:
-  plot: true
+  plot: false
   ledgers:
     - bitcoin
     - bitcoin_cash

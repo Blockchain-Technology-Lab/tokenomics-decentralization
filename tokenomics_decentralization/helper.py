@@ -8,6 +8,7 @@ import datetime
 import calendar
 import argparse
 import json
+from collections import defaultdict
 import logging
 from yaml import safe_load
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
@@ -167,6 +168,15 @@ def get_tau_thresholds():
     return [float(name.split('=')[1].strip()) for name in config['metrics'] if 'tau' in name]
 
 
+def get_tau_threshold_from_parameter(parameter):
+    """
+    Retrieves the tau threshold that should be used in the computation from the parameter string
+    :param parameter: string of the form 'tau=<threshold>'
+    :returns: a float of the tau decentralization parameter
+    """
+    return float(parameter.split('=')[1])
+
+
 def get_plot_flag():
     """
     Gets the flag that determines whether generate plots for the output
@@ -193,43 +203,15 @@ def get_force_map_addresses_flag():
         raise ValueError('Flag "force_map_addresses" not in config file')
 
 
-def get_force_map_balances_flag():
-    """
-    Gets the flag that determines whether to forcefully map balances in db
-    :returns: boolean
-    :raises ValueError: if the flag is not set in the config file
-    """
-    config = get_config_data()
-    try:
-        return config['execution_flags']['force_map_balances']
-    except KeyError:
-        raise ValueError('Flag "force_map_balances" not in config file')
-
-
-def get_force_analyze_flag():
-    """
-    Gets the flag that determines whether to forcefully recalculate metrics
-    :returns: boolean
-    :raises ValueError: if the flag is not set in the config file
-    """
-    config = get_config_data()
-    try:
-        return config['execution_flags']['force_analyze']
-    except KeyError:
-        raise ValueError('Flag "force_analyze" not in config file')
-
-
 def get_clustering_flag():
     """
-    Gets the flag that determines whether to cluster addresses into entities
+    Gets a flag that determines whether to cluster addresses into entities
     :returns: boolean
     :raises ValueError: if the flag is not set in the config file
     """
-    config = get_config_data()
-    try:
-        return config['analyze_flags']['clustering']
-    except KeyError:
-        raise ValueError('Flag "clustering" not in config file')
+    if get_active_source_keywords():
+        return True
+    return False
 
 
 def get_metrics():
@@ -309,13 +291,12 @@ def get_top_limit_value():
 
 def get_circulation_from_entries(entries):
     """
-    Computes the aggregate value of a list of db entries
+    Computes the aggregate value of a list of db entries.
+    Uses a greedy execution, instead of an one-liner that sums a list, to avoid memory consumption.
+    :param entries: a list of integers
     :returns: integer
     """
-    circulation = 0
-    for entry in entries:
-        circulation += int(entry[0])
-    return circulation
+    return sum(entries)
 
 
 def get_exclude_contracts_flag():
@@ -468,3 +449,161 @@ def get_usd_cent_equivalent(ledger, date):
     except KeyError:
         logging.warning(f'No price data found for {ledger} on {date}')
         return 0
+
+
+def get_output_row(ledger, date, metrics):
+    """
+    Constructs a line of the csv output.
+    :param ledger: a string with the ledger's name
+    :param date: a snapshot date in YYYY-MM-DD format
+    :param metrics: a dictionary where the key is the name of the computed metric prefixed with the applied thresholds and the value is a number
+    :returns: a list of strings which comprises a single line of the csv output
+    """
+    clustering = get_clustering_flag()
+    exclude_contract_addresses_flag = get_exclude_contracts_flag()
+    exclude_below_fees_flag = get_exclude_below_fees_flag()
+    exclude_below_usd_cent_flag = get_exclude_below_usd_cent_flag()
+    top_limit_type = get_top_limit_type()
+    top_limit_value = get_top_limit_value()
+
+    csv_row = [ledger, date, clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value,
+               exclude_below_fees_flag, exclude_below_usd_cent_flag]
+
+    for metric_name in get_metrics():
+        val = metric_name
+        if not clustering:
+            val = 'non-clustered ' + val
+        if exclude_contract_addresses_flag:
+            val = 'exclude_contracts ' + val
+        if exclude_below_fees_flag:
+            val = 'exclude_below_fees ' + val
+        if exclude_below_usd_cent_flag:
+            val = 'exclude_below_usd_cent ' + val
+        if top_limit_value > 0:
+            val = f'top-{top_limit_value}_{top_limit_type} ' + val
+        csv_row.append(metrics[val])
+    return csv_row
+
+
+def write_csv_output(output_rows):
+    """
+    Produces the output csv file for the given data.
+    :param output_rows: a list of lists, where each list corresponds to a line in the output csv file
+    """
+    header = ['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses', 'top_limit_type',
+              'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
+    header += get_metrics()
+
+    clustering = get_clustering_flag()
+    exclude_contract_addresses_flag = get_exclude_contracts_flag()
+    top_limit_type = get_top_limit_type()
+    top_limit_value = get_top_limit_value()
+    exclude_below_fees_flag = get_exclude_below_fees_flag()
+    exclude_below_usd_cent_flag = get_exclude_below_usd_cent_flag()
+    output_filename = 'output'
+    if not clustering:
+        output_filename += '-no_clustering'
+    if exclude_contract_addresses_flag:
+        output_filename += '-exclude_contract_addresses'
+    if top_limit_value:
+        output_filename += f'-{top_limit_type}_{top_limit_value}'
+    if exclude_below_fees_flag:
+        output_filename += '-exclude_below_fees'
+    if exclude_below_usd_cent_flag:
+        output_filename += '-exclude_below_usd_cent'
+    output_filename += '.csv'
+
+    output_dir = get_output_directories()[0]
+    with open(output_dir / output_filename, 'w') as f:
+        csv_writer = csv.writer(f)
+        csv_writer.writerow(header)
+        csv_writer.writerows(output_rows)
+
+
+def get_active_source_keywords():
+    """
+    Returns the keywords of the sources that should be used in the analysis based on the config parameters.
+    :returns: a list of strings of mapping information source keywords
+    """
+    try:
+        return get_config_data()['analyze_flags']['clustering_sources']
+    except KeyError:
+        raise ValueError('Clustering sources does not exist in analyze flags')
+
+
+def get_active_sources():
+    """
+    Returns the sources that should be used in the analysis based on the config parameters.
+    :returns: a list of strings of mapping information sources
+    """
+    with open(MAPPING_INFO_DIR / 'sources.json') as f:
+        source_keywords = json.load(f)
+
+    active_sources = set()
+    for kw in get_active_source_keywords():
+        for source in source_keywords[kw]:
+            active_sources.add(source)
+
+    return active_sources
+
+
+def get_clusters(ledger):
+    """
+    Retrieves the clusters of addresses that form from the mapping information.
+    First identifies the addresses that are associated (in the mapping
+    information) with more than one entities.
+    Then it retrieves the set of all entities that each such address is
+    associated with and constructs the clusters by finding overlapping entities in these sets.
+    Finally it constructs a dictionary that maps entities to their cluster.
+    :param ledger: a string of the ledger's name
+    :returns: a dictionary where the key is an entity and the value is the cluster to which it belongs
+    """
+    # Find addresses that are associated with more than one entities.
+    # Note: If the mapping file is very large, loading the whole dictionary can result to running out of memory. Using this step consumes less memory but requires one extra pass of the file.
+    addresses = set()
+    multi_entity_addresses = set()
+    with open(MAPPING_INFO_DIR / f'addresses/{ledger}.jsonl') as f:
+        for line in f:
+            info = json.loads(line)
+            address = info['address']
+            if address in addresses:
+                multi_entity_addresses.add(address)
+            addresses.add(address)
+    del addresses
+
+    # Get the entities associated with the multi-entity addresses.
+    address_entities = defaultdict(set)
+    with open(MAPPING_INFO_DIR / f'addresses/{ledger}.jsonl') as f:
+        for line in f:
+            info = json.loads(line)
+            address = info['address']
+            if address in multi_entity_addresses:
+                source = info['source']
+                entity_name = info['name']
+                if source not in get_active_sources():
+                    continue
+                address_entities[address].add((entity_name, source))
+    del multi_entity_addresses
+
+    clusters = list(address_entities.values())
+    del address_entities
+
+    # If an entity is present in two entries, then these are merged.
+    # If an entry cannot be merged with any other entry, then it is finalized.
+    finalized_counter = 0
+    cluster_mapping = {}
+    while clusters:
+        cluster = clusters.pop()
+        merged_flag = False
+        for idx, new_item in enumerate(clusters):
+            if new_item.intersection(cluster):
+                merged_flag = True
+                clusters[idx] = new_item.union(cluster)
+                break
+        if not merged_flag:
+            finalized_counter += 1
+            cluster_name = f'-++-{finalized_counter}-++-'
+            for item in cluster:  # item = (entity, source)
+                cluster_mapping[item[0]] = cluster_name
+
+    return cluster_mapping

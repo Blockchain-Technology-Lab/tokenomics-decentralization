@@ -10,17 +10,21 @@ def test_run(mocker):
 
     get_plot_flag_mock.return_value = False
 
-    run.main(['bitcoin'], ['2010-01-01'])
+    mapping_calls = []
+    analyze_calls = []
 
-    apply_mapping_mock.assert_called_with('bitcoin', '2010-01-01')
-    analyze_mock.assert_called_with(['bitcoin'], ['2010-01-01'])
+    run.main(['bitcoin'], ['2010-01-01'])
+    mapping_calls.append(call('bitcoin'))
+    assert apply_mapping_mock.call_args_list == mapping_calls
+    analyze_calls.append(call(['bitcoin'], ['2010-01-01']))
+    assert analyze_mock.call_args_list == analyze_calls
 
     run.main(['bitcoin', 'ethereum'], ['2010-01-01', '2020-01-01'])
-    assert call('bitcoin', '2010-01-01') in apply_mapping_mock.call_args_list
-    assert call('bitcoin', '2020-01-01') in apply_mapping_mock.call_args_list
-    assert call('ethereum', '2010-01-01') in apply_mapping_mock.call_args_list
-    assert call('ethereum', '2020-01-01') in apply_mapping_mock.call_args_list
-    analyze_mock.assert_called_with(['bitcoin', 'ethereum'], ['2010-01-01', '2020-01-01'])
+    mapping_calls.append(call('bitcoin'))
+    mapping_calls.append(call('ethereum'))
+    assert apply_mapping_mock.call_args_list == mapping_calls
+    analyze_calls.append(call(['bitcoin', 'ethereum'], ['2010-01-01', '2020-01-01']))
+    assert analyze_mock.call_args_list == analyze_calls
 
     get_plot_flag_mock.return_value = True
     run.main(['bitcoin'], ['2010-01-01'])

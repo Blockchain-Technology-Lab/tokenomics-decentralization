@@ -38,6 +38,15 @@ To contribute mapping information you can either update an existing file, by
 changing and/or adding some entries, or create a new file for a newly-supported
 ledger.
 
+Note: If you add an entry in `mapping_addresses` with a source that does not
+already exist, you should also add this source in the file
+`mapping_information/sources.json`. Specifically, if it comes from a
+publicly-available website you should add it under "Explorers", otherwise either
+use an existing appropriate keyword or create a new one. If you create a new
+one, make sure to also include it in the configuration file `config.yaml` and in
+the description of the [Setup
+page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/setup/)).
+
 ### Price information
 
 The directory `price_data/` contains information about the supported ledgers'

@@ -1,0 +1,16 @@
+{
+    "Explorers": [
+        "https://bitinfocharts.com",
+        "https://dogecoinwhalealert.com",
+        "https://www.walletexplorer.com",
+        "https://api.tzkt.io/",
+        "https://etherscan.io"
+    ],
+    "Staking Keys": [
+        "staking key",
+        "payment key"
+    ],
+    "Multi-input transactions": [
+        "multi-input"
+    ]
+}

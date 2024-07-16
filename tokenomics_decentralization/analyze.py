@@ -1,34 +1,22 @@
-from tokenomics_decentralization.schema import get_connector
-from tokenomics_decentralization.metrics import (compute_hhi, compute_tau, compute_gini, compute_shannon_entropy,
-                                                 compute_total_entities, compute_max_power_ratio, compute_theil_index)
+import csv
+import os.path
 import tokenomics_decentralization.helper as hlp
 import tokenomics_decentralization.db_helper as db_hlp
-import os
+from collections import defaultdict
+from tokenomics_decentralization.metrics import (compute_hhi, compute_tau, compute_gini, compute_shannon_entropy,
+                                                 compute_total_entities, compute_max_power_ratio, compute_theil_index)
 import logging
-import csv
 
 logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p', level=logging.INFO)
 
 
-def analyze_snapshot(conn, ledger, snapshot):
-    force_analyze = hlp.get_force_analyze_flag()
-    clustering = hlp.get_clustering_flag()
-    top_limit_type = hlp.get_top_limit_type()
-    top_limit_value = hlp.get_top_limit_value()
-    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
-    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
-    exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
-
-    snapshot_info = db_hlp.get_snapshot_info(conn, ledger, snapshot)
-    circulation = int(float(snapshot_info[3]))
-
-    snapshot_date = snapshot_info[1]
-    median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=snapshot_date) \
-        if exclude_below_fees_flag else -1
-    usd_cent_equivalent = hlp.get_usd_cent_equivalent(ledger=ledger, date=snapshot_date) \
-        if exclude_below_usd_cent_flag else -1
-    balance_threshold = max(median_tx_fee, usd_cent_equivalent)
-
+def analyze_snapshot(entries):
+    """
+    Applies thresholding based on the config parameters and then applies
+    the metrics on the given entries.
+    :param entries: a list of integers in descending order
+    :returns: a dictionary where the key is the name of the computed metric prefixed with the applied thresholds and the value is a number
+    """
     compute_functions = {
         'hhi': compute_hhi,
         'shannon_entropy': compute_shannon_entropy,
@@ -40,53 +28,37 @@ def analyze_snapshot(conn, ledger, snapshot):
     for threshold in hlp.get_tau_thresholds():
         compute_functions[f'tau={threshold}'] = compute_tau
 
-    metric_names = hlp.get_metrics()
+    top_limit_type = hlp.get_top_limit_type()
+    top_limit_value = hlp.get_top_limit_value()
+    if top_limit_value > 0:
+        if top_limit_type == 'percentage':
+            total_entities = compute_functions['total_entities'](entries, -1)
+            top_limit_percentage_value = int(total_entities * top_limit_value)
+            entries = entries[:top_limit_percentage_value]
+        elif top_limit_type == 'absolute':
+            entries = entries[:top_limit_value]
 
-    entries = None
+    circulation = hlp.get_circulation_from_entries(entries)
+
     metrics_results = {}
-    for default_metric_name in metric_names:
+    for default_metric_name in hlp.get_metrics():
         flagged_metric = default_metric_name
-        if not clustering:
+        if not hlp.get_clustering_flag():
             flagged_metric = 'non-clustered ' + flagged_metric
-        if exclude_contract_addresses_flag:
+        if hlp.get_exclude_contracts_flag():
             flagged_metric = 'exclude_contracts ' + flagged_metric
-        if exclude_below_fees_flag:
+        if hlp.get_exclude_below_fees_flag():
             flagged_metric = 'exclude_below_fees ' + flagged_metric
-        if exclude_below_usd_cent_flag:
+        if hlp.get_exclude_below_usd_cent_flag():
             flagged_metric = 'exclude_below_usd_cent ' + flagged_metric
         if top_limit_value > 0:
             flagged_metric = f'top-{top_limit_value}_{top_limit_type} ' + flagged_metric
 
-        val = db_hlp.get_metric_value(conn, ledger, snapshot, flagged_metric)
-        if val and not force_analyze:
-            metric_value = val[0]
+        if 'tau' in default_metric_name:
+            threshold = hlp.get_tau_threshold_from_parameter(default_metric_name)
+            metric_value = compute_functions[default_metric_name](entries, circulation, threshold)
         else:
-            if not entries:
-                if not clustering:
-                    entries = db_hlp.get_non_clustered_balance_entries(conn, snapshot, ledger, balance_threshold=balance_threshold)
-                else:
-                    entries = db_hlp.get_balance_entries(conn, snapshot, ledger, balance_threshold=balance_threshold)
-
-                if top_limit_value > 0:
-                    if top_limit_type == 'percentage':
-                        total_entities = compute_functions['total_entities'](entries, circulation)
-                        top_limit_percentage_value = int(total_entities * top_limit_value)
-                        entries = entries[:top_limit_percentage_value]
-                    elif top_limit_type == 'absolute':
-                        entries = entries[:top_limit_value]
-
-                    circulation = hlp.get_circulation_from_entries(entries)
-
-            logging.info(f'Computing {flagged_metric}')
-            if 'tau' in default_metric_name:
-                threshold = float(default_metric_name.split('=')[1])
-                metric_value = compute_functions[default_metric_name](entries, circulation, threshold)[0]
-            else:
-                metric_value = compute_functions[default_metric_name](entries, circulation)
-
-            db_hlp.insert_metric(conn, ledger, snapshot, flagged_metric, metric_value)
-
-            db_hlp.commit_database(conn)
+            metric_value = compute_functions[default_metric_name](entries, circulation)
 
         if any(['tau' in default_metric_name, 'total_entities' in default_metric_name]):
             metric_value = int(metric_value)
@@ -96,85 +68,80 @@ def analyze_snapshot(conn, ledger, snapshot):
     return metrics_results
 
 
-def get_output_row(ledger, date, metrics):
-    clustering = hlp.get_clustering_flag()
-    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
+def get_entries(ledger, date, filename):
+    """
+    Collects the balance entries and applies the address mapping on them.
+    Also applies filters on them based on the config flags.
+    Finally orders the entries in descending order.
+    :param ledger: a string of a ledger's name
+    :param date: a string in YYYY-MM-DD format of the snapshot that is retrieved
+    :param filename: the path of the file that stores the snapshot's raw data
+    :returns: a list of integers in descending order
+    """
     exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
     exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
-    top_limit_type = hlp.get_top_limit_type()
-    top_limit_value = hlp.get_top_limit_value()
+    exclude_contracts_flag = hlp.get_exclude_contracts_flag()
 
-    csv_row = [ledger, date, clustering, exclude_contract_addresses_flag, top_limit_type, top_limit_value,
-               exclude_below_fees_flag, exclude_below_usd_cent_flag]
+    median_tx_fee = hlp.get_median_tx_fee(ledger=ledger, date=date) \
+        if exclude_below_fees_flag else 0
+    usd_cent_equivalent = hlp.get_usd_cent_equivalent(ledger=ledger, date=date) \
+        if exclude_below_usd_cent_flag else 0
+    balance_threshold = max(median_tx_fee, usd_cent_equivalent)
 
-    for metric_name in hlp.get_metrics():
-        val = metric_name
-        if not clustering:
-            val = 'non-clustered ' + val
-        if exclude_contract_addresses_flag:
-            val = 'exclude_contracts ' + val
-        if exclude_below_fees_flag:
-            val = 'exclude_below_fees ' + val
-        if exclude_below_usd_cent_flag:
-            val = 'exclude_below_usd_cent ' + val
-        if top_limit_value > 0:
-            val = f'top-{top_limit_value}_{top_limit_type} ' + val
-        csv_row.append(metrics[val])
-    return csv_row
+    conn = db_hlp.get_connector(db_hlp.get_db_filename(ledger))
+    special_addresses = hlp.get_special_addresses(ledger)
 
+    with open(filename) as f:
+        csv_reader = csv.reader(f)
+        next(csv_reader)
+        clustered_balances = defaultdict(int)
+        for line in csv_reader:
+            address, balance = line[0], int(line[-1])
+            if address in special_addresses:
+                continue
+            entity, is_contract = db_hlp.get_address_entity(conn, address)
+            if not (exclude_contracts_flag and is_contract):
+                clustered_balances[entity] += balance
 
-def write_csv_output(output_rows):
-    header = ['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses', 'top_limit_type',
-              'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
-    header += hlp.get_metrics()
+    entries = []
+    while clustered_balances:
+        item = clustered_balances.popitem()
+        if item[1] > balance_threshold:
+            entries.append(item[1])
+    entries.sort(reverse=True)
 
-    clustering = hlp.get_clustering_flag()
-    exclude_contract_addresses_flag = hlp.get_exclude_contracts_flag()
-    top_limit_type = hlp.get_top_limit_type()
-    top_limit_value = hlp.get_top_limit_value()
-    exclude_below_fees_flag = hlp.get_exclude_below_fees_flag()
-    exclude_below_usd_cent_flag = hlp.get_exclude_below_usd_cent_flag()
-    output_filename = 'output'
-    if not clustering:
-        output_filename += '-no_clustering'
-    if exclude_contract_addresses_flag:
-        output_filename += '-exclude_contract_addresses'
-    if top_limit_value:
-        output_filename += f'-{top_limit_type}_{top_limit_value}'
-    if exclude_below_fees_flag:
-        output_filename += '-exclude_below_fees'
-    if exclude_below_usd_cent_flag:
-        output_filename += '-exclude_below_usd_cent'
-    output_filename += '.csv'
-
-    output_dir = hlp.get_output_directories()[0]
-    with open(output_dir / output_filename, 'w') as f:
-        csv_writer = csv.writer(f)
-        csv_writer.writerow(header)
-        csv_writer.writerows(output_rows)
+    return entries
 
 
 def analyze(ledgers, snapshot_dates):
+    """
+    Executes the analysis of the given ledgers for the snapshot dates and writes the output
+    to csv files.
+    :param ledgers: a list of ledger names
+    :param snapshot_dates: a list of strings in YYYY-MM-DD format
+    """
     output_rows = []
     for ledger in ledgers:
+        logging.info(f'[*] {ledger} - Analyzing')
         for date in snapshot_dates:
             logging.info(f'[*] {ledger} - {date}')
 
-            db_paths = [db_dir / f'{ledger}_{date}.db' for db_dir in hlp.get_output_directories()]
-            db_file = False
-            for filename in db_paths:
+            input_filename = None
+            input_paths = [input_dir / f'{ledger}_{date}_raw_data.csv' for input_dir in hlp.get_input_directories()]
+            for filename in input_paths:
                 if os.path.isfile(filename):
-                    db_file = filename
+                    input_filename = filename
                     break
-            if not db_file:
-                logging.error('Snapshot db does not exist')
+            if not input_filename:
+                logging.error(f'{ledger} input data for {date} do not exist')
                 continue
 
-            conn = get_connector(db_file)
-            metrics_values = analyze_snapshot(conn, ledger, date)
-            output_rows.append(get_output_row(ledger, date, metrics_values))
+            entries = get_entries(ledger, date, filename)
+            metrics_values = analyze_snapshot(entries)
+            del entries
+
+            output_rows.append(hlp.get_output_row(ledger, date, metrics_values))
             for metric, value in metrics_values.items():
                 logging.info(f'{metric}: {value}')
 
-    write_csv_output(output_rows)
-    return output_rows
+    hlp.write_csv_output(output_rows)

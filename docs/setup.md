@@ -35,23 +35,19 @@ page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/co
 ledgers are included here (to add support for a new ledger see the [conributions
 page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/contribute/)).
 
-`execution_flags` defines various flags that control the data handling (all set to false by default):
+`execution_flags` defines flags that control the data handling (all set to false by default):
 
-* `force_map_addresses`: if set to true, the address helper data from the directory
+* `force_map_addresses`: if set to true, the address mapping data from the directory
   `mapping_information` is re-computed; you should set this flag to true if the
-  data has been updated since the last execution for the given ledger
-* `force_map_balances`: is set to true, the balance data of the ledger's addresses is
-  recomputed; you should set this flag to true if the data has been updated
-  since the last execution for the given ledger
-* `force_analyze`: if set to true, the computation of a metric is recomputed; you should set
-  this flag to true if any type of data has been updated since the last
-  execution for the given ledger
+  mapping data has been updated since the last execution for the given ledger
 
 `analyze_flags` defines various analysis-related flags:
 
-* `clustering`: a boolean that determines whether addresses will be clustered into entities
- (as defined in the mapping information). If set to false, no clustering takes
-  place and the addresses are treated as distinct entities.
+* `clustering_sources`: a list of sources that should be used to compute the
+  address mapping information. If empty, no clustering takes place and the
+  addresses are treated as distinct entities. The list should contain any
+  combination of the following options (_case sensitive_): "Explorers", "Staking
+  Keys", "Multi-input transactions".
 * `top_limit_type`: a string that can take one of two values (`absolute` or `percentage`) that
   enables applying a threshold on the addresses that will be considered
 * `top_limit_value`: the value of the top limit that should be applied; if 0,
@@ -84,9 +80,7 @@ define the source of data. `input_directories` defines the directories that
 contain raw address balance information, as obtained from BigQuery or a full
 node (for more information about this see the [data collection
 page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/data/)).
-`output_directories` defines the directories to store the databases which
-contain the mapping information and analyzed data. The first entry in the output
-directories is also used to store the output files of the analysis and the
-plots.
+`output_directories` defines the directory to store the output files of the
+analysis and the plots.
 
 Finally, `plot_parameters` contains various parameters that control whether plots will be produced for the results and for which configurations.
