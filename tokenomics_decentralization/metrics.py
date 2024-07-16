@@ -8,19 +8,17 @@ def compute_tau(entries, circulation, threshold):
     :param circulation: int, the total amount of tokens in circulation
     :param threshold: float, the parameter of the tau index, i.e. the threshold for the market share
     that is captured by the index
-    :returns: list of length two, where the first element is the tau index (int) and the second is the
-    percentage of the total market share that is captured by the tau index (float)
+    :returns: an integer of the tau index
     """
-    results = [0, 0]
-
+    count, share = 0, 0
     for entry in entries:
         market_share = int(entry[0]) / circulation
-        if results[1] >= threshold:
+        if share >= threshold:
             break
-        results[0] += 1
-        results[1] += market_share
+        count += 1
+        share += market_share
 
-    return results
+    return count
 
 
 def compute_gini(entries, circulation):

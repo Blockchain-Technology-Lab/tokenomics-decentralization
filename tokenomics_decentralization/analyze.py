@@ -56,7 +56,7 @@ def analyze_snapshot(entries):
 
         if 'tau' in default_metric_name:
             threshold = float(default_metric_name.split('=')[1])
-            metric_value = compute_functions[default_metric_name](entries, circulation, threshold)[0]
+            metric_value = compute_functions[default_metric_name](entries, circulation, threshold)
         else:
             metric_value = compute_functions[default_metric_name](entries, circulation)
 

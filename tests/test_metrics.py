@@ -4,53 +4,44 @@ from tokenomics_decentralization.metrics import compute_gini, compute_hhi, compu
 
 def test_tau_50():
     tokens_per_entity = [(3.0, ), (2, ), (1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=6, threshold=0.5)
+    tau_index = compute_tau(tokens_per_entity, circulation=6, threshold=0.5)
     assert tau_index == 1
-    assert tau_market_share == 0.5
 
     tokens_per_entity = [(3, ), (2, ), (1, ), (1, ), (1, ), (1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=9, threshold=0.5)
+    tau_index = compute_tau(tokens_per_entity, circulation=9, threshold=0.5)
     assert tau_index == 2
-    assert round(tau_market_share, 2) == 0.56
 
     tokens_per_entity = [(1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=1, threshold=0.5)
+    tau_index = compute_tau(tokens_per_entity, circulation=1, threshold=0.5)
     assert tau_index == 1
-    assert tau_market_share == 1
 
 
 def test_tau_33():
     tokens_per_entity = [(3.0, ), (2, ), (1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=6, threshold=0.33)
+    tau_index = compute_tau(tokens_per_entity, circulation=6, threshold=0.33)
     assert tau_index == 1
-    assert tau_market_share == 0.5
 
     tokens_per_entity = [(3, ), (2, ), (1, ), (1, ), (1, ), (1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=9, threshold=0.33)
+    tau_index = compute_tau(tokens_per_entity, circulation=9, threshold=0.33)
     assert tau_index == 1
-    assert round(tau_market_share, 2) == 0.33
 
     tokens_per_entity = [(1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=1, threshold=0.33)
+    tau_index = compute_tau(tokens_per_entity, circulation=1, threshold=0.33)
     assert tau_index == 1
-    assert tau_market_share == 1
 
 
 def test_tau_66():
     tokens_per_entity = [(3.0, ), (2, ), (1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=6, threshold=0.66)
+    tau_index = compute_tau(tokens_per_entity, circulation=6, threshold=0.66)
     assert tau_index == 2
-    assert round(tau_market_share, 2) == 0.83
 
     tokens_per_entity = [(3, ), (2, ), (1, ), (1, ), (1, ), (1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=9, threshold=0.66)
+    tau_index = compute_tau(tokens_per_entity, circulation=9, threshold=0.66)
     assert tau_index == 3
-    assert round(tau_market_share, 2) == 0.67
 
     tokens_per_entity = [(1, )]
-    tau_index, tau_market_share = compute_tau(tokens_per_entity, circulation=1, threshold=0.66)
+    tau_index = compute_tau(tokens_per_entity, circulation=1, threshold=0.66)
     assert tau_index == 1
-    assert tau_market_share == 1
 
 
 def test_gini():

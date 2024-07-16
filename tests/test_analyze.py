@@ -83,7 +83,7 @@ def test_analyze_snapshot(mocker):
     get_exclude_below_usd_cent_mock.return_value = True
     get_exclude_below_fees_mock.return_value = False
     get_metrics_mock.return_value = ['tau=0.5']
-    compute_tau_mock.return_value = [100, None]
+    compute_tau_mock.return_value = 100
     output = analyze_snapshot(entries)
     assert compute_tau_mock.call_args_list == [call(entries, circulation, 0.5)]
     assert output == {'exclude_below_usd_cent exclude_contracts tau=0.5': 100}
