@@ -168,6 +168,15 @@ def get_tau_thresholds():
     return [float(name.split('=')[1].strip()) for name in config['metrics'] if 'tau' in name]
 
 
+def get_tau_threshold_from_parameter(parameter):
+    """
+    Retrieves the tau threshold that should be used in the computation from the parameter string
+    :param parameter: string of the form 'tau=<threshold>'
+    :returns: a float of the tau decentralization parameter
+    """
+    return float(parameter.split('=')[1])
+
+
 def get_plot_flag():
     """
     Gets the flag that determines whether generate plots for the output

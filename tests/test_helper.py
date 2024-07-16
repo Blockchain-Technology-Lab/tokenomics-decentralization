@@ -82,6 +82,13 @@ def test_tau_thresholds():
         assert isinstance(tau, float)
 
 
+def test_get_tau_threshold_from_parameter():
+    tau = hlp.get_tau_threshold_from_parameter('tau=0.1')
+    assert tau == 0.1
+    with pytest.raises(ValueError):
+        hlp.get_tau_threshold_from_parameter('tau=blah')
+
+
 def test_get_dates_between():
     start_date = datetime.date(2023, 9, 25)
     end_date = datetime.date(2023, 11, 20)

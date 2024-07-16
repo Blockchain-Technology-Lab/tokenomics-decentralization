@@ -55,7 +55,7 @@ def analyze_snapshot(entries):
             flagged_metric = f'top-{top_limit_value}_{top_limit_type} ' + flagged_metric
 
         if 'tau' in default_metric_name:
-            threshold = float(default_metric_name.split('=')[1])
+            threshold = hlp.get_tau_threshold_from_parameter(default_metric_name)
             metric_value = compute_functions[default_metric_name](entries, circulation, threshold)
         else:
             metric_value = compute_functions[default_metric_name](entries, circulation)
