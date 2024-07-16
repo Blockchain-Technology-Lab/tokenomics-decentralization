@@ -31,7 +31,7 @@ def test_analyze_snapshot(mocker):
 
     compute_hhi_mock.return_value = 1
 
-    entries = [(1, ), (2, )]
+    entries = [1, 2]
 
     hhi_calls = []
 
@@ -112,14 +112,20 @@ def test_get_entries(mocker):
     get_db_filename_mock = mocker.patch('tokenomics_decentralization.db_helper.get_db_filename')
     get_db_filename_mock.return_value = 'bitcoin_Test.db'
 
-    mocker.patch('builtins.open', mocker.mock_open(read_data='address,balance\naddr1,1\naddr2,2'))
+    mocker.patch('builtins.open', mocker.mock_open(read_data='address,balance\naddr1,17\naddr2,26'))
 
     get_address_entity_mock = mocker.patch('tokenomics_decentralization.db_helper.get_address_entity')
     get_address_entity_mock.side_effect = [('entity1', 1), ('entity2', 0)]
 
     entries = get_entries('bitcoin', '2010-01-01', 'test_filename')
-    assert entries == [1]
+    assert entries == [17]
     assert get_db_connector_mock.call_args_list == [call('bitcoin_Test.db')]
+
+    get_address_entity_mock.side_effect = [('entity1', 1), ('entity2', 0)]
+    get_special_addresses_mock.return_value = set()
+    get_exclude_contracts_mock.return_value = True
+    entries = get_entries('bitcoin', '2010-01-01', 'test_filename')
+    assert entries == [26]
 
 
 def test_analyze(mocker):
