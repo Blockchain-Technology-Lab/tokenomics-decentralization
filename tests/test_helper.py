@@ -1,7 +1,6 @@
 import tokenomics_decentralization.helper as hlp
 import pathlib
 import os
-import argparse
 import datetime
 import pytest
 
@@ -12,9 +11,9 @@ def test_valid_date():
 
     for d in ['2022/1/01', '2022/01/1', '2022/1', '2022/01', '2022.1.01', '2022.01.1', '2022.1', '2022.01', 'blah',
               '2022-', '2022-1-1', '2022-1-01', '2022-1', '2022-01-1', '2022-02-29']:
-        with pytest.raises(argparse.ArgumentTypeError) as e_info:
+        with pytest.raises(ValueError) as e_info:
             hlp.valid_date(d)
-        assert e_info.type == argparse.ArgumentTypeError
+        assert e_info.type == ValueError
 
 
 def test_get_date_beginning():

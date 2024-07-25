@@ -6,7 +6,6 @@ import pathlib
 import os
 import datetime
 import calendar
-import argparse
 import json
 from collections import defaultdict
 import logging
@@ -33,8 +32,8 @@ def valid_date(date_string):
     try:
         get_date_beginning(date_string)
     except ValueError:
-        raise argparse.ArgumentTypeError("Please use the format YYYY-MM-DD for the timeframe argument "
-                                         "(day and month can be omitted).")
+        raise ValueError("Please use the format YYYY-MM-DD for the timeframe argument "
+                         "(day and month can be omitted).")
     return date_string
 
 
