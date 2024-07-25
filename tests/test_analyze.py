@@ -1,5 +1,5 @@
-from tokenomics_decentralization.analyze import analyze_snapshot, analyze, get_entries
-from unittest.mock import call
+from tokenomics_decentralization.analyze import analyze_snapshot, analyze, get_entries, analyze_ledger_snapshot
+from unittest.mock import call, Mock
 import pathlib
 
 
@@ -129,19 +129,24 @@ def test_get_entries(mocker):
 
 
 def test_analyze(mocker):
+    get_concurrency_mock = mocker.patch('tokenomics_decentralization.helper.get_concurrency_per_ledger')
+    get_concurrency_mock.return_value = {'bitcoin': 2, 'ethereum': 2}
+
+    write_csv_output_mock = mocker.patch('tokenomics_decentralization.helper.write_csv_output')
+
+    analyze(['bitcoin'], ['2010-01-01'])
+    assert len(write_csv_output_mock.call_args_list) == 1
+
+
+def test_analyze_ledger_snapshot(mocker):
     get_input_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_input_directories')
     get_input_directories_mock.return_value = [pathlib.Path('/').resolve()]
 
     is_file_mock = mocker.patch('os.path.isfile')
     is_file_mock.side_effect = {
         pathlib.Path('/bitcoin_2010-01-01_raw_data.csv').resolve(): True,
-        pathlib.Path('/bitcoin_2011-01-01_raw_data.csv').resolve(): False,
         pathlib.Path('/ethereum_2010-01-01_raw_data.csv').resolve(): False,
-        pathlib.Path('/ethereum_2011-01-01_raw_data.csv').resolve(): True,
     }.get
-
-    get_db_connector_mock = mocker.patch('tokenomics_decentralization.db_helper.get_connector')
-    get_db_connector_mock.return_value = 'connector'
 
     get_entries_mock = mocker.patch('tokenomics_decentralization.analyze.get_entries')
     entries = [1, 2]
@@ -153,36 +158,26 @@ def test_analyze(mocker):
     get_output_row_mock = mocker.patch('tokenomics_decentralization.helper.get_output_row')
     get_output_row_mock.return_value = 'row'
 
-    write_csv_output_mock = mocker.patch('tokenomics_decentralization.helper.write_csv_output')
+    sema = Mock()
 
-    get_input_dirs_calls = []
     get_entries_calls = []
     analyze_snapshot_calls = []
     get_row_calls = []
-    write_output_calls = []
+    sema_release_calls = []
 
-    analyze(['bitcoin'], ['2010-01-01'])
-    get_input_dirs_calls.append(call())
-    assert get_input_directories_mock.call_args_list == get_input_dirs_calls
+    analyze_ledger_snapshot('bitcoin', '2010-01-01', [], sema)
     get_entries_calls.append(call('bitcoin', '2010-01-01', pathlib.Path('/bitcoin_2010-01-01_raw_data.csv').resolve()))
     assert get_entries_mock.call_args_list == get_entries_calls
     analyze_snapshot_calls.append(call(entries))
     assert analyze_snapshot_mock.call_args_list == analyze_snapshot_calls
     get_row_calls.append(call('bitcoin', '2010-01-01', {'hhi': 1}))
     assert get_output_row_mock.call_args_list == get_row_calls
-    write_output_calls.append(call(['row']))
-    assert write_csv_output_mock.call_args_list == write_output_calls
+    sema_release_calls.append(call())
+    assert sema.release.call_args_list == sema_release_calls
 
-    analyze(['bitcoin', 'ethereum'], ['2010-01-01', '2011-01-01'])
-    get_input_dirs_calls += 4 * [call()]
-    assert get_input_directories_mock.call_args_list == get_input_dirs_calls
-    get_entries_calls.append(call('bitcoin', '2010-01-01', pathlib.Path('/bitcoin_2010-01-01_raw_data.csv').resolve()))
-    get_entries_calls.append(call('ethereum', '2011-01-01', pathlib.Path('/ethereum_2011-01-01_raw_data.csv').resolve()))
+    analyze_ledger_snapshot('ethereum', '2010-01-01', [], sema)
     assert get_entries_mock.call_args_list == get_entries_calls
-    analyze_snapshot_calls += 2 * [call(entries)]
     assert analyze_snapshot_mock.call_args_list == analyze_snapshot_calls
-    get_row_calls.append(call('bitcoin', '2010-01-01', {'hhi': 1}))
-    get_row_calls.append(call('ethereum', '2011-01-01', {'hhi': 1}))
     assert get_output_row_mock.call_args_list == get_row_calls
-    write_output_calls.append(call(['row', 'row']))
-    assert write_csv_output_mock.call_args_list == write_output_calls
+    sema_release_calls.append(call())  # Test that semaphore release is called even if file does not exist
+    assert sema.release.call_args_list == sema_release_calls

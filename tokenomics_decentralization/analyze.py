@@ -1,4 +1,5 @@
 import csv
+import multiprocessing
 import os.path
 import tokenomics_decentralization.helper as hlp
 import tokenomics_decentralization.db_helper as db_hlp
@@ -113,6 +114,33 @@ def get_entries(ledger, date, filename):
     return entries
 
 
+def analyze_ledger_snapshot(ledger, date, output_rows, sema):
+    """
+    Executes the analysis of a given ledgers and snapshot date.
+    :param ledger: a ledger name
+    :param date: a string in YYYY-MM-DD format
+    :param output_rows: a list of strings in the form of csv output rows
+    :param sema: a multiprocessing semaphore
+    """
+    input_filename = None
+    input_paths = [input_dir / f'{ledger}_{date}_raw_data.csv' for input_dir in hlp.get_input_directories()]
+    for filename in input_paths:
+        if os.path.isfile(filename):
+            input_filename = filename
+            break
+    if input_filename:
+        logging.info(f'[*] {ledger} - {date}')
+
+        entries = get_entries(ledger, date, filename)
+        metrics_values = analyze_snapshot(entries)
+        del entries
+
+        row = hlp.get_output_row(ledger, date, metrics_values)
+        output_rows.append(row)
+
+    sema.release()  # Release the semaphore s.t. the loop in analyze() can continue
+
+
 def analyze(ledgers, snapshot_dates):
     """
     Executes the analysis of the given ledgers for the snapshot dates and writes the output
@@ -120,28 +148,19 @@ def analyze(ledgers, snapshot_dates):
     :param ledgers: a list of ledger names
     :param snapshot_dates: a list of strings in YYYY-MM-DD format
     """
-    output_rows = []
+    manager = multiprocessing.Manager()
+    output_rows = manager.list()  # output_rows is a shared list across all parallel processes
+
+    concurrency = hlp.get_concurrency_per_ledger()
     for ledger in ledgers:
-        logging.info(f'[*] {ledger} - Analyzing')
+        sema = multiprocessing.Semaphore(concurrency[ledger])
+        jobs = []
         for date in snapshot_dates:
-            logging.info(f'[*] {ledger} - {date}')
+            sema.acquire()  # Loop blocks here while the active processes are as many as the semaphore's limit
+            p = multiprocessing.Process(target=analyze_ledger_snapshot, args=(ledger, date, output_rows, sema))
+            jobs.append(p)
+            p.start()
+        for proc in jobs:
+            proc.join()
 
-            input_filename = None
-            input_paths = [input_dir / f'{ledger}_{date}_raw_data.csv' for input_dir in hlp.get_input_directories()]
-            for filename in input_paths:
-                if os.path.isfile(filename):
-                    input_filename = filename
-                    break
-            if not input_filename:
-                logging.error(f'{ledger} input data for {date} do not exist')
-                continue
-
-            entries = get_entries(ledger, date, filename)
-            metrics_values = analyze_snapshot(entries)
-            del entries
-
-            output_rows.append(hlp.get_output_row(ledger, date, metrics_values))
-            for metric, value in metrics_values.items():
-                logging.info(f'{metric}: {value}')
-
-    hlp.write_csv_output(output_rows)
+    hlp.write_csv_output(sorted(output_rows, key=lambda x: (x[0], x[1])))  # Csv rows ordered by ledger and date
