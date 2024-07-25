@@ -6,7 +6,7 @@ import pathlib
 import os
 import datetime
 import calendar
-import argparse
+import psutil
 import json
 from collections import defaultdict
 import logging
@@ -33,8 +33,8 @@ def valid_date(date_string):
     try:
         get_date_beginning(date_string)
     except ValueError:
-        raise argparse.ArgumentTypeError("Please use the format YYYY-MM-DD for the timeframe argument "
-                                         "(day and month can be omitted).")
+        raise ValueError("Please use the format YYYY-MM-DD for the timeframe argument "
+                         "(day and month can be omitted).")
     return date_string
 
 
@@ -607,3 +607,41 @@ def get_clusters(ledger):
                 cluster_mapping[item[0]] = cluster_name
 
     return cluster_mapping
+
+
+def get_concurrency_per_ledger():
+    """
+    Computes the maximum number of parallel processes that can run per ledger,
+    based on the system's available memory.
+    :returns: a dictionary where the keys are ledger names and values are integers
+    """
+    system_memory_total = psutil.virtual_memory().total  # Get the system's total memory
+    system_memory_total -= 10**9  # Leave 1GB of memory to be used by other processes
+
+    concurrency = {}
+    too_large_ledgers = set()
+    input_dirs = get_input_directories()
+    for ledger in get_ledgers():
+        # Find the size of the largest input file per ledger
+        max_file_size = 0
+        for input_dir in input_dirs:
+            for folder, _, files in os.walk(input_dir):
+                for file in files:
+                    if file.startswith(ledger):
+                        max_file_size = max(max_file_size, os.stat(os.path.join(folder, file)).st_size)
+        # Compute the max number of processes that can open the largest ledger file
+        # and run in parallel without exhausting the system's memory.
+        if max_file_size > 0:
+            # When loaded in (a dict in) memory, each file consumes approx. 2.5x space compared to storage.
+            concurrency[ledger] = int(system_memory_total / (2.5 * max_file_size))
+            # Find if some ledger files are too large to fit in the system's available memory.
+            if concurrency[ledger] == 0:
+                too_large_ledgers.add(ledger)
+        else:
+            concurrency[ledger] = 1
+
+    if too_large_ledgers:
+        raise ValueError('The max input files of the following ledgers are too'
+                         'large to load in memory' + ','.join(too_large_ledgers))
+
+    return concurrency

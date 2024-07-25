@@ -1,7 +1,7 @@
 import tokenomics_decentralization.helper as hlp
+from collections import namedtuple
 import pathlib
 import os
-import argparse
 import datetime
 import pytest
 
@@ -12,9 +12,9 @@ def test_valid_date():
 
     for d in ['2022/1/01', '2022/01/1', '2022/1', '2022/01', '2022.1.01', '2022.01.1', '2022.1', '2022.01', 'blah',
               '2022-', '2022-1-1', '2022-1-01', '2022-1', '2022-01-1', '2022-02-29']:
-        with pytest.raises(argparse.ArgumentTypeError) as e_info:
+        with pytest.raises(ValueError) as e_info:
             hlp.valid_date(d)
-        assert e_info.type == argparse.ArgumentTypeError
+        assert e_info.type == ValueError
 
 
 def test_get_date_beginning():
@@ -486,3 +486,28 @@ def test_get_clusters(mocker):
     assert clusters['entity1'] == clusters['entity3']
     assert clusters['entity4'] == clusters['entity5']
     assert 'entity7' not in clusters.keys()
+
+
+def test_get_concurrency_per_ledger(mocker):
+    psutil_memory_mock = mocker.patch('psutil.virtual_memory')
+    psutil_memory_mock.return_value = namedtuple('VM', 'total')(10*10**9)
+
+    get_input_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_input_directories')
+    get_input_directories_mock.return_value = [pathlib.Path('/').resolve()]
+
+    get_ledgers_mock = mocker.patch('tokenomics_decentralization.helper.get_ledgers')
+    get_ledgers_mock.return_value = ['bitcoin', 'ethereum']
+
+    os_walk_mock = mocker.patch('os.walk')
+    os_walk_mock.return_value = [('/', 'foo', ['bitcoin_2010-01-01_raw_data.csv'])]
+
+    os_stat_mock = mocker.patch('os.stat')
+    os_stat_mock.return_value = namedtuple('ST', 'st_size')(10*10**8)
+
+    concurrency = hlp.get_concurrency_per_ledger()
+    assert concurrency == {'bitcoin': 3, 'ethereum': 1}
+
+    os_stat_mock.return_value = namedtuple('ST', 'st_size')(5*10**9)
+
+    with pytest.raises(ValueError):
+        hlp.get_concurrency_per_ledger()
