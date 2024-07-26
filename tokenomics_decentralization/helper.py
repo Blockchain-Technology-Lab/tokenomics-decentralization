@@ -633,7 +633,8 @@ def get_concurrency_per_ledger():
         # and run in parallel without exhausting the system's memory.
         if max_file_size > 0:
             # When loaded in (a dict in) memory, each file consumes approx. 2.5x space compared to storage.
-            concurrency[ledger] = int(system_memory_total / (2.5 * max_file_size))
+            # Limit processes to CPU count to avoid OS process management overhead.
+            concurrency[ledger] = min(os.cpu_count(), int(system_memory_total / (2.5 * max_file_size)))
             # Find if some ledger files are too large to fit in the system's available memory.
             if concurrency[ledger] == 0:
                 too_large_ledgers.add(ledger)
