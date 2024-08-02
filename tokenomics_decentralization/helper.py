@@ -147,7 +147,10 @@ def get_output_directory():
     :returns: a list of directories that might contain the db files
     """
     config = get_config_data()
-    return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']][0]
+    sources = ' - '.join(get_active_source_keywords())
+    if not sources:
+        sources = 'No clustering'
+    return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']][0] / sources
 
 
 def get_input_directories():
