@@ -348,15 +348,6 @@ def get_plot_config_data():
     return get_config_data()['plot_parameters']
 
 
-def get_output_files():
-    """
-    Retrieves all output files produced by some run
-    :returns: a list of filenames
-    """
-    output_dir = str(get_output_directories()[0])
-    return [filename for filename in os.listdir(output_dir) if filename.startswith('output') and filename.endswith('.csv')]
-
-
 def get_special_addresses(ledger):
     """
     Retrieves the ledger's special addresses that should be excluded from the analysis

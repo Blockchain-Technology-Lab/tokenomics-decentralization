@@ -301,13 +301,6 @@ def test_get_circulation_from_entries():
     assert circulation == 21
 
 
-def test_get_output_files(mocker):
-    get_config_mock = mocker.patch("tokenomics_decentralization.helper.get_output_directories")
-    get_config_mock.return_value = [pathlib.Path(__file__).resolve().parent]
-    output_files = hlp.get_output_files()
-    assert isinstance(output_files, list)
-
-
 def test_get_special_addresses():
     ethereum_special_addresses = hlp.get_special_addresses('ethereum')
     assert isinstance(ethereum_special_addresses, list)
