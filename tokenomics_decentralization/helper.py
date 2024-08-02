@@ -485,24 +485,17 @@ def get_output_row(ledger, date, metrics):
     return csv_row
 
 
-def write_csv_output(output_rows):
+def get_output_filename():
     """
-    Produces the output csv file for the given data.
-    :param output_rows: a list of lists, where each list corresponds to a line in the output csv file
+    Produces the name (full path) of the output file.
+    :returns output_filename: a pathlib path of the output file
     """
-    header = ['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses', 'top_limit_type',
-              'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
-    header += get_metrics()
-
-    clustering = get_clustering_flag()
     exclude_contract_addresses_flag = get_exclude_contracts_flag()
     top_limit_type = get_top_limit_type()
     top_limit_value = get_top_limit_value()
     exclude_below_fees_flag = get_exclude_below_fees_flag()
     exclude_below_usd_cent_flag = get_exclude_below_usd_cent_flag()
     output_filename = 'output'
-    if not clustering:
-        output_filename += '-no_clustering'
     if exclude_contract_addresses_flag:
         output_filename += '-exclude_contract_addresses'
     if top_limit_value:
@@ -512,9 +505,19 @@ def write_csv_output(output_rows):
     if exclude_below_usd_cent_flag:
         output_filename += '-exclude_below_usd_cent'
     output_filename += '.csv'
+    return get_output_directories()[0] / output_filename
 
-    output_dir = get_output_directories()[0]
-    with open(output_dir / output_filename, 'w') as f:
+
+def write_csv_output(output_rows):
+    """
+    Produces the output csv file for the given data.
+    :param output_rows: a list of lists, where each list corresponds to a line in the output csv file
+    """
+    header = ['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses', 'top_limit_type',
+              'top_limit_value', 'exclude_below_fees', 'exclude_below_usd_cent']
+    header += get_metrics()
+
+    with open(get_output_filename(), 'w') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerow(header)
         csv_writer.writerows(output_rows)

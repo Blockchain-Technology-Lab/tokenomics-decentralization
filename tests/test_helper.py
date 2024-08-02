@@ -395,31 +395,43 @@ def test_get_output_row(mocker):
     assert csv_row == ['bitcoin', '2010-01-01', False, True, 'absolute', 1, False, True, 1, 0]
 
 
+def test_get_output_filename(mocker):
+    get_output_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_output_directories')
+    get_output_directories_mock.return_value = [pathlib.Path(__file__).resolve().parent]
+    get_exclude_contracts_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_contracts_flag')
+    get_exclude_contracts_mock.return_value = False
+    get_exclude_below_fees_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_below_fees_flag')
+    get_exclude_below_fees_mock.return_value = False
+    get_exclude_below_usd_cent_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_below_usd_cent_flag')
+    get_exclude_below_usd_cent_mock.return_value = False
+    get_top_limit_type_mock = mocker.patch('tokenomics_decentralization.helper.get_top_limit_type')
+    get_top_limit_type_mock.return_value = 'absolute'
+    get_top_limit_value_mock = mocker.patch('tokenomics_decentralization.helper.get_top_limit_value')
+    get_top_limit_value_mock.return_value = 0
+
+    output_filename = hlp.get_output_filename()
+    assert output_filename == pathlib.Path(__file__).resolve().parent / 'output.csv'
+
+    get_exclude_contracts_mock.return_value = True
+    get_exclude_below_fees_mock.return_value = True
+    get_exclude_below_usd_cent_mock.return_value = True
+    get_top_limit_value_mock.return_value = 10
+
+    output_filename = hlp.get_output_filename()
+    assert output_filename == pathlib.Path(__file__).resolve().parent / 'output-exclude_contract_addresses-absolute_10-exclude_below_fees-exclude_below_usd_cent.csv'
+
+
 def test_write_csv_output(mocker):
     get_metrics_mock = mocker.patch('tokenomics_decentralization.helper.get_metrics')
     get_metrics_mock.return_value = ['hhi']
 
-    get_output_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_output_directories')
-    get_output_directories_mock.return_value = [pathlib.Path(__file__).resolve().parent]
-
-    get_clustering_mock = mocker.patch('tokenomics_decentralization.helper.get_clustering_flag')
-    get_exclude_contracts_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_contracts_flag')
-    get_exclude_below_fees_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_below_fees_flag')
-    get_exclude_below_usd_cent_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_below_usd_cent_flag')
-    get_top_limit_type_mock = mocker.patch('tokenomics_decentralization.helper.get_top_limit_type')
-    get_top_limit_value_mock = mocker.patch('tokenomics_decentralization.helper.get_top_limit_value')
-
-    get_clustering_mock.return_value = True
-    get_exclude_contracts_mock.return_value = False
-    get_exclude_below_fees_mock.return_value = False
-    get_exclude_below_usd_cent_mock.return_value = False
-    get_top_limit_type_mock.return_value = 'absolute'
-    get_top_limit_value_mock.return_value = 0
+    get_output_filename_mock = mocker.patch('tokenomics_decentralization.helper.get_output_filename')
+    get_output_filename_mock.return_value = pathlib.Path(__file__).resolve().parent / 'output.csv'
 
     hlp.write_csv_output([
         ['bitcoin', '2010-01-01', True, False, 'absolute', 0, False, False, 100],
         ['ethereum', '2010-01-01', True, False, 'absolute', 0, False, False, 200],
-        ])
+    ])
     with open(pathlib.Path(__file__).resolve().parent / 'output.csv') as f:
         lines = f.readlines()
         assert lines[0] == ','.join(['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses',
@@ -430,28 +442,6 @@ def test_write_csv_output(mocker):
         assert lines[2] == ','.join(['ethereum', '2010-01-01', 'True', 'False', 'absolute', '0', 'False', 'False',
                                      '200']) + '\n'
     os.remove(pathlib.Path(__file__).resolve().parent / 'output.csv')
-
-    get_clustering_mock.return_value = False
-    get_exclude_contracts_mock.return_value = True
-    get_exclude_below_fees_mock.return_value = True
-    get_exclude_below_usd_cent_mock.return_value = True
-    get_top_limit_type_mock.return_value = 'absolute'
-    get_top_limit_value_mock.return_value = 10
-
-    hlp.write_csv_output([
-        ['bitcoin', '2010-01-01', False, False, 'absolute', 0, False, False, 100],
-        ['ethereum', '2010-01-01', False, False, 'absolute', 0, False, False, 200],
-    ])
-    with open(pathlib.Path(__file__).resolve().parent / 'output-no_clustering-exclude_contract_addresses-absolute_10-exclude_below_fees-exclude_below_usd_cent.csv') as f:
-        lines = f.readlines()
-        assert lines[0] == ','.join(['ledger', 'snapshot_date', 'clustering', 'exclude_contract_addresses',
-                                     'top_limit_type', 'top_limit_value', 'exclude_below_fees',
-                                     'exclude_below_usd_cent', 'hhi']) + '\n'
-        assert lines[1] == ','.join(['bitcoin', '2010-01-01', 'False', 'False', 'absolute', '0', 'False', 'False',
-                                     '100']) + '\n'
-        assert lines[2] == ','.join(['ethereum', '2010-01-01', 'False', 'False', 'absolute', '0', 'False', 'False',
-                                     '200']) + '\n'
-    os.remove(pathlib.Path(__file__).resolve().parent / 'output-no_clustering-exclude_contract_addresses-absolute_10-exclude_below_fees-exclude_below_usd_cent.csv')
 
 
 def test_get_active_source_keywords(mocker):
