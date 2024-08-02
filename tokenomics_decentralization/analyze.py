@@ -122,20 +122,35 @@ def analyze_ledger_snapshot(ledger, date, output_rows, sema):
     :param output_rows: a list of strings in the form of csv output rows
     :param sema: a multiprocessing semaphore
     """
-    input_filename = None
-    input_paths = [input_dir / f'{ledger}_{date}_raw_data.csv' for input_dir in hlp.get_input_directories()]
-    for filename in input_paths:
-        if os.path.isfile(filename):
-            input_filename = filename
-            break
-    if input_filename:
-        logging.info(f'[*] {ledger} - {date}')
+    row = None
 
-        entries = get_entries(ledger, date, filename)
-        metrics_values = analyze_snapshot(entries)
-        del entries
+    try:
+        with open(hlp.get_output_filename()) as f:
+            csv_reader = csv.reader(f)
+            for line in csv_reader:
+                if line[0] == ledger and line[1] == date:
+                    row = line
+                    break
+    except FileNotFoundError:
+        pass
 
-        row = hlp.get_output_row(ledger, date, metrics_values)
+    if not row:
+        input_filename = None
+        input_paths = [input_dir / f'{ledger}_{date}_raw_data.csv' for input_dir in hlp.get_input_directories()]
+        for filename in input_paths:
+            if os.path.isfile(filename):
+                input_filename = filename
+                break
+        if input_filename:
+            logging.info(f'[*] {ledger} - {date}')
+
+            entries = get_entries(ledger, date, filename)
+            metrics_values = analyze_snapshot(entries)
+            del entries
+
+            row = hlp.get_output_row(ledger, date, metrics_values)
+
+    if row:
         output_rows.append(row)
 
     sema.release()  # Release the semaphore s.t. the loop in analyze() can continue
