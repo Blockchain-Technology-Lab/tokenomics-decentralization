@@ -141,13 +141,13 @@ def increment_date(date, by):
         raise ValueError(f'Invalid granularity: {by}')
 
 
-def get_output_directories():
+def get_output_directory():
     """
     Reads the config file and retrieves the output directories
     :returns: a list of directories that might contain the db files
     """
     config = get_config_data()
-    return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']]
+    return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']][0]
 
 
 def get_input_directories():
@@ -496,7 +496,7 @@ def get_output_filename():
     if exclude_below_usd_cent_flag:
         output_filename += '-exclude_below_usd_cent'
     output_filename += '.csv'
-    return get_output_directories()[0] / output_filename
+    return get_output_directory() / output_filename
 
 
 def write_csv_output(output_rows):

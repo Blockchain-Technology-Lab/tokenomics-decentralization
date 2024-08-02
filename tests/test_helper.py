@@ -68,10 +68,9 @@ def test_input_directories():
     assert len(input_dirs) > 0
 
 
-def test_output_directories():
-    output_dirs = hlp.get_output_directories()
-    assert isinstance(output_dirs, list)
-    assert len(output_dirs) > 0
+def test_output_directory():
+    output_dir = hlp.get_output_directory()
+    assert isinstance(output_dir, pathlib.Path)
 
 
 def test_tau_thresholds():
@@ -389,8 +388,8 @@ def test_get_output_row(mocker):
 
 
 def test_get_output_filename(mocker):
-    get_output_directories_mock = mocker.patch('tokenomics_decentralization.helper.get_output_directories')
-    get_output_directories_mock.return_value = [pathlib.Path(__file__).resolve().parent]
+    get_output_directory_mock = mocker.patch('tokenomics_decentralization.helper.get_output_directory')
+    get_output_directory_mock.return_value = pathlib.Path(__file__).resolve().parent
     get_exclude_contracts_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_contracts_flag')
     get_exclude_contracts_mock.return_value = False
     get_exclude_below_fees_mock = mocker.patch('tokenomics_decentralization.helper.get_exclude_below_fees_flag')
