@@ -29,7 +29,7 @@ if __name__ == '__main__':
         start_date, end_date = hlp.get_date_beginning(snapshot_dates[0]), hlp.get_date_end(snapshot_dates[-1])
         snapshot_dates = hlp.get_dates_between(start_date, end_date, granularity)
 
-    output_dir = hlp.get_output_directories()[0]
+    output_dir = hlp.get_output_directory()
     if not output_dir.is_dir():
         output_dir.mkdir()
 
