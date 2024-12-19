@@ -144,13 +144,13 @@ def increment_date(date, by):
 def get_output_directory():
     """
     Reads the config file and retrieves the output directories
-    :returns: a list of directories that might contain the db files
+    :returns: the directory to use for the output files
     """
     config = get_config_data()
     sources = ' - '.join(get_active_source_keywords())
     if not sources:
         sources = 'No clustering'
-    return [pathlib.Path(db_dir).resolve() for db_dir in config['output_directories']][0] / sources
+    return pathlib.Path(config['output_directories'][0]).resolve() / sources
 
 
 def get_input_directories():
