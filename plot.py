@@ -21,7 +21,7 @@ def plot():
     Plots the data contained in the output file
     """
     logging.info('Plotting data..')
-    output_dir = hlp.get_output_directories()[0]
+    output_dir = hlp.get_output_directory()
 
     figures_path = output_dir / 'figures'
     if not figures_path.is_dir():
