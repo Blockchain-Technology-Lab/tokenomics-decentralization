@@ -28,7 +28,7 @@ def plot():
         figures_path.mkdir()
 
     # Combine all output files in a single dataframe
-    output_df = pd.concat([pd.read_csv(output_dir / filename) for filename in hlp.get_output_files()], ignore_index=True)
+    output_df = pd.read_csv(hlp.get_output_filename())
 
     plot_config = hlp.get_plot_config_data()
 
