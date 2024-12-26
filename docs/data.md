@@ -197,6 +197,5 @@ There are also three command line arguments that can be used to customize the da
 
 ## Historical prices
 
-The historical market prices (available in `price_data`) were collected from
-[CoinMarketCap](https://coinmarketcap.com/) and
-[Statista](https://www.statista.com/).
+The historical market prices for all coins (available under `price_data`) were collected from
+[CoinGecko](https://www.coingecko.com/).

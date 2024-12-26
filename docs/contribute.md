@@ -50,15 +50,18 @@ page](https://blockchain-technology-lab.github.io/tokenomics-decentralization/se
 ### Price information
 
 The directory `price_data/` contains information about the supported ledgers'
-market price. Each file in this folder is named `<project_name>.csv` (for the
+market price. Each file in this folder is named `<ledger>-USD.csv` (for the
 corresponding ledger). The csv file has no header and each line contains two
 comma-separated values:
 (i) a day (in the form YYYY-MM-DD);
-(ii) the USD market price of the token on the set day.
+(ii) the USD market price of the token on the set day (specifically its opening price).
+
+All price information is currently obtained from CoinGecko.
 
 To contribute price information you can either update an existing file, by
 adding entries for days where data is missing, or create a new file for a
 newly-supported ledger and add historical price data.
+
 
 ## Add metrics
 
