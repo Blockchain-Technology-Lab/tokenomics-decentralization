@@ -12,6 +12,7 @@ from collections import defaultdict
 import logging
 from yaml import safe_load
 from dateutil.rrule import rrule, MONTHLY, WEEKLY, YEARLY, DAILY
+from typing import Union
 
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
 MAPPING_INFO_DIR = ROOT_DIR / 'mapping_information'
@@ -410,7 +411,8 @@ def get_denomination_from_coin(ledger):
         'cardano': 1e6,
         'ethereum': 1e9,
         'litecoin': 1e8,
-        'tezos': 1e6
+        'tezos': 1e6,
+        'ripple': 1e6
     }
     try:
         return denominations[ledger]
@@ -643,3 +645,26 @@ def get_concurrency_per_ledger():
                          'large to load in memory' + ','.join(too_large_ledgers))
 
     return concurrency
+
+
+def convert_to_atomic_units(coin: str, balance: Union[str, float]) -> int:
+    """
+    Convert a floating balance to its atomic unit representation using the coin's denomination.
+
+    Parameters
+    ----------
+    coin : str
+        The name of the cryptocurrency (e.g., 'ripple', 'bitcoin', 'ethereum').
+    balance : str or float
+        The balance in full coin units (e.g., '17.229982' XRP or 0.001 BTC).
+
+    Returns
+    -------
+    int
+        The equivalent balance in atomic units (e.g., drops, satoshis, wei).
+    """
+    try:
+        denomination = get_denomination_from_coin(coin)
+        return int(float(balance) * denomination)
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Invalid balance or coin type: {coin}, {balance}") from e
