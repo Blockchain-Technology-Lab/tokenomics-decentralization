@@ -97,7 +97,7 @@ def get_entries(ledger, date, filename):
         next(csv_reader)
         clustered_balances = defaultdict(int)
         for line in csv_reader:
-            address, balance = line[0], float(line[-1])
+            address, balance = line[0], int(line[-1])
             if address in special_addresses:
                 continue
             entity, is_contract = db_hlp.get_address_entity(conn, address)
