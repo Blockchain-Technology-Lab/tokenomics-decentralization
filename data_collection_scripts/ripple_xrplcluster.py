@@ -21,7 +21,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 DB_FILE = os.path.join(OUTPUT_DIR, "balances.db")
 
 logging.basicConfig(
-    filename=os.path.join(OUTPUT_DIR, "run.log"),
+    filename=os.path.join(OUTPUT_DIR, "xrpl_cluster.log"),
     level=logging.INFO,
     format="%(asctime)s %(message)s",
 )
@@ -56,10 +56,9 @@ def get_complete_ledger_range() -> tuple[int, int]:
     # Parse ranges and take overall min/max
     min_idx, max_idx = None, None
     for part in complete.split(","):
-        a, b = part.split("-")
-        a, b = int(a), int(b)
-        min_idx = a if min_idx is None else min(min_idx, a)
-        max_idx = b if max_idx is None else max(max_idx, b)
+        start_idx, end_idx = map(int, part.split("-"))
+        min_idx = start_idx if min_idx is None else min(min_idx, start_idx)
+        max_idx = end_idx if max_idx is None else max(max_idx, end_idx)
     return min_idx, max_idx
 
 
@@ -264,7 +263,7 @@ def export_month(year: int, month: int):
     next_month_date = next_month_date.replace(day=1)
 
     filename = os.path.join(
-        OUTPUT_DIR, f"ripple_{next_month_date.strftime('%Y-%m-%d')}_raw_data.csv"
+        OUTPUT_DIR, f"xrpl_{next_month_date.strftime('%Y-%m-%d')}_raw_data.csv"
     )
     conn, table_name = init_db(year, month)
     ensure_metadata_table(conn)
@@ -313,7 +312,7 @@ def export_csv_from_sqlite(year: int, month: int):
     Reads from table accounts_YYYY_MM and writes to /mnt/output/xrp_MM_YYYY.csv
     """
     table_name = f"accounts_{year}_{month:02d}"
-    csv_filename = f"xrp_{month:02d}_{year}.csv"
+    csv_filename = f"xrpl_{month:02d}_{year}.csv"
     csv_path = os.path.join(OUTPUT_DIR, csv_filename)
 
     try:
