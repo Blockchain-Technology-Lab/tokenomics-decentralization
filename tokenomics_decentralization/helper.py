@@ -524,7 +524,10 @@ def get_active_source_keywords():
     :returns: a list of strings of mapping information source keywords
     """
     try:
-        return get_config_data()['analyze_flags']['clustering_sources']
+        active_sources = get_config_data()['analyze_flags']['clustering_sources']
+        if not active_sources:
+            return []
+        return active_sources
     except KeyError:
         raise ValueError('Clustering sources does not exist in analyze flags')
 
