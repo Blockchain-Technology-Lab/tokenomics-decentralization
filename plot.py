@@ -13,7 +13,7 @@ tickers = {
     'ethereum': 'ETH',
     'litecoin': 'LTC',
     'tezos': 'XTZ',
-    'ripple': 'XRP'
+    'xrpl': 'XRP'
 }
 
 

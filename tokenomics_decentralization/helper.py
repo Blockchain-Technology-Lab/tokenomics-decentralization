@@ -411,7 +411,7 @@ def get_denomination_from_coin(ledger):
         'ethereum': 1e9,
         'litecoin': 1e8,
         'tezos': 1e6,
-        'ripple': 1e6
+        'xrpl': 1e6
     }
     try:
         return denominations[ledger]
