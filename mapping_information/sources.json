@@ -4,7 +4,8 @@
         "https://dogecoinwhalealert.com",
         "https://www.walletexplorer.com",
         "https://api.tzkt.io/",
-        "https://etherscan.io"
+        "https://etherscan.io",
+        "https://api.xrpscan.com"
     ],
     "Staking Keys": [
         "staking key",

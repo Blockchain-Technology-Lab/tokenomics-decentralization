@@ -173,6 +173,7 @@ def test_get_denomination_from_coin():
     assert hlp.get_denomination_from_coin('ethereum') == 1e9
     assert hlp.get_denomination_from_coin('litecoin') == 1e8
     assert hlp.get_denomination_from_coin('tezos') == 1e6
+    assert hlp.get_denomination_from_coin('xrpl') == 1e6
     assert hlp.get_denomination_from_coin('blahblah') == 1
 
 

@@ -19,6 +19,7 @@ ledgers:
   - ethereum
   - litecoin
   - tezos
+  - xrpl
 
 # Execution flags
 execution_flags:
@@ -67,6 +68,7 @@ plot_parameters:
     - ethereum
     - litecoin
     - tezos
+    - xrpl
   metrics:
     - hhi
     - shannon_entropy
@@ -96,3 +98,5 @@ plot_parameters:
     exclude_contract_addresses:
       - true
       - false
+
+
